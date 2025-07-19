@@ -8,7 +8,8 @@ from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from consts import GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from game_field import GameField
 from player import Player
 
 
@@ -18,7 +19,8 @@ class MainWindow:
         self.__screen = screen
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
-        self.__players = [Player() for i in range(1, 2)]
+        self.__player = Player()
+        self.__field = GameField(GAME_FIELD_WIDTH // BLOCK_SIZE, GAME_FIELD_HEIGHT // BLOCK_SIZE)
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -72,12 +74,12 @@ class MainWindow:
 
             # Updates
             self.update(events)
-            for player in self.__players:
-                player.update(keys)
+            self.__player.update(keys)
 
             # Draws
             self.begin_draw()
-            player.draw()
+            self.__player.draw()
+            self.__field.draw()
             self.end_draw()
 
     def update(self, events) -> None:
@@ -99,15 +101,6 @@ class MainWindow:
         # Set modelview matrix
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-
-        # # Draw game field border (10 pixels from each edge)
-        # glColor3f(1, 1, 1)
-        # glBegin(GL_LINE_LOOP)
-        # glVertex2f(10, 10)
-        # glVertex2f(GAME_FIELD_WIDTH - 10, 10)
-        # glVertex2f(GAME_FIELD_WIDTH - 10, GAME_FIELD_HEIGHT - 10)
-        # glVertex2f(10, GAME_FIELD_HEIGHT - 10)
-        # glEnd()
 
         # Draw things
         glBegin(GL_QUADS)

@@ -1,18 +1,14 @@
 import pygame
 from pygame.key import ScancodeWrapper
 from OpenGL.GL import *  # type: ignore
-from consts import GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, PLAYER_JUMP_FORCE, PLAYER_SPEED, GRAVITY
+from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, PLAYER_JUMP_FORCE, PLAYER_SPEED, GRAVITY
 
 
 class Player:
     def __init__(self) -> None:
-        # self.__rect = pygame.Rect(GAME_FIELD_WIDTH // 2, GAME_FIELD_HEIGHT // 2, 100, 100)
-        self.__rect = pygame.Rect(
-            int(0),
-            int(GAME_FIELD_HEIGHT - 100),
-            50,
-            50
-        )
+        size = BLOCK_SIZE
+        start_pos = 0, GAME_FIELD_HEIGHT - 100
+        self.__rect = pygame.Rect(*start_pos, size, size)
 
         self.__velocity_y = 0
         self.__gravity = GRAVITY
