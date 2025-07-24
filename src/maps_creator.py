@@ -1,7 +1,7 @@
 import sys
 from typing import Tuple
 import pygame
-from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, START_SCREEN_WIDTH, START_SCREEN_HEIGHT
+from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
 from mouse_buttons import Mouse
 from game_field import GameField
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE, VIDEORESIZE
@@ -11,13 +11,16 @@ from OpenGL.GLU import *  # type: ignore
 
 pygame.init()
 
+
 bg_color = 200, 200, 200
 
+info = pygame.display.Info()
+target_width = int(info.current_w * 0.8)
+target_height = int(target_width / GAME_FIELD_PROPORTIONS)
+screen_size = (target_width, target_height)
+
 # Создаём окно с поддержкой OpenGL
-screen: pygame.Surface = pygame.display.set_mode(
-    (START_SCREEN_WIDTH, START_SCREEN_HEIGHT),
-    DOUBLEBUF | OPENGL | RESIZABLE
-)
+screen: pygame.Surface = pygame.display.set_mode(screen_size, DOUBLEBUF | OPENGL | RESIZABLE)
 
 mouse = Mouse()
 game_field = GameField(GAME_FIELD_WIDTH // BLOCK_SIZE, GAME_FIELD_HEIGHT // BLOCK_SIZE)
@@ -34,7 +37,7 @@ def set_screen_size(screen_size: Tuple[int, int]) -> None:
 
 
 # Настройка OpenGL один раз после создания окна
-set_screen_size((START_SCREEN_WIDTH, START_SCREEN_HEIGHT))
+set_screen_size(screen_size)
 
 # # Включаем сглаживание линий и альфа-смешивание
 # glEnable(GL_LINE_SMOOTH)

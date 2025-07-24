@@ -19,8 +19,10 @@ class MainWindow:
         self.__screen = screen
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
-        self.__player = Player()
-        self.__field = GameField(GAME_FIELD_WIDTH // BLOCK_SIZE, GAME_FIELD_HEIGHT // BLOCK_SIZE)
+        self.__game_field = GameField(GAME_FIELD_WIDTH // BLOCK_SIZE, GAME_FIELD_HEIGHT // BLOCK_SIZE)
+        self.__game_field.load_from_file()
+
+        self.__player = Player(self.__game_field)
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -74,12 +76,13 @@ class MainWindow:
 
             # Updates
             self.update(events)
-            self.__player.update(keys)
+            
 
             # Draws
             self.begin_draw()
             self.__player.draw()
-            self.__field.draw()
+            self.__player.update(keys) # когда будет работать colliderect, убрать отрисовку из update
+            self.__game_field.draw()
             self.end_draw()
 
     def update(self, events) -> None:

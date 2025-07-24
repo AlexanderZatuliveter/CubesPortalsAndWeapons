@@ -14,9 +14,9 @@ pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=100)
 
 info = pygame.display.Info()
 
-target_width = info.current_w * 0.8
-target_height = target_width / GAME_FIELD_PROPORTIONS
-screen_size = (START_SCREEN_WIDTH, START_SCREEN_HEIGHT)
+target_width = int(info.current_w * 0.8)
+target_height = int(target_width / GAME_FIELD_PROPORTIONS)
+screen_size = (target_width, target_height)
 
 screen = pygame.display.set_mode(screen_size, DOUBLEBUF | OPENGL | RESIZABLE)
 pygame.display.set_caption("Cubes, portals & weapons")
