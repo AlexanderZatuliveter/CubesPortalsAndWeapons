@@ -9,7 +9,7 @@ from game_field import GameField
 class Player:
     def __init__(self, game_field: GameField) -> None:
         size = BLOCK_SIZE
-        start_pos = 0, GAME_FIELD_HEIGHT - 100
+        start_pos = 48, GAME_FIELD_HEIGHT - 144
         self.__rect = pygame.Rect(*start_pos, size, size)
         self.__game_field = game_field
 
@@ -45,7 +45,7 @@ class Player:
             y2 = self.__rect.y + self.__rect.height - 2
             return x, y1, y2
         elif direction == "right":
-            x = self.__rect.x + self.__rect.width + self.__speed
+            x = self.__rect.x + self.__rect.width + self.__speed * 2
             y1 = self.__rect.y + 2
             y2 = self.__rect.y + self.__rect.height - 2
             return x, y1, y2
