@@ -40,39 +40,38 @@ class Player:
             y = self.__rect.y - 5
             return x1, x2, y
         elif direction == "left":
-            x = int(self.__rect.x - self.__speed)
-            y1 = self.__rect.y
-            y2 = self.__rect.y + self.__rect.height
+            x = self.__rect.x - self.__speed
+            y1 = self.__rect.y + 2
+            y2 = self.__rect.y + self.__rect.height - 2
             return x, y1, y2
         elif direction == "right":
-            x = int(self.__rect.x + self.__rect.width + self.__speed)
-            y1 = self.__rect.y
-            y2 = self.__rect.y + self.__rect.height
+            x = self.__rect.x + self.__rect.width + self.__speed
+            y1 = self.__rect.y + 2
+            y2 = self.__rect.y + self.__rect.height - 2
             return x, y1, y2
 
     def update(self, keys: ScancodeWrapper) -> None:
-
         self.__draw_square(self.__rect.x, self.__rect.y, (0 / 255, 255 / 255, 0 / 255))
 
         if keys[pygame.K_a] and self.__rect.left > 0:
             x, y1, y2 = self.__collidepoints("left")
             rect = self.__modify_rect(-self.__speed, 0, self.__rect)
-            if not self.__game_field.colliderect_with(x, y1, rect)  \
-                    and not self.__game_field.colliderect_with(x, y2, rect):
+            if not self.__game_field.colliderect_with(
+                    x, y1, rect) and not self.__game_field.colliderect_with(x, y2, rect):
                 self.__rect.centerx -= PLAYER_SPEED
 
-            self.__draw_square(x, y1)
-            self.__draw_square(x, y2)
+            self.__draw_square(x, y1, (255 / 255, 123 / 255, 0 / 255))
+            self.__draw_square(x, y2, (255 / 255, 123 / 255, 0 / 255))
 
         if keys[pygame.K_d] and self.__rect.right < GAME_FIELD_WIDTH:
             x, y1, y2 = self.__collidepoints("right")
             rect = self.__modify_rect(self.__speed, 0, self.__rect)
-            if not self.__game_field.colliderect_with(x, y1, rect) \
-                    and not self.__game_field.colliderect_with(x, y2, rect):
+            if not self.__game_field.colliderect_with(
+                    x, y1, rect) and not self.__game_field.colliderect_with(x, y2, rect):
                 self.__rect.centerx += PLAYER_SPEED
 
-            self.__draw_square(x, y1)
-            self.__draw_square(x, y2)
+            self.__draw_square(x, y1, (255 / 255, 123 / 255, 0 / 255))
+            self.__draw_square(x, y2, (255 / 255, 123 / 255, 0 / 255))
 
         x1, x2, y = self.__collidepoints("bottom")
         rect = self.__modify_rect(0, int(self.__velocity_y), self.__rect)
@@ -84,8 +83,8 @@ class Player:
 
         x1, x2, y = self.__collidepoints("top")
         rect = self.__modify_rect(0, -5, self.__rect)
-        is_upper_block = self.__game_field.colliderect_with(x1, y, rect) \
-            or self.__game_field.colliderect_with(x2, y, rect)
+        is_upper_block = self.__game_field.colliderect_with(x1, y, rect) or \
+            self.__game_field.colliderect_with(x2, y, rect)
 
         self.__draw_square(x1, y)
         self.__draw_square(x2, y)
@@ -93,19 +92,23 @@ class Player:
         is_jump = (is_bottom_block or self.__rect.bottom >= GAME_FIELD_HEIGHT) \
             and not (is_upper_block and self.__rect.top <= 0)
 
-        if keys[pygame.K_w] and is_jump:
+        jump_pressed = keys[pygame.K_w] and is_jump
+
+        if jump_pressed:
             self.__velocity_y = self.__jump_force
 
-        # Gravitation
         if not is_bottom_block and not self.__rect.bottom > GAME_FIELD_HEIGHT:
             self.__velocity_y += self.__gravity
             self.__rect.centery += int(self.__velocity_y)
-
-        if self.__rect.bottom >= GAME_FIELD_HEIGHT:
-            self.__rect.bottom = GAME_FIELD_HEIGHT
-            self.__velocity_y = 0
+        else:
+            # Только сбрасывай скорость, если не было прыжка в этом кадре
+            if not jump_pressed:
+                self.__velocity_y = 0
+            if self.__rect.bottom > GAME_FIELD_HEIGHT:
+                self.__rect.bottom = GAME_FIELD_HEIGHT
 
         if self.__rect.top <= 0 or is_upper_block:
+            self.__rect.top = max(self.__rect.top, 0)
             self.__velocity_y = self.__gravity * 2
 
     def draw(self) -> None:

@@ -21,7 +21,11 @@
     "cSpell.language": "en,ru",
     "cSpell.dictionaries": ["russian"],
     "cSpell.words": [
+        "centerx",
+        "centery",
         "collidepoints",
+        "colliderect",
+        "Scancode",
         "VIDEORESIZE"
     ],
     "python.testing.pytestArgs": [
