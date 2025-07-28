@@ -26,7 +26,7 @@ class Player:
         x: int,
         y: int,
         color: tuple[float, float, float] = (255 / 255, 0 / 255, 0 / 255),
-        size: int = 8
+        size: int = 4
     ) -> None:
 
         dif = size / 2
@@ -46,7 +46,7 @@ class Player:
         elif direction == "top":
             x1 = self.__rect.x
             x2 = self.__rect.x + self.__rect.width
-            y = self.__rect.y - 5
+            y = self.__rect.y - 7
             return x1, x2, y
         elif direction == "left":
             x = self.__rect.x - self.__speed
@@ -81,7 +81,7 @@ class Player:
             self.__game_field.colliderect_with(x2, y, rect)
 
         x1, x2, y = self.__collidepoints("top")
-        rect = self.__modify_rect(0, -5, self.__rect)
+        rect = self.__modify_rect(0, -7, self.__rect)
         is_upper_block = self.__game_field.colliderect_with(x1, y, rect) or \
             self.__game_field.colliderect_with(x2, y, rect)
 
@@ -104,16 +104,17 @@ class Player:
 
         if self.__rect.top <= 0 or is_upper_block:
             self.__rect.top = max(self.__rect.top, 0)
-            self.__velocity_y = self.__gravity * 2
+            self.__velocity_y = 3
 
     def draw(self) -> None:
-        glColor3f(50 / 255, 50 / 255, 235 / 255)
-        glVertex2f(self.__rect.x, self.__rect.y)
-        glVertex2f(self.__rect.x + self.__rect.w, self.__rect.y)
-        glVertex2f(self.__rect.x + self.__rect.w, self.__rect.y + self.__rect.h)
-        glVertex2f(self.__rect.x, self.__rect.y + self.__rect.h)
 
         if IS_DEBUG:
+            glColor3f(1, 1, 0)
+            glVertex2f(self.__rect.x - 1, self.__rect.y - 1)
+            glVertex2f(self.__rect.x + self.__rect.w + 1, self.__rect.y - 1)
+            glVertex2f(self.__rect.x + self.__rect.w + 1, self.__rect.y + self.__rect.h + 1)
+            glVertex2f(self.__rect.x - 1, self.__rect.y + self.__rect.h + 1)
+
             self.__draw_square(self.__rect.x, self.__rect.y, (0 / 255, 255 / 255, 0 / 255))
 
             rx, ry1, ry2 = self.__collidepoints("right")
@@ -131,3 +132,9 @@ class Player:
             bx1, bx2, by = self.__collidepoints("bottom")
             self.__draw_square(bx1, by)
             self.__draw_square(bx2, by)
+
+        glColor3f(50 / 255, 50 / 255, 235 / 255)
+        glVertex2f(self.__rect.x, self.__rect.y)
+        glVertex2f(self.__rect.x + self.__rect.w, self.__rect.y)
+        glVertex2f(self.__rect.x + self.__rect.w, self.__rect.y + self.__rect.h)
+        glVertex2f(self.__rect.x, self.__rect.y + self.__rect.h)

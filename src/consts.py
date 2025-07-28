@@ -3,12 +3,12 @@ import pygame
 pygame.init()
 
 GAME_FIELD_PROPORTIONS = 16 / 9
-GAME_FIELD_WIDTH = int(pygame.display.Info().current_w * 0.8)
+GAME_FIELD_WIDTH = int(pygame.display.Info().current_w * 0.8) + 2
 GAME_FIELD_HEIGHT = int(GAME_FIELD_WIDTH / GAME_FIELD_PROPORTIONS)
 
-PLAYER_SPEED = 13
-PLAYER_JUMP_FORCE = 20
-GRAVITY = 1.0
-BLOCK_SIZE = 47
+PLAYER_SPEED = 10
+PLAYER_JUMP_FORCE = 12
+GRAVITY = 0.5
+BLOCK_SIZE = 30
 
 IS_DEBUG = True

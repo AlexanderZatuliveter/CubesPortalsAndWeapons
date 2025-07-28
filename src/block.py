@@ -7,8 +7,7 @@ from consts import BLOCK_SIZE, IS_DEBUG
 
 class Block:
     def __init__(self) -> None:
-        size = BLOCK_SIZE
-        self.__rect = pygame.Rect(0, 0, size, size)
+        self.__rect = pygame.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)
 
     def draw(self, pos: Tuple[int, int]) -> None:
         if IS_DEBUG:

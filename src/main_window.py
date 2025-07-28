@@ -55,7 +55,7 @@ class MainWindow:
         # Reset projection matrix
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(0, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT, 0, -1, 1)
+        glOrtho(0, *self.__screen.get_size(), 0, -1, 1)
 
     def show(self) -> None:
 

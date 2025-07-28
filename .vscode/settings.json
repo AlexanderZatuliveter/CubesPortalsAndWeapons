@@ -30,6 +30,7 @@
         "DOUBLEBUF",
         "OPENGL",
         "Scancode",
+        "Translatef",
         "VIDEORESIZE"
     ],
     "python.testing.pytestArgs": [
