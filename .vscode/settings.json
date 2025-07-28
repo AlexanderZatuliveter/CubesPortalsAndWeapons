@@ -25,6 +25,8 @@
         "centery",
         "collidepoints",
         "colliderect",
+        "DOUBLEBUF",
+        "OPENGL",
         "Scancode",
         "VIDEORESIZE"
     ],

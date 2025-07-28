@@ -76,12 +76,11 @@ class MainWindow:
 
             # Updates
             self.update(events)
-            
+            self.__player.update(keys)
 
             # Draws
             self.begin_draw()
             self.__player.draw()
-            self.__player.update(keys) # когда будет работать colliderect, убрать отрисовку из update
             self.__game_field.draw()
             self.end_draw()
 

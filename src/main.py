@@ -2,7 +2,7 @@ import pygame
 import ctypes
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 
-from consts import GAME_FIELD_PROPORTIONS, START_SCREEN_HEIGHT, START_SCREEN_WIDTH
+from consts import GAME_FIELD_PROPORTIONS
 from main_window import MainWindow
 
 

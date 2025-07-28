@@ -2,7 +2,7 @@ from typing import Literal
 import pygame
 from pygame.key import ScancodeWrapper
 from OpenGL.GL import *  # type: ignore
-from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, PLAYER_JUMP_FORCE, PLAYER_SPEED, GRAVITY
+from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, IS_DEBUG, PLAYER_JUMP_FORCE, PLAYER_SPEED, GRAVITY
 from game_field import GameField
 
 
@@ -21,12 +21,21 @@ class Player:
     def __modify_rect(self, difx: int, dify: int, rect: pygame.Rect) -> pygame.Rect:
         return pygame.Rect(difx + rect.x, dify + rect.y, rect.width, rect.height)
 
-    def __draw_square(self, x: int, y: int, color: tuple[float, float, float] = (255 / 255, 0 / 255, 0 / 255)) -> None:
+    def __draw_square(
+        self,
+        x: int,
+        y: int,
+        color: tuple[float, float, float] = (255 / 255, 0 / 255, 0 / 255),
+        size: int = 8
+    ) -> None:
+
+        dif = size / 2
+
         glColor3f(color[0], color[1], color[2])
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + 5, y - 5)
-        glVertex2f(x + 5, y + 5)
-        glVertex2f(x - 5, y + 5)
+        glVertex2f(x - dif, y - dif)
+        glVertex2f(x + dif, y - dif)
+        glVertex2f(x + dif, y + dif)
+        glVertex2f(x - dif, y + dif)
 
     def __collidepoints(self, direction: Literal["bottom", "top", "left", "right"]) -> tuple[int, int, int]:
         if direction == "bottom":
@@ -51,7 +60,8 @@ class Player:
             return x, y1, y2
 
     def update(self, keys: ScancodeWrapper) -> None:
-        self.__draw_square(self.__rect.x, self.__rect.y, (0 / 255, 255 / 255, 0 / 255))
+        # if IS_DEBUG:
+        #     self.__draw_square(self.__rect.x, self.__rect.y, (0 / 255, 255 / 255, 0 / 255))
 
         if keys[pygame.K_a] and self.__rect.left > 0:
             x, y1, y2 = self.__collidepoints("left")
@@ -60,8 +70,9 @@ class Player:
                     x, y1, rect) and not self.__game_field.colliderect_with(x, y2, rect):
                 self.__rect.centerx -= PLAYER_SPEED
 
-            self.__draw_square(x, y1, (255 / 255, 123 / 255, 0 / 255))
-            self.__draw_square(x, y2, (255 / 255, 123 / 255, 0 / 255))
+            # if IS_DEBUG:
+            #     self.__draw_square(x, y1, (255 / 255, 123 / 255, 0 / 255))
+            #     self.__draw_square(x, y2, (255 / 255, 123 / 255, 0 / 255))
 
         if keys[pygame.K_d] and self.__rect.right < GAME_FIELD_WIDTH:
             x, y1, y2 = self.__collidepoints("right")
@@ -70,24 +81,27 @@ class Player:
                     x, y1, rect) and not self.__game_field.colliderect_with(x, y2, rect):
                 self.__rect.centerx += PLAYER_SPEED
 
-            self.__draw_square(x, y1, (255 / 255, 123 / 255, 0 / 255))
-            self.__draw_square(x, y2, (255 / 255, 123 / 255, 0 / 255))
+            # if IS_DEBUG:
+            #     self.__draw_square(x, y1, (255 / 255, 123 / 255, 0 / 255))
+            #     self.__draw_square(x, y2, (255 / 255, 123 / 255, 0 / 255))
 
         x1, x2, y = self.__collidepoints("bottom")
         rect = self.__modify_rect(0, int(self.__velocity_y), self.__rect)
         is_bottom_block = self.__game_field.colliderect_with(x1, y, rect) or \
             self.__game_field.colliderect_with(x2, y, rect)
 
-        self.__draw_square(x1, y)
-        self.__draw_square(x2, y)
+        # if IS_DEBUG:
+        #     self.__draw_square(x1, y)
+        #     self.__draw_square(x2, y)
 
         x1, x2, y = self.__collidepoints("top")
         rect = self.__modify_rect(0, -5, self.__rect)
         is_upper_block = self.__game_field.colliderect_with(x1, y, rect) or \
             self.__game_field.colliderect_with(x2, y, rect)
 
-        self.__draw_square(x1, y)
-        self.__draw_square(x2, y)
+        # if IS_DEBUG:
+        #     self.__draw_square(x1, y)
+        #     self.__draw_square(x2, y)
 
         is_jump = (is_bottom_block or self.__rect.bottom >= GAME_FIELD_HEIGHT) \
             and not (is_upper_block and self.__rect.top <= 0)
@@ -117,3 +131,19 @@ class Player:
         glVertex2f(self.__rect.x + self.__rect.w, self.__rect.y)
         glVertex2f(self.__rect.x + self.__rect.w, self.__rect.y + self.__rect.h)
         glVertex2f(self.__rect.x, self.__rect.y + self.__rect.h)
+
+        if IS_DEBUG:
+            rx, ry1, ry2 = self.__collidepoints("right")
+            lx, ly1, ly2 = self.__collidepoints("left")
+            tx1, tx2, ty = self.__collidepoints("top")
+            bx1, bx2, by = self.__collidepoints("bottom")
+
+            self.__draw_square(self.__rect.x, self.__rect.y, (0 / 255, 255 / 255, 0 / 255))
+            self.__draw_square(rx, ry1, (255 / 255, 123 / 255, 0 / 255))
+            self.__draw_square(rx, ry2, (255 / 255, 123 / 255, 0 / 255))
+            self.__draw_square(lx, ly1, (255 / 255, 123 / 255, 0 / 255))
+            self.__draw_square(lx, ly2, (255 / 255, 123 / 255, 0 / 255))
+            self.__draw_square(tx1, ty)
+            self.__draw_square(tx2, ty)
+            self.__draw_square(bx1, by)
+            self.__draw_square(bx2, by)
