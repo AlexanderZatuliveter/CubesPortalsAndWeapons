@@ -60,8 +60,6 @@ class Player:
             return x, y1, y2
 
     def update(self, keys: ScancodeWrapper) -> None:
-        # if IS_DEBUG:
-        #     self.__draw_square(self.__rect.x, self.__rect.y, (0 / 255, 255 / 255, 0 / 255))
 
         if keys[pygame.K_a] and self.__rect.left > 0:
             x, y1, y2 = self.__collidepoints("left")
@@ -70,10 +68,6 @@ class Player:
                     x, y1, rect) and not self.__game_field.colliderect_with(x, y2, rect):
                 self.__rect.centerx -= PLAYER_SPEED
 
-            # if IS_DEBUG:
-            #     self.__draw_square(x, y1, (255 / 255, 123 / 255, 0 / 255))
-            #     self.__draw_square(x, y2, (255 / 255, 123 / 255, 0 / 255))
-
         if keys[pygame.K_d] and self.__rect.right < GAME_FIELD_WIDTH:
             x, y1, y2 = self.__collidepoints("right")
             rect = self.__modify_rect(self.__speed, 0, self.__rect)
@@ -81,27 +75,15 @@ class Player:
                     x, y1, rect) and not self.__game_field.colliderect_with(x, y2, rect):
                 self.__rect.centerx += PLAYER_SPEED
 
-            # if IS_DEBUG:
-            #     self.__draw_square(x, y1, (255 / 255, 123 / 255, 0 / 255))
-            #     self.__draw_square(x, y2, (255 / 255, 123 / 255, 0 / 255))
-
         x1, x2, y = self.__collidepoints("bottom")
         rect = self.__modify_rect(0, int(self.__velocity_y), self.__rect)
         is_bottom_block = self.__game_field.colliderect_with(x1, y, rect) or \
             self.__game_field.colliderect_with(x2, y, rect)
 
-        # if IS_DEBUG:
-        #     self.__draw_square(x1, y)
-        #     self.__draw_square(x2, y)
-
         x1, x2, y = self.__collidepoints("top")
         rect = self.__modify_rect(0, -5, self.__rect)
         is_upper_block = self.__game_field.colliderect_with(x1, y, rect) or \
             self.__game_field.colliderect_with(x2, y, rect)
-
-        # if IS_DEBUG:
-        #     self.__draw_square(x1, y)
-        #     self.__draw_square(x2, y)
 
         is_jump = (is_bottom_block or self.__rect.bottom >= GAME_FIELD_HEIGHT) \
             and not (is_upper_block and self.__rect.top <= 0)
@@ -115,7 +97,6 @@ class Player:
             self.__velocity_y += self.__gravity
             self.__rect.centery += int(self.__velocity_y)
         else:
-            # Только сбрасывай скорость, если не было прыжка в этом кадре
             if not jump_pressed:
                 self.__velocity_y = 0
             if self.__rect.bottom > GAME_FIELD_HEIGHT:
@@ -133,17 +114,20 @@ class Player:
         glVertex2f(self.__rect.x, self.__rect.y + self.__rect.h)
 
         if IS_DEBUG:
-            rx, ry1, ry2 = self.__collidepoints("right")
-            lx, ly1, ly2 = self.__collidepoints("left")
-            tx1, tx2, ty = self.__collidepoints("top")
-            bx1, bx2, by = self.__collidepoints("bottom")
-
             self.__draw_square(self.__rect.x, self.__rect.y, (0 / 255, 255 / 255, 0 / 255))
+
+            rx, ry1, ry2 = self.__collidepoints("right")
             self.__draw_square(rx, ry1, (255 / 255, 123 / 255, 0 / 255))
             self.__draw_square(rx, ry2, (255 / 255, 123 / 255, 0 / 255))
+
+            lx, ly1, ly2 = self.__collidepoints("left")
             self.__draw_square(lx, ly1, (255 / 255, 123 / 255, 0 / 255))
             self.__draw_square(lx, ly2, (255 / 255, 123 / 255, 0 / 255))
+
+            tx1, tx2, ty = self.__collidepoints("top")
             self.__draw_square(tx1, ty)
             self.__draw_square(tx2, ty)
+
+            bx1, bx2, by = self.__collidepoints("bottom")
             self.__draw_square(bx1, by)
             self.__draw_square(bx2, by)

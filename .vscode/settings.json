@@ -25,6 +25,8 @@
         "centery",
         "collidepoints",
         "colliderect",
+        "difx",
+        "dify",
         "DOUBLEBUF",
         "OPENGL",
         "Scancode",
