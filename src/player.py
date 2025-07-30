@@ -9,7 +9,7 @@ from game_field import GameField
 class Player:
     def __init__(self, game_field: GameField) -> None:
         size = BLOCK_SIZE
-        start_pos = BLOCK_SIZE * 26 / 2, GAME_FIELD_HEIGHT - 144
+        start_pos = GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT + BLOCK_SIZE * 2
         self.__rect = pygame.Rect(*start_pos, size, size)
         self.__game_field = game_field
 
@@ -62,20 +62,18 @@ class Player:
 
     def update(self, keys: ScancodeWrapper) -> None:
 
-        print(self.__velocity_y)
-
         if keys[pygame.K_a]:
             x, y1, y2 = self.__collidepoints("left")
             rect = self.__modify_rect(-self.__speed, 0, self.__rect)
-            if not self.__game_field.colliderect_with(
-                    x, y1, rect) and not self.__game_field.colliderect_with(x, y2, rect):
+            if not self.__game_field.colliderect_with(x, y1, rect) \
+                    and not self.__game_field.colliderect_with(x, y2, rect):
                 self.__rect.centerx -= PLAYER_SPEED
 
         if keys[pygame.K_d]:
             x, y1, y2 = self.__collidepoints("right")
             rect = self.__modify_rect(self.__speed, 0, self.__rect)
-            if not self.__game_field.colliderect_with(
-                    x, y1, rect) and not self.__game_field.colliderect_with(x, y2, rect):
+            if not self.__game_field.colliderect_with(x, y1, rect) \
+                    and not self.__game_field.colliderect_with(x, y2, rect):
                 self.__rect.centerx += PLAYER_SPEED
 
         x1, x2, y = self.__collidepoints("bottom")
@@ -88,15 +86,12 @@ class Player:
         is_upper_block = self.__game_field.colliderect_with(x1, y, rect) or \
             self.__game_field.colliderect_with(x2, y, rect)
 
-        is_jump = (is_bottom_block or self.__rect.bottom >= GAME_FIELD_HEIGHT) \
-            and not (is_upper_block and self.__rect.top <= 0)
-
-        jump_pressed = keys[pygame.K_w] and is_jump
+        jump_pressed = keys[pygame.K_w] and is_bottom_block and not is_upper_block
 
         if jump_pressed:
             self.__velocity_y = self.__jump_force
 
-        if not is_bottom_block and not self.__rect.bottom > GAME_FIELD_HEIGHT:
+        if not is_bottom_block:
             if self.__velocity_y < self.__max_velocity_y:
                 self.__velocity_y += self.__gravity
             self.__rect.centery += int(self.__velocity_y)
@@ -104,8 +99,7 @@ class Player:
             if not jump_pressed:
                 self.__velocity_y = 0
 
-        if self.__rect.top <= 0 or is_upper_block:
-            self.__rect.top = max(self.__rect.top, 0)
+        if is_upper_block:
             self.__velocity_y = 3
 
         if self.__rect.left < 0:
