@@ -14,6 +14,7 @@ class Player:
         self.__game_field = game_field
 
         self.__velocity_y = 0
+        self.__max_velocity_y = 50
         self.__gravity = GRAVITY
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__speed = PLAYER_SPEED
@@ -61,14 +62,16 @@ class Player:
 
     def update(self, keys: ScancodeWrapper) -> None:
 
-        if keys[pygame.K_a] and self.__rect.left > 0:
+        print(self.__velocity_y)
+
+        if keys[pygame.K_a]:
             x, y1, y2 = self.__collidepoints("left")
             rect = self.__modify_rect(-self.__speed, 0, self.__rect)
             if not self.__game_field.colliderect_with(
                     x, y1, rect) and not self.__game_field.colliderect_with(x, y2, rect):
                 self.__rect.centerx -= PLAYER_SPEED
 
-        if keys[pygame.K_d] and self.__rect.right < GAME_FIELD_WIDTH:
+        if keys[pygame.K_d]:
             x, y1, y2 = self.__collidepoints("right")
             rect = self.__modify_rect(self.__speed, 0, self.__rect)
             if not self.__game_field.colliderect_with(
@@ -94,17 +97,25 @@ class Player:
             self.__velocity_y = self.__jump_force
 
         if not is_bottom_block and not self.__rect.bottom > GAME_FIELD_HEIGHT:
-            self.__velocity_y += self.__gravity
+            if self.__velocity_y < self.__max_velocity_y:
+                self.__velocity_y += self.__gravity
             self.__rect.centery += int(self.__velocity_y)
         else:
             if not jump_pressed:
                 self.__velocity_y = 0
-            if self.__rect.bottom > GAME_FIELD_HEIGHT:
-                self.__rect.bottom = GAME_FIELD_HEIGHT
 
         if self.__rect.top <= 0 or is_upper_block:
             self.__rect.top = max(self.__rect.top, 0)
             self.__velocity_y = 3
+
+        if self.__rect.left < 0:
+            self.__rect.x = GAME_FIELD_WIDTH - self.__rect.width
+        elif self.__rect.right > GAME_FIELD_WIDTH:
+            self.__rect.x = 0
+        elif self.__rect.bottom > GAME_FIELD_HEIGHT:
+            self.__rect.y = 0
+        elif self.__rect.top <= 0:
+            self.__rect.y = GAME_FIELD_HEIGHT - self.__rect.height
 
     def draw(self) -> None:
 
