@@ -7,32 +7,32 @@ from consts import BLOCK_SIZE
 
 
 class GameField:
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int) -> None:
         self.field = np.zeros(shape=(x, y), dtype=object)
         self.field.fill(None)
 
-    def draw(self):
+    def draw(self) -> None:
         for (bx, by), block in np.ndenumerate(self.field):
             if block:
                 pos = self._get_block_position(bx, by)
                 block.draw(pos)
 
-    def _get_block_position(self, bx: int, by: int):
+    def _get_block_position(self, bx: int, by: int) -> tuple[int, int]:
         return (
             bx * BLOCK_SIZE,
             by * BLOCK_SIZE
         )
 
-    def get_block_field_position(self, x: float, y: float):
+    def get_block_field_position(self, x: float, y: float) -> IntPosition:
         return IntPosition(
             int(x // BLOCK_SIZE),
             int(y // BLOCK_SIZE)
         )
 
-    def _get_block_rect(self, x: int, y: int):
+    def _get_block_rect(self, x: int, y: int) -> pygame.Rect:
         return pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
 
-    def colliderect_with(self, x: int, y: int, rect: pygame.Rect):
+    def colliderect_with(self, x: int, y: int, rect: pygame.Rect) -> bool:
         block_pos = self.get_block_field_position(x, y)
 
         if 0 <= block_pos.x < len(self.field) and 0 <= block_pos.y < len(self.field[0]):
@@ -42,25 +42,29 @@ class GameField:
 
         return False
 
-    def put_block_by_screen_pos(self, x: int, y: int):
+    def put_block_by_screen_pos(self, x: int, y: int) -> None:
         pos = self.get_block_field_position(x, y)
         self.put_block(pos)
 
-    def put_block(self, pos: IntPosition):
+    def put_block(self, pos: IntPosition) -> None:
         block = self.field[pos.x][pos.y]
         if not block:
             self.field[pos.x][pos.y] = Block()
 
-    def hit_block(self, pos: IntPosition):
+    def hit_block(self, pos: IntPosition) -> None:
         block = self.field[pos.x][pos.y]
         if block:
             self.field[pos.x][pos.y] = None
 
-    def hit_block_by_screen_pos(self, x, y):
+    def hit_block_by_screen_pos(self, x, y) -> None:
         pos = self.get_block_field_position(x, y)
         self.hit_block(pos)
 
-    def save_to_file(self):
+    # def is_block_on_pos(self, x: int, y: int) -> bool:
+    #     block_pos = self.get_block_field_position(x, y)
+    #     return self.field[block_pos.x][block_pos.y] is not None
+
+    def save_to_file(self) -> None:
         map = {}
         positions = {}
         for (x, y), block in np.ndenumerate(self.field):
@@ -71,7 +75,7 @@ class GameField:
         with open("first.map", "w") as json_file:
             json_file.write(json_string)
 
-    def load_from_file(self):
+    def load_from_file(self) -> None:
         with open("first.map", "r") as json_file:
             json_string = json_file.read()
 

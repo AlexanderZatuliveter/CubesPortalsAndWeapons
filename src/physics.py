@@ -9,7 +9,7 @@ from game_field import GameField
 
 
 class Physics:
-    def __init__(self, object, game_field: GameField):
+    def __init__(self, object, game_field: GameField) -> None:
         self.__object = object
         self.__game_field = game_field
 
@@ -79,7 +79,7 @@ class Physics:
     def gravitation(self) -> None:
 
         is_bottom_block = self.is_block(direction="bottom")
-        is_upper_block = self.is_block(direction="bottom")
+        is_upper_block = self.is_block(direction="top")
 
         if not is_bottom_block:
             if self.__object.velocity_y < self.__object.max_velocity_y:
@@ -90,4 +90,4 @@ class Physics:
                 self.__object.velocity_y = 0
 
         if is_upper_block:
-            self.__object.velocity_y = 3
+            self.__object.velocity_y = 5

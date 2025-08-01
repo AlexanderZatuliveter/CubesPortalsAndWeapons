@@ -19,14 +19,6 @@ class Player:
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.speed = PLAYER_SPEED
 
-    def __draw_square(self, x: int, y: int, color: tuple[float, float, float] = (1, 0, 0), size: int = 4) -> None:
-        half = size / 2
-        glColor3f(color[0], color[1], color[2])
-        glVertex2f(x - half, y - half)
-        glVertex2f(x + half, y - half)
-        glVertex2f(x + half, y + half)
-        glVertex2f(x - half, y + half)
-
     def update(self, keys: ScancodeWrapper) -> None:
 
         if keys[pygame.K_a] and not self.__physics.is_block(direction="left"):
@@ -43,6 +35,14 @@ class Player:
 
         self.__physics.gravitation()
         self.__physics.borders_teleportation()
+
+    def __draw_square(self, x: int, y: int, color: tuple[float, float, float] = (1, 0, 0), size: int = 4) -> None:
+        half = size / 2
+        glColor3f(color[0], color[1], color[2])
+        glVertex2f(x - half, y - half)
+        glVertex2f(x + half, y - half)
+        glVertex2f(x + half, y + half)
+        glVertex2f(x - half, y + half)
 
     def draw(self) -> None:
 
