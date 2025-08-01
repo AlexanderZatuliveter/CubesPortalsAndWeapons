@@ -9,6 +9,7 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from enemy import Enemy
 from game_field import GameField
 from player import Player
 
@@ -23,6 +24,18 @@ class MainWindow:
         self.__game_field.load_from_file()
 
         self.__player = Player(self.__game_field)
+
+        self.__enemies = []
+
+        for y in range(BLOCK_SIZE, BLOCK_SIZE * 23, BLOCK_SIZE * 4):
+            self.__enemy = Enemy(
+                self.__game_field,
+                self.__player,
+                (GAME_FIELD_WIDTH // 3 * 2, y),
+                BLOCK_SIZE * 25,
+                int(BLOCK_SIZE * 40.5)
+            )
+            self.__enemies.append(self.__enemy)
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -77,10 +90,14 @@ class MainWindow:
             # Updates
             self.update(events)
             self.__player.update(keys)
+            for enemy in self.__enemies:
+                enemy.update()
 
             # Draws
             self.begin_draw()
             self.__player.draw()
+            for enemy in self.__enemies:
+                enemy.draw()
             self.__game_field.draw()
             self.end_draw()
 

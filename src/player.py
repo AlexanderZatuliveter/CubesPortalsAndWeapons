@@ -9,8 +9,8 @@ from game_field import GameField
 class Player:
     def __init__(self, game_field: GameField) -> None:
         size = BLOCK_SIZE
-        start_pos = GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT + BLOCK_SIZE * 2
-        self.__rect = pygame.Rect(*start_pos, size, size)
+        start_pos = GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2
+        self.rect = pygame.Rect(*start_pos, size, size)
         self.__game_field = game_field
 
         self.__velocity_y = 0
@@ -40,49 +40,49 @@ class Player:
 
     def __collidepoints(self, direction: Literal["bottom", "top", "left", "right"]) -> tuple[int, int, int]:
         if direction == "bottom":
-            x1 = self.__rect.x
-            x2 = self.__rect.x + self.__rect.width
-            y = int(self.__rect.y + self.__rect.height + self.__velocity_y)
+            x1 = self.rect.x
+            x2 = self.rect.x + self.rect.width
+            y = int(self.rect.y + self.rect.height + self.__velocity_y)
             return x1, x2, y
         elif direction == "top":
-            x1 = self.__rect.x
-            x2 = self.__rect.x + self.__rect.width
-            y = self.__rect.y - 7
+            x1 = self.rect.x
+            x2 = self.rect.x + self.rect.width
+            y = self.rect.y - 7
             return x1, x2, y
         elif direction == "left":
-            x = self.__rect.x - self.__speed
-            y1 = self.__rect.y + 2
-            y2 = self.__rect.y + self.__rect.height - 2
+            x = self.rect.x - self.__speed
+            y1 = self.rect.y + 2
+            y2 = self.rect.y + self.rect.height - 2
             return x, y1, y2
         elif direction == "right":
-            x = self.__rect.x + self.__rect.width + self.__speed
-            y1 = self.__rect.y + 2
-            y2 = self.__rect.y + self.__rect.height - 2
+            x = self.rect.x + self.rect.width + self.__speed
+            y1 = self.rect.y + 2
+            y2 = self.rect.y + self.rect.height - 2
             return x, y1, y2
 
     def update(self, keys: ScancodeWrapper) -> None:
 
         if keys[pygame.K_a]:
             x, y1, y2 = self.__collidepoints("left")
-            rect = self.__modify_rect(-self.__speed, 0, self.__rect)
+            rect = self.__modify_rect(-self.__speed, 0, self.rect)
             if not self.__game_field.colliderect_with(x, y1, rect) \
                     and not self.__game_field.colliderect_with(x, y2, rect):
-                self.__rect.centerx -= PLAYER_SPEED
+                self.rect.centerx -= PLAYER_SPEED
 
         if keys[pygame.K_d]:
             x, y1, y2 = self.__collidepoints("right")
-            rect = self.__modify_rect(self.__speed, 0, self.__rect)
+            rect = self.__modify_rect(self.__speed, 0, self.rect)
             if not self.__game_field.colliderect_with(x, y1, rect) \
                     and not self.__game_field.colliderect_with(x, y2, rect):
-                self.__rect.centerx += PLAYER_SPEED
+                self.rect.centerx += PLAYER_SPEED
 
         x1, x2, y = self.__collidepoints("bottom")
-        rect = self.__modify_rect(0, int(self.__velocity_y), self.__rect)
+        rect = self.__modify_rect(0, int(self.__velocity_y), self.rect)
         is_bottom_block = self.__game_field.colliderect_with(x1, y, rect) or \
             self.__game_field.colliderect_with(x2, y, rect)
 
         x1, x2, y = self.__collidepoints("top")
-        rect = self.__modify_rect(0, -7, self.__rect)
+        rect = self.__modify_rect(0, -7, self.rect)
         is_upper_block = self.__game_field.colliderect_with(x1, y, rect) or \
             self.__game_field.colliderect_with(x2, y, rect)
 
@@ -94,7 +94,7 @@ class Player:
         if not is_bottom_block:
             if self.__velocity_y < self.__max_velocity_y:
                 self.__velocity_y += self.__gravity
-            self.__rect.centery += int(self.__velocity_y)
+            self.rect.centery += int(self.__velocity_y)
         else:
             if not jump_pressed:
                 self.__velocity_y = 0
@@ -102,25 +102,25 @@ class Player:
         if is_upper_block:
             self.__velocity_y = 3
 
-        if self.__rect.left < 0:
-            self.__rect.x = GAME_FIELD_WIDTH - self.__rect.width
-        elif self.__rect.right > GAME_FIELD_WIDTH:
-            self.__rect.x = 0
-        elif self.__rect.bottom > GAME_FIELD_HEIGHT:
-            self.__rect.y = 0
-        elif self.__rect.top <= 0:
-            self.__rect.y = GAME_FIELD_HEIGHT - self.__rect.height
+        if self.rect.left < 0:
+            self.rect.x = GAME_FIELD_WIDTH - self.rect.width
+        elif self.rect.right > GAME_FIELD_WIDTH:
+            self.rect.x = 0
+        elif self.rect.bottom > GAME_FIELD_HEIGHT:
+            self.rect.y = 0
+        elif self.rect.top < 0:
+            self.rect.y = GAME_FIELD_HEIGHT - self.rect.height
 
     def draw(self) -> None:
 
         if IS_DEBUG:
             glColor3f(1, 1, 0)
-            glVertex2f(self.__rect.x - 1, self.__rect.y - 1)
-            glVertex2f(self.__rect.x + self.__rect.w + 1, self.__rect.y - 1)
-            glVertex2f(self.__rect.x + self.__rect.w + 1, self.__rect.y + self.__rect.h + 1)
-            glVertex2f(self.__rect.x - 1, self.__rect.y + self.__rect.h + 1)
+            glVertex2f(self.rect.x - 1, self.rect.y - 1)
+            glVertex2f(self.rect.x + self.rect.w + 1, self.rect.y - 1)
+            glVertex2f(self.rect.x + self.rect.w + 1, self.rect.y + self.rect.h + 1)
+            glVertex2f(self.rect.x - 1, self.rect.y + self.rect.h + 1)
 
-            self.__draw_square(self.__rect.x, self.__rect.y, (0 / 255, 255 / 255, 0 / 255))
+            self.__draw_square(self.rect.x, self.rect.y, (0 / 255, 255 / 255, 0 / 255))
 
             rx, ry1, ry2 = self.__collidepoints("right")
             self.__draw_square(rx, ry1, (255 / 255, 123 / 255, 0 / 255))
@@ -139,7 +139,7 @@ class Player:
             self.__draw_square(bx2, by)
 
         glColor3f(50 / 255, 50 / 255, 235 / 255)
-        glVertex2f(self.__rect.x, self.__rect.y)
-        glVertex2f(self.__rect.x + self.__rect.w, self.__rect.y)
-        glVertex2f(self.__rect.x + self.__rect.w, self.__rect.y + self.__rect.h)
-        glVertex2f(self.__rect.x, self.__rect.y + self.__rect.h)
+        glVertex2f(self.rect.x, self.rect.y)
+        glVertex2f(self.rect.x + self.rect.w, self.rect.y)
+        glVertex2f(self.rect.x + self.rect.w, self.rect.y + self.rect.h)
+        glVertex2f(self.rect.x, self.rect.y + self.rect.h)
