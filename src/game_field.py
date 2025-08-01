@@ -11,11 +11,6 @@ class GameField:
         self.field = np.zeros(shape=(x, y), dtype=object)
         self.field.fill(None)
 
-    # def update(self):
-    #     for (x, y), block in np.ndenumerate(self.field):
-    #         if block and block.is_destroyed:
-    #             self.field[x, y] = None
-
     def draw(self):
         for (bx, by), block in np.ndenumerate(self.field):
             if block:
@@ -46,13 +41,6 @@ class GameField:
                 return True
 
         return False
-
-    # def _colliderect_with(self, rect: pygame.Rect):
-    #     block_pos = self.get_block_field_position(rect.x, rect.y)
-    #     block = self.field[block_pos.x][block_pos.y]
-    #     if block and rect.colliderect(block_pos.x * BLOCK_SIZE, block_pos.y * BLOCK_SIZE, block.rect.width, block.rect.height):
-    #         return True
-    #     return False
 
     def put_block_by_screen_pos(self, x: int, y: int):
         pos = self.get_block_field_position(x, y)

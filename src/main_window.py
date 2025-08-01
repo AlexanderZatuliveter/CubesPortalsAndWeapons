@@ -30,7 +30,6 @@ class MainWindow:
         for y in range(BLOCK_SIZE, BLOCK_SIZE * 23, BLOCK_SIZE * 4):
             self.__enemy = Enemy(
                 self.__game_field,
-                self.__player,
                 (GAME_FIELD_WIDTH // 3 * 2, y),
                 BLOCK_SIZE * 25,
                 int(BLOCK_SIZE * 40.5)

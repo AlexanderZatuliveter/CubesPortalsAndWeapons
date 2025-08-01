@@ -28,6 +28,7 @@
         "difx",
         "dify",
         "DOUBLEBUF",
+        "ndenumerate",
         "OPENGL",
         "Scancode",
         "Translatef",
