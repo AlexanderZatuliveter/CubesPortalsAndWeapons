@@ -25,16 +25,40 @@ class MainWindow:
 
         self.__player = Player(self.__game_field)
 
-        self.__enemies = []
+        self.__enemy_1 = Enemy(
+            self.__game_field,
+            (BLOCK_SIZE * 30, BLOCK_SIZE * 3),
+            BLOCK_SIZE * 30,
+            BLOCK_SIZE * 40
+        )
 
-        for y in range(BLOCK_SIZE, BLOCK_SIZE * 23, BLOCK_SIZE * 4):
-            self.__enemy = Enemy(
-                self.__game_field,
-                (GAME_FIELD_WIDTH // 3 * 2, y),
-                BLOCK_SIZE * 25,
-                int(BLOCK_SIZE * 40.5)
-            )
-            self.__enemies.append(self.__enemy)
+        self.__enemy_2 = Enemy(
+            self.__game_field,
+            (BLOCK_SIZE * 25, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2),
+            BLOCK_SIZE * 25,
+            BLOCK_SIZE * 40
+        )
+
+        self.__enemy_3 = Enemy(
+            self.__game_field,
+            (BLOCK_SIZE * 11, BLOCK_SIZE * 3),
+            BLOCK_SIZE * 11,
+            BLOCK_SIZE * 1
+        )
+
+        self.__enemy_4 = Enemy(
+            self.__game_field,
+            (BLOCK_SIZE * 16, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2),
+            BLOCK_SIZE * 16,
+            BLOCK_SIZE * 1
+        )
+
+        self.__enemies = [
+            self.__enemy_1,
+            self.__enemy_2,
+            self.__enemy_3,
+            self.__enemy_4
+        ]
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""

@@ -86,7 +86,7 @@ class Physics:
                 self.__object.velocity_y += GRAVITY
             self.__object.rect.centery += int(self.__object.velocity_y)
         else:
-            if not is_bottom_block and is_upper_block:
+            if is_bottom_block:
                 self.__object.velocity_y = 0
 
         if is_upper_block:

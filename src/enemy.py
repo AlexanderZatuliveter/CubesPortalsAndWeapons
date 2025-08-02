@@ -19,7 +19,7 @@ class Enemy:
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)
 
-        self.__direction = "right"
+        self.__direction = ""
         self.__moving_start = moving_start
         self.__moving_end = moving_end
 
@@ -36,10 +36,18 @@ class Enemy:
         glVertex2f(x - half, y + half)
 
     def update(self) -> None:
-        if self.rect.left <= self.__moving_start:
-            self.__direction = "right"
-        elif self.rect.right >= self.__moving_end:
-            self.__direction = "left"
+        direction_sign = 1 if self.__moving_end > self.__moving_start else -1
+
+        if direction_sign == 1:
+            if self.rect.left <= self.__moving_start:
+                self.__direction = "right"
+            elif self.rect.right >= self.__moving_end:
+                self.__direction = "left"
+        else:
+            if self.rect.right >= self.__moving_start:
+                self.__direction = "left"
+            elif self.rect.left <= self.__moving_end:
+                self.__direction = "right"
 
         if self.__direction == "right":
             self.rect.x += self.speed
