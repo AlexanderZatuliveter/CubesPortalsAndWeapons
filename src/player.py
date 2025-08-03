@@ -2,16 +2,16 @@ import pygame
 from pygame.key import ScancodeWrapper
 from OpenGL.GL import *  # type: ignore
 from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, IS_DEBUG, PLAYER_JUMP_FORCE, PLAYER_SPEED, GRAVITY
+from float_rect import FloatRect
 from game_field import GameField
-from object_protocol import ObjectProtocol
 from physics import Physics
 
 
 class Player:
     def __init__(self, game_field: GameField) -> None:
         size = BLOCK_SIZE
-        start_pos = GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2
-        self.rect = pygame.Rect(*start_pos, size, size)
+        start_pos = GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2 - 50.0
+        self.rect = FloatRect(*start_pos, size, size)
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)
 
@@ -22,11 +22,12 @@ class Player:
 
     def update(self, keys: ScancodeWrapper) -> None:
 
-        if keys[pygame.K_a] and not self.__physics.is_block(direction="left"):
-            self.rect.centerx -= int(self.speed)
+        if keys[pygame.K_a]:
+            if not self.__physics.is_block(direction="left"):
+                self.rect.move_ip(-self.speed, 0)
 
         if keys[pygame.K_d] and not self.__physics.is_block(direction="right"):
-            self.rect.centerx += int(self.speed)
+            self.rect.move_ip(self.speed, 0)
 
         is_bottom_block = self.__physics.is_block(direction="bottom")
         is_upper_block = self.__physics.is_block(direction="top")
@@ -48,15 +49,21 @@ class Player:
 
     def draw(self) -> None:
 
+        glColor3f(50 / 255, 50 / 255, 235 / 255)
+        glVertex2f(self.rect.x, self.rect.y)
+        glVertex2f(self.rect.x + self.rect.w, self.rect.y)
+        glVertex2f(self.rect.x + self.rect.w, self.rect.y + self.rect.h)
+        glVertex2f(self.rect.x, self.rect.y + self.rect.h)
+
         # this is debug code block is the same as in enemy class.
         if IS_DEBUG:
-            glColor3f(1, 1, 0)
-            glVertex2f(self.rect.x - 1, self.rect.y - 1)
-            glVertex2f(self.rect.x + self.rect.w + 1, self.rect.y - 1)
-            glVertex2f(self.rect.x + self.rect.w + 1, self.rect.y + self.rect.h + 1)
-            glVertex2f(self.rect.x - 1, self.rect.y + self.rect.h + 1)
+            # glColor3f(1, 1, 0)
+            # glVertex2f(self.rect.x - 1, self.rect.y - 1)
+            # glVertex2f(self.rect.x + self.rect.w + 1, self.rect.y - 1)
+            # glVertex2f(self.rect.x + self.rect.w + 1, self.rect.y + self.rect.h + 1)
+            # glVertex2f(self.rect.x - 1, self.rect.y + self.rect.h + 1)
 
-            self.__draw_square(self.rect.x, self.rect.y, (0 / 255, 255 / 255, 0 / 255))
+            # self.__draw_square(self.rect.x, self.rect.y, (0 / 255, 255 / 255, 0 / 255))
 
             point1, point2 = self.__physics.collidepoints("right")
             self.__draw_square(*point1, (255 / 255, 123 / 255, 0 / 255))
@@ -73,9 +80,3 @@ class Player:
             point1, point2 = self.__physics.collidepoints("bottom")
             self.__draw_square(*point1)
             self.__draw_square(*point2)
-
-        glColor3f(50 / 255, 50 / 255, 235 / 255)
-        glVertex2f(self.rect.x, self.rect.y)
-        glVertex2f(self.rect.x + self.rect.w, self.rect.y)
-        glVertex2f(self.rect.x + self.rect.w, self.rect.y + self.rect.h)
-        glVertex2f(self.rect.x, self.rect.y + self.rect.h)

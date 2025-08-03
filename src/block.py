@@ -3,11 +3,12 @@ import pygame
 from OpenGL.GL import *  # type: ignore
 
 from consts import BLOCK_SIZE, IS_DEBUG
+from float_rect import FloatRect
 
 
 class Block:
     def __init__(self) -> None:
-        self.__rect = pygame.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)  # todo: remove rect, use only BLOCK_SIZE, BLOCK_SIZE
+        self.__rect = FloatRect(0, 0, BLOCK_SIZE, BLOCK_SIZE)  # todo: remove rect, use only BLOCK_SIZE, BLOCK_SIZE
 
     def draw(self, pos: Tuple[int, int]) -> None:
         if IS_DEBUG:

@@ -1,6 +1,7 @@
 import pygame
 from OpenGL.GL import *  # type: ignore
 from consts import BLOCK_SIZE, IS_DEBUG, ENEMY_SPEED
+from float_rect import FloatRect
 from game_field import GameField
 from physics import Physics
 
@@ -15,7 +16,7 @@ class Enemy:
     ) -> None:
 
         size = BLOCK_SIZE
-        self.rect = pygame.Rect(*start_pos, size, size)
+        self.rect = FloatRect(*start_pos, size, size)
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)
 
@@ -50,9 +51,9 @@ class Enemy:
                 self.__direction = "right"
 
         if self.__direction == "right":
-            self.rect.x += int(self.speed)
+            self.rect.x += self.speed
         elif self.__direction == "left":
-            self.rect.x -= int(self.speed)
+            self.rect.x -= self.speed
 
         self.__physics.gravitation()
         self.__physics.borders_teleportation()

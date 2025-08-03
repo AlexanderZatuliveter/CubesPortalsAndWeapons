@@ -1,6 +1,6 @@
 import numpy as np
-import pygame
 from block import Block
+from float_rect import FloatRect
 from position import IntPosition
 import json
 from consts import BLOCK_SIZE
@@ -17,7 +17,7 @@ class GameField:
                 pos = self._get_block_position(bx, by)
                 block.draw(pos)
 
-    def _get_block_position(self, bx: int, by: int) -> tuple[int, int]:
+    def _get_block_position(self, bx: int, by: int) -> tuple[float, float]:
         return (
             bx * BLOCK_SIZE,
             by * BLOCK_SIZE
@@ -29,10 +29,10 @@ class GameField:
             int(y // BLOCK_SIZE)
         )
 
-    def _get_block_rect(self, x: int, y: int) -> pygame.Rect:
-        return pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+    def _get_block_rect(self, x: int, y: int) -> FloatRect:
+        return FloatRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
 
-    def colliderect_with(self, x: float, y: float, rect: pygame.Rect) -> bool:
+    def colliderect_with(self, x: float, y: float, rect: FloatRect) -> bool:
         block_pos = self.get_block_field_position(x, y)
 
         if 0 <= block_pos.x < len(self.field) and 0 <= block_pos.y < len(self.field[0]):

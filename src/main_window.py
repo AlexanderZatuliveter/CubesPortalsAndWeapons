@@ -20,7 +20,7 @@ class MainWindow:
         self.__screen = screen
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
-        self.__game_field = GameField(GAME_FIELD_WIDTH // BLOCK_SIZE, GAME_FIELD_HEIGHT // BLOCK_SIZE)
+        self.__game_field = GameField(int(GAME_FIELD_WIDTH // BLOCK_SIZE), int(GAME_FIELD_HEIGHT // BLOCK_SIZE))
         self.__game_field.load_from_file()
 
         self.__player = Player(self.__game_field)
@@ -34,7 +34,7 @@ class MainWindow:
 
         self.__enemy_2 = Enemy(
             self.__game_field,
-            (BLOCK_SIZE * 25, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2),
+            (BLOCK_SIZE * 25, int(GAME_FIELD_HEIGHT - BLOCK_SIZE * 2)),
             BLOCK_SIZE * 25,
             BLOCK_SIZE * 40
         )
@@ -48,7 +48,7 @@ class MainWindow:
 
         self.__enemy_4 = Enemy(
             self.__game_field,
-            (BLOCK_SIZE * 16, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2),
+            (BLOCK_SIZE * 16, int(GAME_FIELD_HEIGHT - BLOCK_SIZE * 2)),
             BLOCK_SIZE * 16,
             BLOCK_SIZE * 1
         )
@@ -118,10 +118,10 @@ class MainWindow:
 
             # Draws
             self.begin_draw()
+            self.__game_field.draw()
             self.__player.draw()
             for enemy in self.__enemies:
                 enemy.draw()
-            self.__game_field.draw()
             self.end_draw()
 
     def update(self, events) -> None:
@@ -150,4 +150,4 @@ class MainWindow:
     def end_draw(self) -> None:
         glEnd()
         pygame.display.flip()
-        self.__clock.tick(60)
+        self.__clock.tick(300)

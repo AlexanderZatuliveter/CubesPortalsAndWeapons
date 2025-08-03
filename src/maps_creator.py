@@ -23,7 +23,7 @@ screen_size = (target_width, target_height)
 screen: pygame.Surface = pygame.display.set_mode(screen_size, DOUBLEBUF | OPENGL | RESIZABLE)
 
 mouse = Mouse()
-game_field = GameField(GAME_FIELD_WIDTH // BLOCK_SIZE, GAME_FIELD_HEIGHT // BLOCK_SIZE)
+game_field = GameField(int(GAME_FIELD_WIDTH // BLOCK_SIZE), int(GAME_FIELD_HEIGHT // BLOCK_SIZE))
 clock = pygame.time.Clock()
 
 
