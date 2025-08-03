@@ -6,63 +6,71 @@ import pygame
 
 from consts import GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GRAVITY
 from game_field import GameField
+from object_protocol import ObjectProtocol
 
 
 class Physics:
-    def __init__(self, object, game_field: GameField) -> None:
+    # todo: use protocol for object.
+    def __init__(self, object: ObjectProtocol, game_field: GameField) -> None:
         self.__object = object
         self.__game_field = game_field
 
-    def __modify_rect(self, difx: int, dify: int, rect: pygame.Rect) -> pygame.Rect:
+    def __modify_rect(self, difx: float, dify: float, rect: pygame.Rect) -> pygame.Rect:
         return pygame.Rect(difx + rect.x, dify + rect.y, rect.width, rect.height)
 
-    def collidepoints(self, direction: Literal["bottom", "top", "left", "right"]) -> tuple[int, int, int]:
+    # todo: convert "bottom", "top", "left", "right" to enum.
+    def collidepoints(
+        self,
+        direction: Literal["bottom", "top", "left", "right"]
+    ) -> tuple[tuple[float, float], tuple[float, float]]:
+
         if direction == "bottom":
             x1 = self.__object.rect.x
             x2 = self.__object.rect.x + self.__object.rect.width
-            y = int(self.__object.rect.y + self.__object.rect.height + self.__object.velocity_y)
-            return x1, x2, y
+            y1 = y2 = int(self.__object.rect.y + self.__object.rect.height + self.__object.velocity_y)
+            return ((x1, y1), (x2, y2))
         elif direction == "top":
             x1 = self.__object.rect.x
             x2 = self.__object.rect.x + self.__object.rect.width
-            y = self.__object.rect.y - 7
-            return x1, x2, y
+            y1 = y2 = self.__object.rect.y - 7
+            return ((x1, y1), (x2, y2))
         elif direction == "left":
-            x = self.__object.rect.x - self.__object.speed
+            x1 = x2 = self.__object.rect.x - self.__object.speed
             y1 = self.__object.rect.y + 2
             y2 = self.__object.rect.y + self.__object.rect.height - 2
-            return x, y1, y2
+            return ((x1, y1), (x2, y2))
         elif direction == "right":
-            x = self.__object.rect.x + self.__object.rect.width + self.__object.speed
+            x1 = x2 = self.__object.rect.x + self.__object.rect.width + self.__object.speed
             y1 = self.__object.rect.y + 2
             y2 = self.__object.rect.y + self.__object.rect.height - 2
-            return x, y1, y2
+            return ((x1, y1), (x2, y2))
 
+    # todo: convert direction to enum:
     def is_block(self, direction: Literal["bottom", "top", "left", "right"]) -> bool:
 
         if direction == "bottom":
-            x1, x2, y = self.collidepoints(direction)
+            point1, point2 = self.collidepoints(direction)
             rect = self.__modify_rect(0, int(self.__object.velocity_y), self.__object.rect)
-            is_block = self.__game_field.colliderect_with(x1, y, rect) or \
-                self.__game_field.colliderect_with(x2, y, rect)
+            is_block = self.__game_field.colliderect_with(*point1, rect) or \
+                self.__game_field.colliderect_with(*point2, rect)
 
         elif direction == "top":
-            x1, x2, y = self.collidepoints(direction)
+            point1, point2 = self.collidepoints(direction)
             rect = self.__modify_rect(0, -7, self.__object.rect)
-            is_block = self.__game_field.colliderect_with(x1, y, rect) or \
-                self.__game_field.colliderect_with(x2, y, rect)
+            is_block = self.__game_field.colliderect_with(*point1, rect) or \
+                self.__game_field.colliderect_with(*point2, rect)
 
         elif direction == "right":
-            x, y1, y2 = self.collidepoints(direction)
+            point1, point2 = self.collidepoints(direction)
             rect = self.__modify_rect(self.__object.speed, 0, self.__object.rect)
-            is_block = self.__game_field.colliderect_with(x, y1, rect) or \
-                self.__game_field.colliderect_with(x, y2, rect)
+            is_block = self.__game_field.colliderect_with(*point1, rect) or \
+                self.__game_field.colliderect_with(*point2, rect)
 
         elif direction == "left":
-            x, y1, y2 = self.collidepoints(direction)
+            point1, point2 = self.collidepoints(direction)
             rect = self.__modify_rect(-self.__object.speed, 0, self.__object.rect)
-            is_block = self.__game_field.colliderect_with(x, y1, rect) \
-                or self.__game_field.colliderect_with(x, y2, rect)
+            is_block = self.__game_field.colliderect_with(*point1, rect) \
+                or self.__game_field.colliderect_with(*point2, rect)
 
         return is_block
 

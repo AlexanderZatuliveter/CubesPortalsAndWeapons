@@ -23,11 +23,11 @@ class Enemy:
         self.__moving_start = moving_start
         self.__moving_end = moving_end
 
-        self.velocity_y = 0
-        self.max_velocity_y = 50
+        self.velocity_y = 0.0
+        self.max_velocity_y = 50.0
         self.speed = ENEMY_SPEED
 
-    def __draw_square(self, x: int, y: int, color: tuple[float, float, float] = (1, 0, 0), size: int = 4) -> None:
+    def __draw_square(self, x: float, y: float, color: tuple[float, float, float] = (1, 0, 0), size: int = 4) -> None:
         half = size / 2
         glColor3f(color[0], color[1], color[2])
         glVertex2f(x - half, y - half)
@@ -40,7 +40,7 @@ class Enemy:
 
         if direction_sign == 1:
             if self.rect.left <= self.__moving_start:
-                self.__direction = "right"
+                self.__direction = "right"  # todo: replace strings with enum or boolean (is_left?)
             elif self.rect.right >= self.__moving_end:
                 self.__direction = "left"
         else:
@@ -50,9 +50,9 @@ class Enemy:
                 self.__direction = "right"
 
         if self.__direction == "right":
-            self.rect.x += self.speed
+            self.rect.x += int(self.speed)
         elif self.__direction == "left":
-            self.rect.x -= self.speed
+            self.rect.x -= int(self.speed)
 
         self.__physics.gravitation()
         self.__physics.borders_teleportation()
@@ -68,23 +68,23 @@ class Enemy:
 
             self.__draw_square(self.rect.x, self.rect.y, (0 / 255, 255 / 255, 0 / 255))
 
-            rx, ry1, ry2 = self.__physics.collidepoints("right")
-            self.__draw_square(rx, ry1, (255 / 255, 123 / 255, 0 / 255))
-            self.__draw_square(rx, ry2, (255 / 255, 123 / 255, 0 / 255))
+            point1, point2 = self.__physics.collidepoints("right")
+            self.__draw_square(*point1, (255 / 255, 123 / 255, 0 / 255))   # todo: convert colors to constants.
+            self.__draw_square(*point2, (255 / 255, 123 / 255, 0 / 255))
 
-            lx, ly1, ly2 = self.__physics.collidepoints("left")
-            self.__draw_square(lx, ly1, (255 / 255, 123 / 255, 0 / 255))
-            self.__draw_square(lx, ly2, (255 / 255, 123 / 255, 0 / 255))
+            point1, point2 = self.__physics.collidepoints("left")
+            self.__draw_square(*point1, (255 / 255, 123 / 255, 0 / 255))
+            self.__draw_square(*point2, (255 / 255, 123 / 255, 0 / 255))
 
-            tx1, tx2, ty = self.__physics.collidepoints("top")
-            self.__draw_square(tx1, ty)
-            self.__draw_square(tx2, ty)
+            point1, point2 = self.__physics.collidepoints("top")
+            self.__draw_square(*point1)
+            self.__draw_square(*point2)
 
-            bx1, bx2, by = self.__physics.collidepoints("bottom")
-            self.__draw_square(bx1, by)
-            self.__draw_square(bx2, by)
+            point1, point2 = self.__physics.collidepoints("bottom")
+            self.__draw_square(*point1)
+            self.__draw_square(*point2)
 
-        glColor3f(235 / 255, 50 / 255, 50 / 255)
+        glColor3f(1, 0.2, 0.2)
         glVertex2f(self.rect.x, self.rect.y)
         glVertex2f(self.rect.x + self.rect.w, self.rect.y)
         glVertex2f(self.rect.x + self.rect.w, self.rect.y + self.rect.h)

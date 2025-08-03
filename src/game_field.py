@@ -32,7 +32,7 @@ class GameField:
     def _get_block_rect(self, x: int, y: int) -> pygame.Rect:
         return pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
 
-    def colliderect_with(self, x: int, y: int, rect: pygame.Rect) -> bool:
+    def colliderect_with(self, x: float, y: float, rect: pygame.Rect) -> bool:
         block_pos = self.get_block_field_position(x, y)
 
         if 0 <= block_pos.x < len(self.field) and 0 <= block_pos.y < len(self.field[0]):

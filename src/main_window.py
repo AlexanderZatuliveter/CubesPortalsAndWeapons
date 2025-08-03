@@ -27,7 +27,7 @@ class MainWindow:
 
         self.__enemy_1 = Enemy(
             self.__game_field,
-            (BLOCK_SIZE * 30, BLOCK_SIZE * 3),
+            (BLOCK_SIZE * 30, BLOCK_SIZE * 3),  # todo: pass game field coordinates instead.
             BLOCK_SIZE * 30,
             BLOCK_SIZE * 40
         )
