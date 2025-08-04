@@ -21,6 +21,7 @@
     "cSpell.language": "en,ru",
     "cSpell.dictionaries": ["russian"],
     "cSpell.words": [
+        "centerpos",
         "centerx",
         "centery",
         "collidepoints",

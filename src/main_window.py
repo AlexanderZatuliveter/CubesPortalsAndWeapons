@@ -8,7 +8,7 @@ from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from enemy import Enemy
 from game_field import GameField
 from player import Player
@@ -20,44 +20,17 @@ class MainWindow:
         self.__screen = screen
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
+
         self.__game_field = GameField(int(GAME_FIELD_WIDTH // BLOCK_SIZE), int(GAME_FIELD_HEIGHT // BLOCK_SIZE))
         self.__game_field.load_from_file()
 
         self.__player = Player(self.__game_field)
 
-        self.__enemy_1 = Enemy(
-            self.__game_field,
-            (BLOCK_SIZE * 30, BLOCK_SIZE * 3),  # todo: pass game field coordinates instead.
-            BLOCK_SIZE * 30,
-            BLOCK_SIZE * 40
-        )
-
-        self.__enemy_2 = Enemy(
-            self.__game_field,
-            (BLOCK_SIZE * 25, int(GAME_FIELD_HEIGHT - BLOCK_SIZE * 2)),
-            BLOCK_SIZE * 25,
-            BLOCK_SIZE * 40
-        )
-
-        self.__enemy_3 = Enemy(
-            self.__game_field,
-            (BLOCK_SIZE * 11, BLOCK_SIZE * 3),
-            BLOCK_SIZE * 11,
-            BLOCK_SIZE * 1
-        )
-
-        self.__enemy_4 = Enemy(
-            self.__game_field,
-            (BLOCK_SIZE * 16, int(GAME_FIELD_HEIGHT - BLOCK_SIZE * 2)),
-            BLOCK_SIZE * 16,
-            BLOCK_SIZE * 1
-        )
-
         self.__enemies = [
-            self.__enemy_1,
-            self.__enemy_2,
-            self.__enemy_3,
-            self.__enemy_4
+            Enemy(self.__game_field, (30, 3), 30, 40),
+            Enemy(self.__game_field, (25, 21), 25, 40),
+            Enemy(self.__game_field, (11, 3), 11, 1),
+            Enemy(self.__game_field, (16, 21), 16, 1)
         ]
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
@@ -150,4 +123,4 @@ class MainWindow:
     def end_draw(self) -> None:
         glEnd()
         pygame.display.flip()
-        self.__clock.tick(300)
+        self.__clock.tick(FPS)
