@@ -29,10 +29,13 @@
         "difx",
         "dify",
         "DOUBLEBUF",
+        "MODELVIEW",
         "ndenumerate",
         "OPENGL",
+        "Parameteri",
         "Scancode",
         "shcore",
+        "texid",
         "Translatef",
         "VIDEORESIZE"
     ],

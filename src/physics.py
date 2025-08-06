@@ -14,13 +14,13 @@ class Physics:
     def collidepoints(self, direction: DirectionEnum) -> tuple[tuple[float, float], tuple[float, float]]:
 
         if direction == DirectionEnum.DOWN:
-            x1 = self.__object.rect.x
-            x2 = self.__object.rect.x + self.__object.rect.width
+            x1 = self.__object.rect.x + 2.0
+            x2 = self.__object.rect.x + self.__object.rect.width - 2.0
             y1 = y2 = self.__object.rect.y + self.__object.rect.height + self.__object.velocity_y
             return ((x1, y1), (x2, y2))
         elif direction == DirectionEnum.UP:
-            x1 = self.__object.rect.x
-            x2 = self.__object.rect.x + self.__object.rect.width
+            x1 = self.__object.rect.x + 2.0
+            x2 = self.__object.rect.x + self.__object.rect.width - 2.0
             y1 = y2 = self.__object.rect.y - 7.0
             return ((x1, y1), (x2, y2))
         elif direction == DirectionEnum.LEFT:

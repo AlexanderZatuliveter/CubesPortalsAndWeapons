@@ -1,5 +1,5 @@
 from OpenGL.GL import *  # type: ignore
-from draw_common import debug_draw_square, draw_square_topleft
+from common import debug_draw_square, draw_square_topleft
 from consts import BLOCK_SIZE, IS_DEBUG, ENEMY_SPEED, RED
 from direction_enum import DirectionEnum
 from float_rect import FloatRect

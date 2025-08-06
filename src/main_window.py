@@ -8,8 +8,7 @@ from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
-from enemy import Enemy
+from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, RED, GREEN, ORANGE, YELLOW
 from game_field import GameField
 from player import Player
 
@@ -24,14 +23,19 @@ class MainWindow:
         self.__game_field = GameField(int(GAME_FIELD_WIDTH // BLOCK_SIZE), int(GAME_FIELD_HEIGHT // BLOCK_SIZE))
         self.__game_field.load_from_file()
 
-        self.__player = Player(self.__game_field)
+        joysticks_count = pygame.joystick.get_count()
+        colors = [BLUE, RED, GREEN, YELLOW]
 
-        self.__enemies = [
-            Enemy(self.__game_field, (30, 3), 30, 40),
-            Enemy(self.__game_field, (25, 21), 25, 40),
-            Enemy(self.__game_field, (11, 3), 11, 1),
-            Enemy(self.__game_field, (16, 21), 16, 1)
-        ]
+        self.__players: list[Player] = []
+        for num in range(joysticks_count):
+            self.__players.append(Player(self.__game_field, colors[num], num))
+
+        # self.__enemies = [
+        #     Enemy(self.__game_field, (30, 3), 30, 40),
+        #     Enemy(self.__game_field, (25, 21), 25, 40),
+        #     Enemy(self.__game_field, (11, 3), 11, 1),
+        #     Enemy(self.__game_field, (16, 21), 16, 1)
+        # ]
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -85,16 +89,18 @@ class MainWindow:
 
             # Updates
             self.update(events)
-            self.__player.update(keys)
-            for enemy in self.__enemies:
-                enemy.update()
+            for player in self.__players:
+                player.update()
+            # for enemy in self.__enemies:
+            #     enemy.update()
 
             # Draws
             self.begin_draw()
             self.__game_field.draw()
-            self.__player.draw()
-            for enemy in self.__enemies:
-                enemy.draw()
+            for player in self.__players:
+                player.draw()
+            # for enemy in self.__enemies:
+            #     enemy.draw()
             self.end_draw()
 
     def update(self, events) -> None:
