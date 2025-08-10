@@ -7,3 +7,4 @@ class ObjectProtocol(Protocol):
     speed: float
     velocity_y: float
     max_velocity_y: float
+    anti_gravity: float

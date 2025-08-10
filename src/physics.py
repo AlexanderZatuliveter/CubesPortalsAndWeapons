@@ -79,7 +79,7 @@ class Physics:
 
         if not is_bottom_block:
             if self.__object.velocity_y < self.__object.max_velocity_y:
-                self.__object.velocity_y += GRAVITY
+                self.__object.velocity_y += (GRAVITY - self.__object.anti_gravity)
             self.__object.rect.move_ip(0, self.__object.velocity_y)
         else:
             if is_bottom_block:

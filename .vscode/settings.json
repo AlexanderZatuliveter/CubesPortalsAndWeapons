@@ -29,6 +29,8 @@
         "difx",
         "dify",
         "DOUBLEBUF",
+        "JOYBUTTONDOWN",
+        "KEYUP",
         "MODELVIEW",
         "ndenumerate",
         "OPENGL",
