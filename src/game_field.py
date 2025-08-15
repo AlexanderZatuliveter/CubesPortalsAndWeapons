@@ -42,6 +42,29 @@ class GameField:
 
         return False
 
+    def bottom_block_distance(self, rightx: float, leftx: float, bottomy: float) -> float:
+        x1, x2, y = leftx, rightx, bottomy
+        distance = 0
+
+        def get_block():
+            try:
+                block_pos1 = self.get_block_field_position(x1, y)
+                block1 = self.field[block_pos1.x][block_pos1.y]
+                block_pos2 = self.get_block_field_position(x2, y)
+                block2 = self.field[block_pos2.x][block_pos2.y]
+                return block1, block2
+            except BaseException:
+                return False, False
+
+        block1, block2 = get_block()
+
+        while not block1 and not block2:
+            distance += 0.1
+            y += 0.1
+            block1, block2 = get_block()
+        else:
+            return distance
+
     def put_block_by_screen_pos(self, x: int, y: int) -> None:
         pos = self.get_block_field_position(x, y)
         self.put_block(pos)
