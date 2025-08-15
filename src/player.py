@@ -2,7 +2,7 @@ import pygame
 from pygame.event import Event
 from OpenGL.GL import *  # type: ignore
 from common import debug_draw_square, draw_square_topleft
-from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, IS_DEBUG, PLAYER_JUMP_FORCE, PLAYER_SPEED
+from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, IS_DEBUG, PLAYER_CHANGE_ANTI_GRAVITY, PLAYER_JUMP_FORCE, PLAYER_MAX_ANTI_GRAVITY, PLAYER_SPEED
 from direction_enum import DirectionEnum
 from float_rect import FloatRect
 from game_field import GameField
@@ -25,8 +25,8 @@ class Player:
         self.max_velocity_y = 25.0
         self.speed = PLAYER_SPEED
         self.anti_gravity = 0.0
-        self.__max_anti_gravity = 0.025
-        self.__change_anti_gravity = 0.05
+        self.__max_anti_gravity = PLAYER_MAX_ANTI_GRAVITY
+        self.__change_anti_gravity = PLAYER_CHANGE_ANTI_GRAVITY
 
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__jumping = False

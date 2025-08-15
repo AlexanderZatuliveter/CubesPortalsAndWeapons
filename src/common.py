@@ -46,7 +46,7 @@ def draw_square_topleft_outline(x: float, y: float, color: tuple[float, float, f
 
 def debug_draw_square(x: float, y: float, size: float, physics: Physics):
 
-    draw_square_topleft_outline(x - 1, y - 1, YELLOW, size + 2)
+    draw_square_topleft_outline(x, y, YELLOW, size)
     draw_square_center(x, y, (0 / 255, 255 / 255, 0 / 255))
 
     point1, point2 = physics.collidepoints(DirectionEnum.RIGHT)
@@ -64,33 +64,6 @@ def debug_draw_square(x: float, y: float, size: float, physics: Physics):
     point1, point2 = physics.collidepoints(DirectionEnum.DOWN)
     draw_square_center(*point1, RED)
     draw_square_center(*point2, RED)
-
-
-# def load_texture(path: str):
-#     surface = pygame.image.load(path)
-#     image = pygame.image.tostring(surface, "RGBA", True)
-#     width, height = surface.get_rect().size
-
-#     texid = glGenTextures(1)
-#     glBindTexture(GL_TEXTURE_2D, texid)
-#     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-#     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-#     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image)
-#     return texid, width, height
-
-
-# def draw_texture(texid: wrapper.Wrapper, x: float, y: float, width: float, height: float) -> None:
-#     glEnable(GL_TEXTURE_2D)
-#     glBindTexture(GL_TEXTURE_2D, texid)
-#     glTexCoord2f(0, 0)
-#     glVertex2f(x, y)
-#     glTexCoord2f(1, 0)
-#     glVertex2f(x + width, y)
-#     glTexCoord2f(1, 1)
-#     glVertex2f(x + width, y + height)
-#     glTexCoord2f(0, 1)
-#     glVertex2f(x, y + height)
-#     glDisable(GL_TEXTURE_2D)
 
 
 def load_texture(path: str):
