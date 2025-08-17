@@ -1,22 +1,24 @@
 import pygame
-from pygame.event import Event
 from OpenGL.GL import *  # type: ignore
-from common import debug_draw_square, draw_square_topleft
-from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, IS_DEBUG, PLAYER_CHANGE_ANTI_GRAVITY, PLAYER_JUMP_FORCE, PLAYER_MAX_ANTI_GRAVITY, PLAYER_SPEED
+from common import debug_draw_square
+from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, IS_DEBUG, CHANGE_ANTI_GRAVITY, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED, WHITE
 from direction_enum import DirectionEnum
 from float_rect import FloatRect
 from game_field import GameField
 from physics import Physics
+from renderer import Renderer
 
 
 class Player:
-    def __init__(self, game_field: GameField, color: tuple[float, float, float], joystick_num: int) -> None:
+    def __init__(self, game_field: GameField, renderer: Renderer,
+                 color: tuple[float, float, float], joystick_num: int) -> None:
         size = BLOCK_SIZE
         start_pos = GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2 - 10.0
         self.rect = FloatRect(*start_pos, size, size)
 
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)
+        self.__renderer = renderer
 
         self.__joystick = pygame.joystick.Joystick(joystick_num)
         self.__color = color
@@ -25,8 +27,8 @@ class Player:
         self.max_velocity_y = 25.0
         self.speed = PLAYER_SPEED
         self.anti_gravity = 0.0
-        self.__max_anti_gravity = PLAYER_MAX_ANTI_GRAVITY
-        self.__change_anti_gravity = PLAYER_CHANGE_ANTI_GRAVITY
+        self.__max_anti_gravity = MAX_ANTI_GRAVITY
+        self.__change_anti_gravity = CHANGE_ANTI_GRAVITY
 
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__jumping = False
@@ -71,7 +73,8 @@ class Player:
         self.__physics.borders_teleportation()
 
     def draw(self) -> None:
-        draw_square_topleft(self.rect.x, self.rect.y, self.__color, self.rect.width)
+        self.__renderer.add_quad(self.rect.x, self.rect.y, self.rect.width, self.__color)
+        self.__renderer.add_outline(self.rect.x, self.rect.y, self.rect.width, WHITE)
 
         if IS_DEBUG:
-            debug_draw_square(self.rect.x, self.rect.y, self.rect.width, self.__physics)
+            debug_draw_square(self.rect.x, self.rect.y, self.rect.width, self.__physics, self.__renderer)

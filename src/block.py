@@ -1,16 +1,13 @@
 from OpenGL.GL import *  # type: ignore
 
-from common import draw_square_topleft, draw_square_topleft_outline
-from consts import BLOCK_SIZE, DARK_GREY, IS_DEBUG, RED
+from consts import BLOCK_SIZE, DARK_GREY, GREY, IS_DEBUG, RED
+from renderer import Renderer
 
 
 class Block:
-    def __init__(self) -> None:
-        ...
+    def __init__(self, renderer: Renderer) -> None:
+        self.__renderer = renderer
 
     def draw(self, pos: tuple[float, float]) -> None:
-
-        draw_square_topleft(pos[0], pos[1], DARK_GREY, BLOCK_SIZE)
-
-        if IS_DEBUG:
-            draw_square_topleft_outline(pos[0], pos[1], RED, BLOCK_SIZE)
+        self.__renderer.add_quad(pos[0], pos[1], BLOCK_SIZE, GREY)
+        self.__renderer.add_outline(pos[0], pos[1], BLOCK_SIZE, DARK_GREY)

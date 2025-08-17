@@ -4,12 +4,15 @@ from float_rect import FloatRect
 from position import IntPosition
 import json
 from consts import BLOCK_SIZE
+from renderer import Renderer
 
 
 class GameField:
-    def __init__(self, x: int, y: int) -> None:
+    def __init__(self, x: int, y: int, renderer: Renderer) -> None:
         self.field = np.zeros(shape=(x, y), dtype=object)
         self.field.fill(None)
+        
+        self.__renderer = renderer
 
     def draw(self) -> None:
         for (bx, by), block in np.ndenumerate(self.field):
@@ -72,7 +75,7 @@ class GameField:
     def put_block(self, pos: IntPosition) -> None:
         block = self.field[pos.x][pos.y]
         if not block:
-            self.field[pos.x][pos.y] = Block()
+            self.field[pos.x][pos.y] = Block(self.__renderer)
 
     def hit_block(self, pos: IntPosition) -> None:
         block = self.field[pos.x][pos.y]

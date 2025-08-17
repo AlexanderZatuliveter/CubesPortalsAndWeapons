@@ -42,6 +42,7 @@
         "shcore",
         "texid",
         "Translatef",
+        "verts",
         "VIDEORESIZE"
     ],
     "python.testing.pytestArgs": [
