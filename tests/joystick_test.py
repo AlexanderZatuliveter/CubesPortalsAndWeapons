@@ -28,6 +28,8 @@ angle = 0  # Угол поворота куба
 clock = pygame.time.Clock()
 
 # Функция отрисовки повернутого куба
+
+
 def draw_rotated_cube(surface, color, center, size, angle):
     half = size // 2
     points = [
@@ -45,6 +47,7 @@ def draw_rotated_cube(surface, color, center, size, angle):
         rotated_points.append((center[0] + rx, center[1] + ry))
 
     pygame.draw.polygon(surface, color, rotated_points)
+
 
 # Главный цикл
 while True:

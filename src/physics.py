@@ -90,9 +90,6 @@ class Physics:
                 self.__object.rect.move_ip(0, bottom_block_distance)
 
             self.__object.velocity_y = 0
-
-            # self.__object.velocity_y = bottom_block_distance
-            # print(f"{self.__object.velocity_y=}, {bottom_block_distance=}")
         else:
             if self.__object.velocity_y < self.__object.max_velocity_y:
                 self.__object.velocity_y += (GRAVITY - self.__object.anti_gravity)

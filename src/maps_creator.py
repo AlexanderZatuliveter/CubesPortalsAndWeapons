@@ -4,15 +4,13 @@ import pygame
 from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
 from mouse_buttons import Mouse
 from game_field import GameField
+from renderer import Renderer   # импортируем Renderer
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE, VIDEORESIZE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 
 pygame.init()
-
-
-bg_color = 200, 200, 200
 
 info = pygame.display.Info()
 target_width = int(info.current_w * 0.8)
@@ -23,7 +21,12 @@ screen_size = (target_width, target_height)
 screen: pygame.Surface = pygame.display.set_mode(screen_size, DOUBLEBUF | OPENGL | RESIZABLE)
 
 mouse = Mouse()
-game_field = GameField(int(GAME_FIELD_WIDTH // BLOCK_SIZE), int(GAME_FIELD_HEIGHT // BLOCK_SIZE))
+renderer = Renderer()  # создаём общий рендерер
+game_field = GameField(
+    int(GAME_FIELD_WIDTH // BLOCK_SIZE),
+    int(GAME_FIELD_HEIGHT // BLOCK_SIZE),
+    renderer   # передаём в GameField рендерер
+)
 clock = pygame.time.Clock()
 
 
@@ -39,17 +42,10 @@ def set_screen_size(screen_size: Tuple[int, int]) -> None:
 # Настройка OpenGL один раз после создания окна
 set_screen_size(screen_size)
 
-# # Включаем сглаживание линий и альфа-смешивание
-# glEnable(GL_LINE_SMOOTH)
-# glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-# glEnable(GL_BLEND)
-# glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
 
 while True:
     keys = pygame.key.get_pressed()
     for event in pygame.event.get():
-
         if keys[pygame.K_ESCAPE] or event.type == pygame.QUIT:
             print(f"blocks:{mouse.blocks}")
             pygame.quit()
@@ -74,12 +70,10 @@ while True:
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
-    # Отрисовка
-    glBegin(GL_QUADS)
-    game_field.draw()
-    glEnd()
-
+    # === Отрисовка ===
+    game_field.draw()      # только добавляет объекты в renderer
     mouse.update(game_field)
+    renderer.render_all()  # а вот тут реально всё рисуется
 
     clock.tick(60)
     pygame.display.flip()

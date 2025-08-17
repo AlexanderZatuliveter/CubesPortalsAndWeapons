@@ -1,6 +1,6 @@
 from OpenGL.GL import *  # type: ignore
 
-from consts import BLOCK_SIZE, DARK_GREY, GREY, IS_DEBUG, RED
+from consts import BLOCK_SIZE, DARK_GREY, GREY
 from renderer import Renderer
 
 

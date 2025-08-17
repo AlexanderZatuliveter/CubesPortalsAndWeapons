@@ -10,7 +10,7 @@ class Renderer:
         self.__line_colors: list[tuple[float, float, float]] = []
 
         self.__tex_quads: list[tuple[int, list[tuple[float, float]], list[tuple[float, float]]]] = []
-        # хранится: (texture_id, [coords], [texcoords])
+        # store: (texture_id, [coords], [texcoords])
 
     def add_quad(self, x: float, y: float, size: float, color: tuple[float, float, float]) -> None:
         self.__quad_vertices.append([
@@ -76,7 +76,7 @@ class Renderer:
             glEnd()
         glDisable(GL_TEXTURE_2D)
 
-        # очистка
+        # Cleanup
         self.__quad_vertices.clear()
         self.__quad_colors.clear()
         self.__line_vertices.clear()
