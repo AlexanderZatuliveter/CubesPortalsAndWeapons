@@ -86,10 +86,6 @@ class GameField:
         pos = self.get_block_field_position(x, y)
         self.hit_block(pos)
 
-    # def is_block_on_pos(self, x: int, y: int) -> bool:
-    #     block_pos = self.get_block_field_position(x, y)
-    #     return self.field[block_pos.x][block_pos.y] is not None
-
     def save_to_file(self) -> None:
         map = {}
         positions = {}
