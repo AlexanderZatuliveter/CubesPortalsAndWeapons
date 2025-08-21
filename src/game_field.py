@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from block import Block
 from float_rect import FloatRect
@@ -11,7 +12,7 @@ class GameField:
     def __init__(self, x: int, y: int, renderer: Renderer) -> None:
         self.field = np.zeros(shape=(x, y), dtype=object)
         self.field.fill(None)
-        
+
         self.__renderer = renderer
 
     def draw(self) -> None:
@@ -46,27 +47,28 @@ class GameField:
         return False
 
     def bottom_block_distance(self, rightx: float, leftx: float, bottomy: float) -> float:
-        x1, x2, y = leftx, rightx, bottomy
         distance = 0
+        y = bottomy
 
-        def get_block():
-            try:
-                block_pos1 = self.get_block_field_position(x1, y)
-                block1 = self.field[block_pos1.x][block_pos1.y]
-                block_pos2 = self.get_block_field_position(x2, y)
-                block2 = self.field[block_pos2.x][block_pos2.y]
-                return block1, block2
-            except BaseException:
-                return False, False
+        while True:
+            # Получаем индексы блоков по обеим границам
+            pos1 = self.get_block_field_position(leftx, y)
+            pos2 = self.get_block_field_position(rightx, y)
 
-        block1, block2 = get_block()
+            # Проверка выхода за границы поля
+            out1 = not (0 <= pos1.x < self.field.shape[0] and 0 <= pos1.y < self.field.shape[1])
+            out2 = not (0 <= pos2.x < self.field.shape[0] and 0 <= pos2.y < self.field.shape[1])
+            if out1 and out2:
+                return float('inf')
 
-        while not block1 and not block2:
+            # Проверка наличия блока
+            block1 = self.field[pos1.x][pos1.y] if not out1 else None
+            block2 = self.field[pos2.x][pos2.y] if not out2 else None
+            if block1 or block2:
+                return distance
+
             distance += 0.1
             y += 0.1
-            block1, block2 = get_block()
-        else:
-            return distance
 
     def put_block_by_screen_pos(self, x: int, y: int) -> None:
         pos = self.get_block_field_position(x, y)
