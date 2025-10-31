@@ -38,13 +38,15 @@
         "ndenumerate",
         "OPENGL",
         "Parameteri",
+        "rects",
         "rightx",
         "Scancode",
         "shcore",
         "texid",
         "Translatef",
         "verts",
-        "VIDEORESIZE"
+        "VIDEORESIZE",
+        "пиксельных"
     ],
     "python.testing.pytestArgs": [
         ".",    // path to search unit tests

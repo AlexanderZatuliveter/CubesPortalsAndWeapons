@@ -2,10 +2,9 @@ import numpy as np
 import json
 from OpenGL.GL import *  # type: ignore
 from block import Block
-from common import to_gl_coords
 from float_rect import FloatRect
 from position import IntPosition
-from consts import BLOCK_SIZE, DARK_GREY, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT
+from consts import BLOCK_HEIGHT, BLOCK_SIZE, BLOCK_WIDTH, DARK_GREY
 
 
 class GameField:
@@ -13,24 +12,17 @@ class GameField:
         self.field = np.zeros(shape=(x, y), dtype=object)
         self.field.fill(None)
 
-        # Переводим размер блока в координаты OpenGL
-        self.block_width_gl = (BLOCK_SIZE / GAME_FIELD_WIDTH) * 2
-        self.block_height_gl = (BLOCK_SIZE / GAME_FIELD_HEIGHT) * 2
-
     def draw(self) -> None:
         for (bx, by), block in np.ndenumerate(self.field):
             if block:
-                # pos = self._get_block_position_gl(bx, by)
-                # block.draw(pos)
                 block.draw()
 
-    def _get_block_position_gl(self, bx: int, by: int) -> tuple[float, float]:
-        """Возвращает позицию блока в OpenGL координатах."""
-        x_pixel = bx * BLOCK_SIZE
-        y_pixel = by * BLOCK_SIZE
+    def _get_block_position(self, bx: int, by: int) -> tuple[float, float]:
+        """Возвращает позицию блока."""
+        x = -1.0 + bx * BLOCK_WIDTH
+        y = -0.915 + by * BLOCK_HEIGHT
 
-        x_gl, y_gl = to_gl_coords(x_pixel, y_pixel, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT)
-        return x_gl, y_gl
+        return x, y
 
     def _get_block_rect_pixels(self, x: int, y: int) -> FloatRect:
         """Возвращает прямоугольник блока в пиксельных координатах (для физики/коллизий)."""
@@ -38,25 +30,21 @@ class GameField:
         y_px = y * BLOCK_SIZE
         return FloatRect(x_px, y_px, BLOCK_SIZE, BLOCK_SIZE)
 
-    def get_block_field_position(self, x_gl: float, y_gl: float) -> IntPosition:
-        """Перевод из OpenGL координат обратно в индексы поля."""
-        # Сначала обратно в пиксели
-        x_px = ((x_gl + 1) / 2) * GAME_FIELD_WIDTH
-        y_px = ((1 - y_gl) / 2) * GAME_FIELD_HEIGHT
+    def get_block_field_position(self, x: float, y: float) -> IntPosition:
+        """Перевод в индексы поля."""
 
         return IntPosition(
-            int(x_px // BLOCK_SIZE),
-            int(y_px // BLOCK_SIZE)
+            int(x // BLOCK_WIDTH),
+            int(y // BLOCK_HEIGHT)
         )
 
     def _get_block_rect(self, x: int, y: int) -> FloatRect:
         """Возвращает прямоугольник блока в OpenGL координатах."""
-        x_gl, y_gl = self._get_block_position_gl(x, y)
-        return FloatRect(x_gl, y_gl, self.block_width_gl, self.block_height_gl)
+        x_gl, y_gl = self._get_block_position(x, y)
+        return FloatRect(x_gl, y_gl, BLOCK_WIDTH, BLOCK_HEIGHT)
 
-    def colliderect_with(self, x_gl: float, y_gl: float, rect: FloatRect) -> bool:
-        # get_block_field_position accepts either GL coords (range ~ -1..1) or pixel coords
-        block_pos = self.get_block_field_position(x_gl, y_gl)
+    def colliderect_with(self, x: float, y: float, rect: FloatRect) -> bool:
+        block_pos = self.get_block_field_position(x, y)
 
         if 0 <= block_pos.x < len(self.field) and 0 <= block_pos.y < len(self.field[0]):
             block = self.field[block_pos.x][block_pos.y]
@@ -92,29 +80,30 @@ class GameField:
             distance += 0.1
             y += 0.1
 
-    def put_block_by_screen_pos(self, x_gl: float, y_gl: float) -> None:
-        pos = self.get_block_field_position(x_gl, y_gl)
+    def put_block_by_screen_pos(self, x: float, y: float) -> None:
+        pos = self.get_block_field_position(x, y)
         self.put_block(pos)
 
     def put_block(self, pos: IntPosition) -> None:
         block = self.field[pos.x][pos.y]
         if not block:
-            # Получаем GL-координаты верхнего левого угла блока
-            x_gl, y_gl = self._get_block_position_gl(pos.x, pos.y)
+            x, y = self._get_block_position(pos.x, pos.y)
+
             # Поскольку GL-координата y_gl соответствует верхней границе блока,
             # надо вычесть высоту, чтобы получить нижнюю координату при построении вершин.
-            y_bottom = y_gl - self.block_height_gl
+
+            y_bottom = y - BLOCK_HEIGHT
             self.field[pos.x][pos.y] = Block(
                 vertices=[
-                    x_gl, y_bottom, 0.0, *DARK_GREY,
-                    x_gl + self.block_width_gl, y_bottom, 0.0, *DARK_GREY,
-                    x_gl + self.block_width_gl, y_gl, 0.0, *DARK_GREY,
-                    x_gl, y_gl, 0.0, *DARK_GREY
+                    x, y_bottom, 0.0, *DARK_GREY,
+                    x + BLOCK_WIDTH, y_bottom, 0.0, *DARK_GREY,
+                    x + BLOCK_WIDTH, y, 0.0, *DARK_GREY,
+                    x, y, 0.0, *DARK_GREY
                 ]
             )
 
-    def hit_block_by_screen_pos(self, x_gl: float, y_gl: float) -> None:
-        pos = self.get_block_field_position(x_gl, y_gl)
+    def hit_block_by_screen_pos(self, x: float, y: float) -> None:
+        pos = self.get_block_field_position(x, y)
         self.hit_block(pos)
 
     def hit_block(self, pos: IntPosition) -> None:
@@ -137,6 +126,7 @@ class GameField:
 
         # Создаём новый пустой массив того же размера, заполненный None,
         # чтобы не оставалось неинициализированных/случайных объектов.
+
         old_shape = self.field.shape
         self.field = np.zeros(old_shape, dtype=object)
         self.field.fill(None)
@@ -145,5 +135,4 @@ class GameField:
 
         for pos_str, block_type in positions.items():
             pos = IntPosition.from_string(pos_str)
-            # put_block использует GL-координаты внутри себя
             self.put_block(pos)
