@@ -3,33 +3,11 @@
 from OpenGL.GL import *  # type: ignore
 import pygame
 
-from consts import ORANGE, RED
-from direction_enum import DirectionEnum
-from physics import Physics
-from renderer import Renderer
 
-
-def debug_draw_square(x: float, y: float, size: float, physics: Physics, renderer: Renderer):
-
-    size = 4.0
-
-    renderer.add_quad(x - 2.0, y - 2.0, size, (0 / 255, 255 / 255, 0 / 255))
-
-    point1, point2 = physics.collidepoints(DirectionEnum.RIGHT)
-    renderer.add_quad(point1[0] - 2.0, point1[1] - 2.0, size, ORANGE)
-    renderer.add_quad(point2[0] - 2.0, point2[1] - 2.0, size, ORANGE)
-
-    point1, point2 = physics.collidepoints(DirectionEnum.LEFT)
-    renderer.add_quad(point1[0] - 2.0, point1[1] - 2.0, size, ORANGE)
-    renderer.add_quad(point2[0] - 2.0, point2[1] - 2.0, size, ORANGE)
-
-    point1, point2 = physics.collidepoints(DirectionEnum.UP)
-    renderer.add_quad(point1[0] - 2.0, point1[1] - 2.0, size, RED)
-    renderer.add_quad(point2[0] - 2.0, point2[1] - 2.0, size, RED)
-
-    point1, point2 = physics.collidepoints(DirectionEnum.DOWN)
-    renderer.add_quad(point1[0] - 2.0, point1[1] - 2.0, size, RED)
-    renderer.add_quad(point2[0] - 2.0, point2[1] - 2.0, size, RED)
+def to_gl_coords(x, y, screen_width, screen_height):
+    x_gl = (x / screen_width) * 2 - 1
+    y_gl = 1 - (y / screen_height) * 2
+    return x_gl, y_gl
 
 
 def load_texture(path: str):

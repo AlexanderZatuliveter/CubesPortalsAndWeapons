@@ -1,27 +1,55 @@
+import numpy
 import pygame
 from OpenGL.GL import *  # type: ignore
-from common import debug_draw_square
-from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, IS_DEBUG, CHANGE_ANTI_GRAVITY, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED, WHITE
+from common import to_gl_coords
+from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, CHANGE_ANTI_GRAVITY, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED
 from direction_enum import DirectionEnum
 from float_rect import FloatRect
 from game_field import GameField
 from physics import Physics
-from renderer import Renderer
 
 
 class Player:
-    def __init__(self, game_field: GameField, renderer: Renderer,
-                 color: tuple[float, float, float], joystick_num: int) -> None:
+    def __init__(
+        self,
+        game_field: GameField,
+        color: tuple[int, int, int],
+        joystick_num: int
+    ) -> None:
+
+        vertices = [
+            *to_gl_coords(GAME_FIELD_WIDTH / 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2 -
+                          10.0, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT), 0.0, *color,
+            *to_gl_coords(GAME_FIELD_WIDTH / 3 + BLOCK_SIZE, GAME_FIELD_HEIGHT - BLOCK_SIZE *
+                          2 - 10.0, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT), 0.0, *color,
+            *to_gl_coords(GAME_FIELD_WIDTH / 3 + BLOCK_SIZE, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2 -
+                          10.0 + BLOCK_SIZE, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT), 0.0, *color,
+            *to_gl_coords(GAME_FIELD_WIDTH / 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2 - 10.0 +
+                          BLOCK_SIZE, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT), 0.0, *color
+        ]
+
+        self.__vertices = numpy.array(vertices, dtype=numpy.float32)
+        self.__vertex_count = 4
+
+        self.__vao = glGenVertexArrays(1)
+        glBindVertexArray(self.__vao)
+        self.__vbo = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, self.__vbo)
+
+        glBufferData(GL_ARRAY_BUFFER, self.__vertices.nbytes, self.__vertices, GL_STATIC_DRAW)
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(0))
+        glEnableVertexAttribArray(1)
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(12))
+
         size = BLOCK_SIZE
         start_pos = GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2 - 10.0
         self.rect = FloatRect(*start_pos, size, size)
 
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)
-        self.__renderer = renderer
 
         self.__joystick = pygame.joystick.Joystick(joystick_num)
-        self.__color = color
 
         self.velocity_y = 0.0
         self.max_velocity_y = 25.0
@@ -72,9 +100,6 @@ class Player:
         self.__physics.gravitation()
         self.__physics.borders_teleportation()
 
-    def draw(self) -> None:
-        self.__renderer.add_quad(self.rect.x, self.rect.y, self.rect.width, self.__color)
-        self.__renderer.add_outline(self.rect.x, self.rect.y, self.rect.width, WHITE)
-
-        if IS_DEBUG:
-            debug_draw_square(self.rect.x, self.rect.y, self.rect.width, self.__physics, self.__renderer)
+    def draw(self):
+        glBindVertexArray(self.__vao)
+        glDrawArrays(GL_TRIANGLE_FAN, 0, self.__vertex_count)

@@ -25,8 +25,7 @@ class MainWindow:
 
         self.__game_field = GameField(
             int(GAME_FIELD_WIDTH // BLOCK_SIZE),
-            int(GAME_FIELD_HEIGHT // BLOCK_SIZE),
-            self.__renderer
+            int(GAME_FIELD_HEIGHT // BLOCK_SIZE)
         )
 
         self.__game_field.load_from_file()
@@ -36,7 +35,7 @@ class MainWindow:
 
         self.__players: list[Player] = []
         for num in range(joysticks_count):
-            self.__players.append(Player(self.__game_field, self.__renderer, colors[num], num))
+            self.__players.append(Player(self.__game_field, colors[num], num))
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -62,14 +61,8 @@ class MainWindow:
         self.__past_screen_size = pygame.display.get_window_size()
 
     def __set_screen_size(self, screen_size: Tuple[int, int]) -> None:
-        # Set up the viewport to maintain aspect ratio
         self.__screen = pygame.display.set_mode(screen_size, DOUBLEBUF | OPENGL | RESIZABLE)
-        glViewport(0, 0, *screen_size)
-
-        # Reset projection matrix
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        glOrtho(0, *self.__screen.get_size(), 0, -1, 1)
+        glViewport(0, 0, screen_size[0], screen_size[1])
 
     def show(self) -> None:
 
@@ -77,12 +70,6 @@ class MainWindow:
 
         # Set background's color
         glClearColor(120 / 255, 120 / 255, 120 / 255, 1)
-
-        # turn on smooth lines and blending
-        glEnable(GL_LINE_SMOOTH)
-        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         while True:
             events = pygame.event.get()
@@ -93,21 +80,14 @@ class MainWindow:
             for player in self.__players:
                 player.update()
 
-            # Draws
-
-            # Clear screen
+            # Clear once per frame, then draw all objects
             glClear(GL_COLOR_BUFFER_BIT)
 
-            # Set modelview matrix
-            glMatrixMode(GL_MODELVIEW)
-            glLoadIdentity()
-
-            # Draw all
-            self.__game_field.draw()
+            # Draws
             for player in self.__players:
                 player.draw()
 
-            self.__renderer.render_all()
+            self.__game_field.draw()
 
             pygame.display.flip()
             self.__clock.tick(FPS)

@@ -73,9 +73,6 @@ class Physics:
             self.__object.rect.bottom = GAME_FIELD_HEIGHT
 
     def gravitation(self) -> None:
-
-        print(f"{self.__object.velocity_y=}")
-
         is_bottom_block = self.is_block(direction=DirectionEnum.DOWN)
 
         if is_bottom_block:
