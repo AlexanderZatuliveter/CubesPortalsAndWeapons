@@ -8,7 +8,7 @@ from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, RED, GREEN, ORANGE, YELLOW
+from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, RED, GREEN, YELLOW
 from game_field import GameField
 from player import Player
 from renderer import Renderer
@@ -65,7 +65,6 @@ class MainWindow:
         glViewport(0, 0, screen_size[0], screen_size[1])
 
     def show(self) -> None:
-
         self.__set_screen_size(self.__screen.get_size())
 
         # Set background's color
@@ -82,6 +81,7 @@ class MainWindow:
 
             # Clear once per frame, then draw all objects
             glClear(GL_COLOR_BUFFER_BIT)
+            self.__renderer.use_shader()
 
             # Draws
             for player in self.__players:

@@ -4,12 +4,6 @@ from OpenGL.GL import *  # type: ignore
 import pygame
 
 
-def to_gl_coords(x, y, screen_width, screen_height):
-    x_gl = (x / screen_width) * 2 - 1
-    y_gl = 1 - (y / screen_height) * 2
-    return x_gl, y_gl
-
-
 def load_texture(path: str):
     surface = pygame.image.load(path).convert_alpha()
 
