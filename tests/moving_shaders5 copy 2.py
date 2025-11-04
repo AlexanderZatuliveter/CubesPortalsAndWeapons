@@ -5,6 +5,7 @@ import numpy as np
 import ctypes
 import random
 
+
 # =============================
 # SHADERS
 # =============================
@@ -48,10 +49,13 @@ void main()
 # MATRIX
 # =============================
 
+# Ортографическая проекция с top-left origin
+# (0,0) — верхний левый угол
+# Y растёт вниз
 def ortho(l, r, b, t, n, f):
     return np.array([
         [2 / (r - l), 0, 0, -(r + l) / (r - l)],
-        [0, 2 / (t - b), 0, -(t + b) / (t - b)],
+        [0, 2 / (b - t), 0, -(b + t) / (b - t)],
         [0, 0, -2 / (f - n), -(f + n) / (f - n)],
         [0, 0, 0, 1],
     ], dtype=np.float32)
@@ -66,7 +70,8 @@ def compile_shader(src, shader_type):
     glShaderSource(shader, src)
     glCompileShader(shader)
     if glGetShaderiv(shader, GL_COMPILE_STATUS) != GL_TRUE:
-        raise RuntimeError(glGetShaderInfoLog(shader))
+        log = glGetShaderInfoLog(shader).decode('utf-8')
+        raise RuntimeError(f"Shader compile error:\n{log}")
     return shader
 
 
@@ -78,7 +83,8 @@ def create_program(vs_src, fs_src):
     glAttachShader(prog, fs)
     glLinkProgram(prog)
     if glGetProgramiv(prog, GL_LINK_STATUS) != GL_TRUE:
-        raise RuntimeError(glGetProgramInfoLog(prog))
+        log = glGetProgramInfoLog(prog).decode('utf-8')
+        raise RuntimeError(f"Program link error:\n{log}")
     glDeleteShader(vs)
     glDeleteShader(fs)
     return prog
@@ -91,7 +97,16 @@ def create_program(vs_src, fs_src):
 def main():
     WIDTH, HEIGHT = 800, 600
     pygame.init()
+
+    # Требуем OpenGL 3.3 Core
+    pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+    pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
+    pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
+
     pygame.display.set_mode((WIDTH, HEIGHT), DOUBLEBUF | OPENGL)
+
+    glViewport(0, 0, WIDTH, HEIGHT)
+    glClearColor(0, 0, 0, 1)
 
     program = create_program(VERT_SRC, FRAG_SRC)
     glUseProgram(program)
@@ -105,7 +120,7 @@ def main():
         [0, size],
     ], dtype=np.float32)
 
-    # VBO — квадрат
+    # ========== VBO — квадрат ==========
     vbo_vertices = glGenBuffers(1)
     glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices)
     glBufferData(GL_ARRAY_BUFFER, square.nbytes, square, GL_STATIC_DRAW)
@@ -114,15 +129,11 @@ def main():
     # OBJECT INSTANCING
     # =========================================
     NUM = 100
-    positions = []
-
-    for _ in range(NUM):
-        positions.append([
-            random.uniform(0, WIDTH - size),
-            random.uniform(0, HEIGHT - size)
-        ])
-
-    positions = np.array(positions, dtype=np.float32)
+    positions = np.random.uniform(
+        low=[0, 0],
+        high=[WIDTH - size, HEIGHT - size],
+        size=(NUM, 2)
+    ).astype(np.float32)
 
     vbo_offsets = glGenBuffers(1)
     glBindBuffer(GL_ARRAY_BUFFER, vbo_offsets)
@@ -132,12 +143,14 @@ def main():
     VAO = glGenVertexArrays(1)
     glBindVertexArray(VAO)
 
-    stride = 2 * 4
+    stride = 2 * 4  # sizeof(vec2)
 
+    # vertices
     glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices)
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
     glEnableVertexAttribArray(0)
 
+    # offsets
     glBindBuffer(GL_ARRAY_BUFFER, vbo_offsets)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
     glEnableVertexAttribArray(1)
@@ -151,15 +164,17 @@ def main():
     uColor = glGetUniformLocation(program, "uColor")
     uIsPlayer = glGetUniformLocation(program, "uIsPlayer")
 
+    # === Top-left ortho ===
     projection = ortho(0, WIDTH, 0, HEIGHT, -1, 1)
+    glUniformMatrix4fv(uProjection, 1, GL_FALSE, projection.T)
 
-    glUniformMatrix4fv(uProjection, 1, GL_TRUE, projection)
-
-    # Player pos
+    # Player pos (center initially)
     x, y = WIDTH // 2, HEIGHT // 2
 
     clock = pygame.time.Clock()
     running = True
+
+    speed = 300
 
     while running:
         dt = clock.tick(60) / 1000
@@ -168,16 +183,19 @@ def main():
                 running = False
 
         keys = pygame.key.get_pressed()
-        speed = 300
 
         if keys[K_LEFT]:
             x -= speed * dt
         if keys[K_RIGHT]:
             x += speed * dt
         if keys[K_UP]:
-            y += speed * dt
+            y -= speed * dt   # y вниз
         if keys[K_DOWN]:
-            y -= speed * dt
+            y += speed * dt   # y вверх
+
+        # clamp
+        x = max(0, min(x, WIDTH - size))
+        y = max(0, min(y, HEIGHT - size))
 
         glClear(GL_COLOR_BUFFER_BIT)
         glUseProgram(program)
@@ -186,7 +204,6 @@ def main():
         # === Draw INSTANCED OBJECTS ===
         glUniform1i(uIsPlayer, 0)
         glUniform3f(uColor, 0.5, 0.5, 0.5)
-
         glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, NUM)
 
         # === Draw PLAYER ===
