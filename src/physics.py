@@ -30,7 +30,7 @@ class Physics:
             return ((x1, y1), (x2, y2))
         elif direction == DirectionEnum.RIGHT:
             x1 = x2 = self.__object.rect.x + self.__object.rect.width + self.__object.speed
-            y1 = self.__object.rect.y + 2
+            y1 = self.__object.rect.y + 2.0
             y2 = self.__object.rect.y + self.__object.rect.height - 2.0
             return ((x1, y1), (x2, y2))
 

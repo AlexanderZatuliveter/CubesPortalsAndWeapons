@@ -21,6 +21,7 @@
     "cSpell.language": "en,ru",
     "cSpell.dictionaries": ["russian"],
     "cSpell.words": [
+        "backface",
         "bottomy",
         "centerpos",
         "centerx",
@@ -34,6 +35,8 @@
         "KEYUP",
         "leftx",
         "MODELVIEW",
+        "MULTISAMPLE",
+        "multisampling",
         "nbytes",
         "ndarray",
         "ndenumerate",

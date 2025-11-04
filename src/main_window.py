@@ -21,6 +21,11 @@ class MainWindow:
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
 
+        # Disable unnecessary OpenGL features for 2D rendering
+        glDisable(GL_DEPTH_TEST)  # No depth testing needed for 2D
+        glDisable(GL_CULL_FACE)   # No backface culling needed
+        glDisable(GL_MULTISAMPLE)  # No multisampling needed for pixel-perfect 2D
+
         self.__shader = create_shader("./src/shaders/shader.vert", "./src/shaders/shader.frag")
         glUseProgram(self.__shader)
 
