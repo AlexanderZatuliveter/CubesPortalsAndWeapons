@@ -1,25 +1,25 @@
-import math
 import numpy as np
 from block import Block
 from float_rect import FloatRect
 from position import IntPosition
 import json
 from consts import BLOCK_SIZE
-from renderer import Renderer
+from OpenGL.GL.shaders import ShaderProgram
 
 
 class GameField:
-    def __init__(self, x: int, y: int, renderer: Renderer) -> None:
+    def __init__(self, x: int, y: int, shader) -> None:
         self.field = np.zeros(shape=(x, y), dtype=object)
         self.field.fill(None)
 
-        self.__renderer = renderer
+        self.__shader = shader
 
     def draw(self) -> None:
         for (bx, by), block in np.ndenumerate(self.field):
             if block:
                 pos = self._get_block_position(bx, by)
-                block.draw(pos)
+                block.set_offset(pos[0], pos[1])
+                block.draw()
 
     def _get_block_position(self, bx: int, by: int) -> tuple[float, float]:
         return (
@@ -77,7 +77,7 @@ class GameField:
     def put_block(self, pos: IntPosition) -> None:
         block = self.field[pos.x][pos.y]
         if not block:
-            self.field[pos.x][pos.y] = Block(self.__renderer)
+            self.field[pos.x][pos.y] = Block(self.__shader)
 
     def hit_block(self, pos: IntPosition) -> None:
         block = self.field[pos.x][pos.y]

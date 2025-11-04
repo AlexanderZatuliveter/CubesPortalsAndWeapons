@@ -74,8 +74,6 @@ class Physics:
 
     def gravitation(self) -> None:
 
-        print(f"{self.__object.velocity_y=}")
-
         is_bottom_block = self.is_block(direction=DirectionEnum.DOWN)
 
         if is_bottom_block:

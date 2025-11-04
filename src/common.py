@@ -1,35 +1,45 @@
 
 
 from OpenGL.GL import *  # type: ignore
+from OpenGL.GL.shaders import compileProgram, compileShader
+import numpy as np
 import pygame
 
-from consts import ORANGE, RED
-from direction_enum import DirectionEnum
-from physics import Physics
-from renderer import Renderer
+
+def ortho(l, r, b, t, n, f):
+    return np.array([
+        [2 / (r - l), 0, 0, -(r + l) / (r - l)],
+        [0, 2 / (b - t), 0, -(b + t) / (b - t)],
+        [0, 0, -2 / (f - n), -(f + n) / (f - n)],
+        [0, 0, 0, 1],
+    ], dtype=np.float32)
 
 
-def debug_draw_square(x: float, y: float, size: float, physics: Physics, renderer: Renderer):
+def compile_shader(filepath, shader_type):
+    with open(filepath, 'r') as f:
+        src = f.read()
+    shader = glCreateShader(shader_type)
+    glShaderSource(shader, src)
+    glCompileShader(shader)
+    if glGetShaderiv(shader, GL_COMPILE_STATUS) != GL_TRUE:
+        log = glGetShaderInfoLog(shader).decode('utf-8')
+        raise RuntimeError(f"Shader compile error:\n{log}")
+    return shader
 
-    size = 4.0
 
-    renderer.add_quad(x - 2.0, y - 2.0, size, (0 / 255, 255 / 255, 0 / 255))
-
-    point1, point2 = physics.collidepoints(DirectionEnum.RIGHT)
-    renderer.add_quad(point1[0] - 2.0, point1[1] - 2.0, size, ORANGE)
-    renderer.add_quad(point2[0] - 2.0, point2[1] - 2.0, size, ORANGE)
-
-    point1, point2 = physics.collidepoints(DirectionEnum.LEFT)
-    renderer.add_quad(point1[0] - 2.0, point1[1] - 2.0, size, ORANGE)
-    renderer.add_quad(point2[0] - 2.0, point2[1] - 2.0, size, ORANGE)
-
-    point1, point2 = physics.collidepoints(DirectionEnum.UP)
-    renderer.add_quad(point1[0] - 2.0, point1[1] - 2.0, size, RED)
-    renderer.add_quad(point2[0] - 2.0, point2[1] - 2.0, size, RED)
-
-    point1, point2 = physics.collidepoints(DirectionEnum.DOWN)
-    renderer.add_quad(point1[0] - 2.0, point1[1] - 2.0, size, RED)
-    renderer.add_quad(point2[0] - 2.0, point2[1] - 2.0, size, RED)
+def create_shader(vertex_filepath, fragment_filepath):
+    vs = compile_shader(vertex_filepath, GL_VERTEX_SHADER)
+    fs = compile_shader(fragment_filepath, GL_FRAGMENT_SHADER)
+    prog = glCreateProgram()
+    glAttachShader(prog, vs)
+    glAttachShader(prog, fs)
+    glLinkProgram(prog)
+    if glGetProgramiv(prog, GL_LINK_STATUS) != GL_TRUE:
+        log = glGetProgramInfoLog(prog).decode('utf-8')
+        raise RuntimeError(f"Program link error:\n{log}")
+    glDeleteShader(vs)
+    glDeleteShader(fs)
+    return prog
 
 
 def load_texture(path: str):
