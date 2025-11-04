@@ -6,6 +6,7 @@ class Renderer:
 
     def __init__(self):
         self.__shader = self.__create_shader("./src/shaders/vertex.vert", "./src/shaders/fragment.frag")
+        self.player_shader = self.__create_shader("./src/shaders/vertex_player.vert", "./src/shaders/fragment.frag")
 
     def __create_shader(self, vertex_filepath: str, fragment_filepath: str):
 
@@ -22,5 +23,8 @@ class Renderer:
 
         return shader
 
-    def use_shader(self):
+    def use_normal_shader(self):
         glUseProgram(self.__shader)
+
+    def use_player_shader(self):
+        glUseProgram(self.player_shader)

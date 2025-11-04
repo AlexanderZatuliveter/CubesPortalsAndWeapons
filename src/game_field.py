@@ -57,28 +57,57 @@ class GameField:
         return False
 
     def bottom_block_distance(self, rightx: float, leftx: float, bottomy: float) -> float:
-        distance = 0
-        y = bottomy
+        """
+        Находит вертикальное расстояние (в OpenGL-координатах) от bottomy
+        до ближайшего блока, который находится выше (по возрастанию y)
+        в пределах горизонтального диапазона [leftx, rightx].
 
-        while True:
-            # Получаем индексы блоков по обеим границам
-            pos1 = self.get_block_field_position(leftx, y)
-            pos2 = self.get_block_field_position(rightx, y)
+        Возвращает float('inf'), если над объектом в поле блоков нет.
+        Если блок находится так, что пересекает bottomy, возвращает 0.0.
+        """
+        # Получим индексы колонок, которые покрывает горизонтальный диапазон
+        left_idx = self.get_block_field_position(leftx, bottomy).x
+        right_idx = self.get_block_field_position(rightx, bottomy).x
 
-            # Проверка выхода за границы поля
-            out1 = not (0 <= pos1.x < self.field.shape[0] and 0 <= pos1.y < self.field.shape[1])
-            out2 = not (0 <= pos2.x < self.field.shape[0] and 0 <= pos2.y < self.field.shape[1])
-            if out1 and out2:
-                return float('inf')
+        # Нормализуем порядок и лимиты
+        if left_idx > right_idx:
+            left_idx, right_idx = right_idx, left_idx
 
-            # Проверка наличия блока
-            block1 = self.field[pos1.x][pos1.y] if not out1 else None
-            block2 = self.field[pos2.x][pos2.y] if not out2 else None
-            if block1 or block2:
-                return distance
+        max_x = self.field.shape[0]
+        max_y = self.field.shape[1]
 
-            distance += 0.1
-            y += 0.1
+        # Если оба индекса вне поля по x — нет блоков в этом диапазоне
+        if right_idx < 0 or left_idx >= max_x:
+            return float('inf')
+
+        # Обрежем на границы поля
+        left_idx = max(0, left_idx)
+        right_idx = min(max_x - 1, right_idx)
+
+        # Стартовый индекс по y (поле индексируется целыми ступенями блока)
+        start_y_idx = self.get_block_field_position(0.0, bottomy).y
+        # Если стартовый индекс ниже нуля, поднимем до 0
+        start_y_idx = max(0, start_y_idx)
+
+        # Перебираем вверх по индексам блоков
+        for y_idx in range(start_y_idx, max_y):
+            for x_idx in range(left_idx, right_idx + 1):
+                block = self.field[x_idx][y_idx]
+                if block:
+                    # Найден блок: вычисляем его верхнюю и нижнюю GL-координаты
+                    block_top = -0.915 + y_idx * BLOCK_HEIGHT   # как в _get_block_position
+                    block_bottom = block_top - BLOCK_HEIGHT
+
+                    # расстояние от bottomy до нижней границы блока
+                    distance = block_bottom - bottomy
+
+                    # если блок пересекает или лежит на bottomy — возвращаем 0
+                    if distance <= 0.0:
+                        return 0.0
+                    return float(distance)
+
+        # Не нашли блоков выше — возвращаем бесконечность
+        return float('inf')
 
     def put_block_by_screen_pos(self, x: float, y: float) -> None:
         pos = self.get_block_field_position(x, y)

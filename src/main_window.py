@@ -8,6 +8,7 @@ from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
+from borders import Borders
 from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, RED, GREEN, YELLOW
 from game_field import GameField
 from player import Player
@@ -23,6 +24,8 @@ class MainWindow:
 
         self.__renderer = Renderer()
 
+        self.__borders = Borders()
+
         self.__game_field = GameField(
             int(GAME_FIELD_WIDTH // BLOCK_SIZE),
             int(GAME_FIELD_HEIGHT // BLOCK_SIZE)
@@ -34,8 +37,11 @@ class MainWindow:
         colors = [BLUE, RED, GREEN, YELLOW]
 
         self.__players: list[Player] = []
-        for num in range(joysticks_count):
-            self.__players.append(Player(self.__game_field, colors[num], num))
+        if joysticks_count > 0:
+            for num in range(joysticks_count):
+                self.__players.append(Player(self.__game_field, colors[num], num, self.__renderer.player_shader))
+        else:
+            self.__players.append(Player(self.__game_field, BLUE, self.__renderer.player_shader))
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -77,17 +83,20 @@ class MainWindow:
             # Updates
             self.update(events)
             for player in self.__players:
-                player.update()
+                player.update(keys)
 
             # Clear once per frame, then draw all objects
             glClear(GL_COLOR_BUFFER_BIT)
-            self.__renderer.use_shader()
+            self.__renderer.use_normal_shader()
 
             # Draws
-            for player in self.__players:
-                player.draw()
-
             self.__game_field.draw()
+
+            self.__borders.draw()
+
+            for player in self.__players:
+                self.__renderer.use_player_shader()
+                player.draw()
 
             pygame.display.flip()
             self.__clock.tick(FPS)

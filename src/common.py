@@ -1,7 +1,32 @@
 
 
 from OpenGL.GL import *  # type: ignore
+import numpy
 import pygame
+
+
+def ortho(l, r, b, t, n, f):
+    """Orthographic projection matrix"""
+    return numpy.array([
+        [2 / (r - l), 0, 0, 0],
+        [0, 2 / (t - b), 0, 0],
+        [0, 0, -2 / (f - n), 0],
+        [-(r + l) / (r - l), -(t + b) / (t - b), -(f + n) / (f - n), 1]
+    ], dtype=numpy.float32).T
+
+# def ortho(tx, ty, tz):
+#     return numpy.array([
+#         [1, 0, 0, tx],
+#         [0, 1, 0, ty],
+#         [0, 0, 1, tz],
+#         [0, 0, 0, 1]
+#     ], dtype=numpy.float32)
+
+
+def translate(tx, ty, tz):
+    M = numpy.identity(4, dtype=numpy.float32)
+    M[3][0], M[3][1], M[3][2] = tx, ty, tz
+    return M
 
 
 def load_texture(path: str):

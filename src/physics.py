@@ -67,9 +67,9 @@ class Physics:
             self.__object.rect.right = GAME_FIELD_MAX
         elif self.__object.rect.right > GAME_FIELD_MAX:
             self.__object.rect.left = GAME_FIELD_MIN
-        elif self.__object.rect.bottom > GAME_FIELD_MIN:
+        elif self.__object.rect.bottom < GAME_FIELD_MIN:
             self.__object.rect.top = GAME_FIELD_MAX
-        elif self.__object.rect.top < GAME_FIELD_MAX:
+        elif self.__object.rect.top > GAME_FIELD_MAX:
             self.__object.rect.bottom = GAME_FIELD_MIN
 
     def gravitation(self) -> None:
