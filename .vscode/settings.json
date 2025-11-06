@@ -47,6 +47,7 @@
         "Scancode",
         "shcore",
         "texid",
+        "topy",
         "Translatef",
         "verts",
         "VIDEORESIZE"

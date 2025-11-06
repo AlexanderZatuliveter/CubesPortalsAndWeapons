@@ -95,6 +95,7 @@ class MainWindow:
 
             # Updates
             self.update(events)
+
             for player in self.__players:
                 player.update()
 

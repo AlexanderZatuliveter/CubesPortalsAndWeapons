@@ -72,16 +72,46 @@ class Physics:
         elif self.__object.rect.top < 0:
             self.__object.rect.bottom = GAME_FIELD_HEIGHT
 
+    def side_blocks(self) -> DirectionEnum | None:
+
+        is_left_block = self.is_block(direction=DirectionEnum.LEFT)
+        is_right_block = self.is_block(direction=DirectionEnum.RIGHT)
+        is_block = is_left_block or is_right_block
+
+        if is_block:
+
+            if is_left_block:
+                direction = DirectionEnum.LEFT
+                move_dir = -1
+            else:
+                direction = DirectionEnum.RIGHT
+                move_dir = 1
+
+            block_distance = self.__game_field.horizontal_block_distance(
+                self.__object.rect.right,
+                self.__object.rect.left,
+                self.__object.rect.bottom,
+                self.__object.rect.top,
+                direction
+            )
+
+            if block_distance > 0:
+                self.__object.rect.move_ip(move_dir * block_distance, 0)
+
+            return direction
+
     def gravitation(self) -> None:
 
         is_bottom_block = self.is_block(direction=DirectionEnum.DOWN)
 
         if is_bottom_block:
 
-            bottom_block_distance = self.__game_field.bottom_block_distance(
+            bottom_block_distance = self.__game_field.vertical_block_distance(
                 self.__object.rect.left,
                 self.__object.rect.right,
-                self.__object.rect.bottom
+                self.__object.rect.bottom,
+                self.__object.rect.top,
+                direction=DirectionEnum.DOWN
             )
 
             if bottom_block_distance > 0:
@@ -97,4 +127,16 @@ class Physics:
         is_upper_block = self.is_block(direction=DirectionEnum.UP)
 
         if is_upper_block:
+
+            upper_block_distance = self.__game_field.vertical_block_distance(
+                self.__object.rect.left,
+                self.__object.rect.right,
+                self.__object.rect.bottom,
+                self.__object.rect.top,
+                direction=DirectionEnum.UP
+            )
+
+            if upper_block_distance > 0:
+                self.__object.rect.move_ip(0, -upper_block_distance)
+
             self.__object.velocity_y = 0

@@ -74,12 +74,21 @@ class Player:
 
         difx = axis_x * self.speed
 
-        if difx < 0:
-            if not self.__physics.is_block(DirectionEnum.LEFT):
-                self.rect.x += axis_x * self.speed
+        is_block = self.__physics.side_blocks()
+
+        if is_block is None:
+            self.rect.x += difx
         else:
-            if not self.__physics.is_block(DirectionEnum.RIGHT):
-                self.rect.x += axis_x * self.speed
+            # is_block = right
+            if difx > 0 and is_block != DirectionEnum.RIGHT:
+                self.rect.x += difx
+            elif difx < 0 and is_block == DirectionEnum.RIGHT:
+                self.rect.x += difx
+            # is_block = left
+            if difx < 0 and is_block != DirectionEnum.LEFT:
+                self.rect.x += difx
+            elif difx > 0 and is_block == DirectionEnum.LEFT:
+                self.rect.x += difx
 
         is_bottom_block = self.__physics.is_block(DirectionEnum.DOWN)
         is_upper_block = self.__physics.is_block(DirectionEnum.UP)
@@ -100,6 +109,7 @@ class Player:
             self.anti_gravity -= 0.005
 
         self.__physics.gravitation()
+        self.__physics.side_blocks()
         self.__physics.borders_teleportation()
 
     def draw(self) -> None:
