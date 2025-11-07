@@ -4,26 +4,41 @@ import numpy
 import ctypes
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
-from consts import BULLET_HEIGHT, BULLET_SPEED, BULLET_WIDTH, GAME_FIELD_WIDTH
+from bullet_enum import BulletEnum
+from consts import BIG_BULLET_DAMAGE, BIG_BULLET_HEIGHT, BIG_BULLET_MAX_DISTANCE, BIG_BULLET_SPEED, BIG_BULLET_WIDTH, GAME_FIELD_WIDTH, SMALL_BULLET_DAMAGE, SMALL_BULLET_HEIGHT, SMALL_BULLET_MAX_DISTANCE, SMALL_BULLET_SPEED, SMALL_BULLET_WIDTH
 from direction_enum import DirectionEnum
 from float_rect import FloatRect
 
 
 class Bullet:
     def __init__(self, x: float, y: float, direction: DirectionEnum,
-                 color: tuple[float, float, float], shader: ShaderProgram):
-        self.rect = FloatRect(x, y, BULLET_WIDTH, BULLET_HEIGHT)
+                 color: tuple[float, float, float], shader: ShaderProgram, bullet_type: BulletEnum):
+
+        if bullet_type == BulletEnum.BIG:
+            self.damage = BIG_BULLET_DAMAGE
+            self.__bullet_speed = BIG_BULLET_SPEED
+            self.__max_distance = BIG_BULLET_MAX_DISTANCE
+            width = BIG_BULLET_WIDTH
+            height = BIG_BULLET_HEIGHT
+
+        elif bullet_type == BulletEnum.SMALL:
+            self.damage = SMALL_BULLET_DAMAGE
+            self.__bullet_speed = SMALL_BULLET_SPEED
+            self.__max_distance = SMALL_BULLET_MAX_DISTANCE
+            width = SMALL_BULLET_WIDTH
+            height = SMALL_BULLET_HEIGHT
+
+        self.rect = FloatRect(x, y, width, height)
         self.color = color
         self.__distance = 0.0
-        self.__max_distance = GAME_FIELD_WIDTH * 2
         self.__direction = direction
         self.__is_destroyed = False
 
         vertices = numpy.array([
             0.0, 0.0,
-            BULLET_WIDTH, 0.0,
-            BULLET_WIDTH, BULLET_HEIGHT,
-            0.0, BULLET_HEIGHT,
+            width, 0.0,
+            width, height,
+            0.0, height,
         ], dtype=numpy.float32)
 
         self.__vertex_count = 4
@@ -44,11 +59,11 @@ class Bullet:
 
     def update(self):
         if self.__direction == DirectionEnum.LEFT:
-            self.rect.x -= BULLET_SPEED
+            self.rect.x -= self.__bullet_speed
         elif self.__direction == DirectionEnum.RIGHT:
-            self.rect.x += BULLET_SPEED
+            self.rect.x += self.__bullet_speed
 
-        self.__distance += BULLET_SPEED
+        self.__distance += self.__bullet_speed
 
         if self.rect.right <= 0.0:
             self.rect.right = GAME_FIELD_WIDTH

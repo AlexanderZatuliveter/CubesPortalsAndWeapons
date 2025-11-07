@@ -29,6 +29,7 @@
         "collidepoint",
         "collidepoints",
         "colliderect",
+        "cooldown",
         "difx",
         "dify",
         "Dinamic",

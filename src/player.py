@@ -2,8 +2,9 @@ import numpy
 import pygame
 from OpenGL.GL import *  # type: ignore
 from bullet import Bullet
+from bullet_enum import BulletEnum
 from bullets import Bullets
-from consts import BLOCK_SIZE, BULLET_DAMAGE, BULLET_HEIGHT, BULLET_WIDTH, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, CHANGE_ANTI_GRAVITY, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED
+from consts import BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED, SMALL_BULLET_HEIGHT, SMALL_BULLET_WIDTH
 from direction_enum import DirectionEnum
 from float_rect import FloatRect
 from game_field import GameField
@@ -41,6 +42,14 @@ class Player:
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__jumping = False
 
+        self.big_shot_cooldown = 750
+        self.big_shot_time = 0
+        self.is_big_shot = False
+
+        self.small_shot_cooldown = 250
+        self.small_shot_time = 0
+        self.is_small_shot = False
+
         self.__shader = shader
         self.__uPlayerPos = glGetUniformLocation(self.__shader, "uPlayerPos")
         self.__uIsPlayer = glGetUniformLocation(self.__shader, "uIsPlayer")
@@ -65,15 +74,55 @@ class Player:
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
 
-    def damage(self):
-        self.__health -= BULLET_DAMAGE
+    def damage(self, bullet_damage: int):
+        self.__health -= bullet_damage
 
         if self.__health <= 0.0:
             self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
             self.__health = PLAYER_HEALTH
             self.__bullets.clear_by_color(self.__color)
 
-    def update(self, events: list[Event]) -> None:
+    def __shoot(self, bullet_type: BulletEnum):
+        # параметры для обоих типов
+        if bullet_type == BulletEnum.BIG:
+            width, height = BIG_BULLET_WIDTH, BIG_BULLET_HEIGHT
+            is_pressed = self.__joystick.get_button(2) or self.__joystick.get_axis(4) > 0
+            cooldown_flag = "is_big_shot"
+            cooldown_time = "big_shot_time"
+            cooldown_dif = self.big_shot_cooldown
+        else:  # SMALL
+            width, height = SMALL_BULLET_WIDTH, SMALL_BULLET_HEIGHT
+            is_pressed = self.__joystick.get_button(1) or self.__joystick.get_axis(5) > 0
+            cooldown_flag = "is_small_shot"
+            cooldown_time = "small_shot_time"
+            cooldown_dif = self.small_shot_cooldown
+
+        # текущее состояние
+        is_shot = getattr(self, cooldown_flag)
+        last_time = getattr(self, cooldown_time)
+
+        # попытка выстрела
+        if is_pressed and not is_shot:
+            x = (self.rect.x + self.rect.width) if self.__direction == DirectionEnum.RIGHT else (self.rect.x - width)
+
+            self.__bullets.add_bullet(Bullet(
+                x,
+                self.rect.y + self.rect.height / 2 - height / 2,
+                self.__direction,
+                self.__color,
+                self.__shader,
+                bullet_type
+            ))
+
+            setattr(self, cooldown_flag, True)
+            setattr(self, cooldown_time, pygame.time.get_ticks())
+
+        # откат перезарядки
+        if is_shot and pygame.time.get_ticks() - last_time >= cooldown_dif:
+            setattr(self, cooldown_flag, False)
+            setattr(self, cooldown_time, 0)
+
+    def update(self) -> None:
 
         # left stick x
         axis_x = self.__joystick.get_axis(0)
@@ -127,22 +176,8 @@ class Player:
         self.__physics.side_blocks()
         self.__physics.borders_teleportation()
 
-        for event in events:
-            if event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 2 and self.__joystick.get_button(2):
-
-                    if self.__direction == DirectionEnum.RIGHT:
-                        x = self.rect.x + self.rect.width
-                    else:
-                        x = self.rect.x - BULLET_WIDTH
-
-                    self.__bullets.add_bullet(Bullet(
-                        x,
-                        self.rect.y + self.rect.height / 2 - BULLET_HEIGHT / 2,
-                        self.__direction,
-                        self.__color,
-                        self.__shader
-                    ))
+        self.__shoot(bullet_type=BulletEnum.BIG)
+        self.__shoot(bullet_type=BulletEnum.SMALL)
 
     def draw(self) -> None:
         glBindVertexArray(self.__vao)

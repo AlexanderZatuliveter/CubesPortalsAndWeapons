@@ -101,7 +101,7 @@ class MainWindow:
             self.update(events)
 
             for player in self.__players:
-                player.update(events)
+                player.update()
 
             self.update_bullets()
 
@@ -137,7 +137,7 @@ class MainWindow:
         for bullet in self.__bullets.get_bullets():
             for player in self.__players:
                 if bullet.rect.colliderect(player.rect):
-                    player.damage()
+                    player.damage(bullet.damage)
                     self.__bullets.destroy(bullet)
             for (bx, by), block in np.ndenumerate(self.__game_field.field):
                 if block is not None:
