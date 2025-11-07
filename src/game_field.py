@@ -1,25 +1,25 @@
-import math
 import numpy as np
 from block import Block
+from direction_enum import DirectionEnum
 from float_rect import FloatRect
 from position import IntPosition
 import json
 from consts import BLOCK_SIZE
-from renderer import Renderer
 
 
 class GameField:
-    def __init__(self, x: int, y: int, renderer: Renderer) -> None:
+    def __init__(self, x: int, y: int, shader) -> None:
         self.field = np.zeros(shape=(x, y), dtype=object)
         self.field.fill(None)
 
-        self.__renderer = renderer
+        self.__shader = shader
 
     def draw(self) -> None:
         for (bx, by), block in np.ndenumerate(self.field):
             if block:
                 pos = self._get_block_position(bx, by)
-                block.draw(pos)
+                block.set_offset(pos[0], pos[1])
+                block.draw()
 
     def _get_block_position(self, bx: int, by: int) -> tuple[float, float]:
         return (
@@ -46,29 +46,87 @@ class GameField:
 
         return False
 
-    def bottom_block_distance(self, rightx: float, leftx: float, bottomy: float) -> float:
-        distance = 0
-        y = bottomy
+    def vertical_block_distance(
+        self,
+        rightx: float,
+        leftx: float,
+        bottomy: float,
+        topy: float,
+        direction: DirectionEnum
+    ):
 
-        while True:
-            # Получаем индексы блоков по обеим границам
-            pos1 = self.get_block_field_position(leftx, y)
-            pos2 = self.get_block_field_position(rightx, y)
+        if direction == DirectionEnum.UP or direction == DirectionEnum.DOWN:
+            distance = 0
 
-            # Проверка выхода за границы поля
-            out1 = not (0 <= pos1.x < self.field.shape[0] and 0 <= pos1.y < self.field.shape[1])
-            out2 = not (0 <= pos2.x < self.field.shape[0] and 0 <= pos2.y < self.field.shape[1])
-            if out1 and out2:
-                return float('inf')
+            if direction == DirectionEnum.DOWN:
+                y = bottomy
+            else:
+                y = topy
 
-            # Проверка наличия блока
-            block1 = self.field[pos1.x][pos1.y] if not out1 else None
-            block2 = self.field[pos2.x][pos2.y] if not out2 else None
-            if block1 or block2:
-                return distance
+            while True:
+                # Получаем индексы блоков по обеим границам
+                pos1 = self.get_block_field_position(leftx, y)
+                pos2 = self.get_block_field_position(rightx, y)
 
-            distance += 0.1
-            y += 0.1
+                # Проверка выхода за границы поля
+                out1 = not (0 <= pos1.x < self.field.shape[0] and 0 <= pos1.y < self.field.shape[1])
+                out2 = not (0 <= pos2.x < self.field.shape[0] and 0 <= pos2.y < self.field.shape[1])
+                if out1 and out2:
+                    return float('inf')
+
+                # Проверка наличия блока
+                block1 = self.field[pos1.x][pos1.y] if not out1 else None
+                block2 = self.field[pos2.x][pos2.y] if not out2 else None
+                if block1 or block2:
+                    return distance
+
+                distance += 0.1
+
+                if direction == DirectionEnum.DOWN:
+                    y += 0.1
+                else:
+                    y -= 0.1
+
+    def horizontal_block_distance(
+        self,
+        rightx: float,
+        leftx: float,
+        bottomy: float,
+        topy: float,
+        direction: DirectionEnum
+    ):
+
+        if direction == DirectionEnum.RIGHT or direction == DirectionEnum.LEFT:
+            distance = 0
+
+            if direction == DirectionEnum.RIGHT:
+                x = rightx
+            else:
+                x = leftx
+
+            while True:
+                # Получаем индексы блоков по обеим границам
+                pos1 = self.get_block_field_position(x, bottomy - 2.0)
+                pos2 = self.get_block_field_position(x, topy + 2.0)
+
+                # Проверка выхода за границы поля
+                out1 = not (0 <= pos1.x < self.field.shape[0] and 0 <= pos1.y < self.field.shape[1])
+                out2 = not (0 <= pos2.x < self.field.shape[0] and 0 <= pos2.y < self.field.shape[1])
+                if out1 and out2:
+                    return float('inf')
+
+                # Проверка наличия блока
+                block1 = self.field[pos1.x][pos1.y] if not out1 else None
+                block2 = self.field[pos2.x][pos2.y] if not out2 else None
+                if block1 or block2:
+                    return distance
+
+                distance += 0.1
+
+                if direction == DirectionEnum.RIGHT:
+                    x += 0.1
+                else:
+                    x -= 0.1
 
     def put_block_by_screen_pos(self, x: int, y: int) -> None:
         pos = self.get_block_field_position(x, y)
@@ -77,7 +135,7 @@ class GameField:
     def put_block(self, pos: IntPosition) -> None:
         block = self.field[pos.x][pos.y]
         if not block:
-            self.field[pos.x][pos.y] = Block(self.__renderer)
+            self.field[pos.x][pos.y] = Block(self.__shader)
 
     def hit_block(self, pos: IntPosition) -> None:
         block = self.field[pos.x][pos.y]
@@ -96,11 +154,11 @@ class GameField:
                 positions[str(IntPosition(x, y))] = type(block).__name__
         map["positions"] = positions
         json_string = json.dumps(map, indent=2)
-        with open("first.map", "w") as json_file:
+        with open("./maps/first.map", "w") as json_file:
             json_file.write(json_string)
 
     def load_from_file(self) -> None:
-        with open("first.map", "r") as json_file:
+        with open("./maps/first.map", "r") as json_file:
             json_string = json_file.read()
 
         map_data = json.loads(json_string)

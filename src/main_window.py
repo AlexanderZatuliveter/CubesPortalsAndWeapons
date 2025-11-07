@@ -8,10 +8,10 @@ from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, RED, GREEN, ORANGE, YELLOW
+from common import create_shader, ortho
+from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, RED, GREEN, YELLOW
 from game_field import GameField
 from player import Player
-from renderer import Renderer
 
 
 class MainWindow:
@@ -21,12 +21,22 @@ class MainWindow:
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
 
-        self.__renderer = Renderer()
+        # Disable unnecessary OpenGL features for 2D rendering
+        glDisable(GL_DEPTH_TEST)  # No depth testing needed for 2D
+        glDisable(GL_CULL_FACE)   # No backface culling needed
+        glDisable(GL_MULTISAMPLE)  # No multisampling needed for pixel-perfect 2D
+
+        self.__shader = create_shader("./src/shaders/shader.vert", "./src/shaders/shader.frag")
+        glUseProgram(self.__shader)
+
+        uProjection = glGetUniformLocation(self.__shader, "uProjection")
+        self.__projection = ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
+        glUniformMatrix4fv(uProjection, 1, GL_FALSE, self.__projection.T)
 
         self.__game_field = GameField(
             int(GAME_FIELD_WIDTH // BLOCK_SIZE),
             int(GAME_FIELD_HEIGHT // BLOCK_SIZE),
-            self.__renderer
+            self.__shader
         )
 
         self.__game_field.load_from_file()
@@ -36,7 +46,7 @@ class MainWindow:
 
         self.__players: list[Player] = []
         for num in range(joysticks_count):
-            self.__players.append(Player(self.__game_field, self.__renderer, colors[num], num))
+            self.__players.append(Player(self.__game_field, self.__shader, colors[num], num))
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -66,10 +76,11 @@ class MainWindow:
         self.__screen = pygame.display.set_mode(screen_size, DOUBLEBUF | OPENGL | RESIZABLE)
         glViewport(0, 0, *screen_size)
 
-        # Reset projection matrix
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        glOrtho(0, *self.__screen.get_size(), 0, -1, 1)
+        # Update the projection matrix in the shader
+        glUseProgram(self.__shader)
+        uProjection = glGetUniformLocation(self.__shader, "uProjection")
+        self.__projection = ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
+        glUniformMatrix4fv(uProjection, 1, GL_FALSE, self.__projection.T)
 
     def show(self) -> None:
 
@@ -78,36 +89,24 @@ class MainWindow:
         # Set background's color
         glClearColor(120 / 255, 120 / 255, 120 / 255, 1)
 
-        # turn on smooth lines and blending
-        glEnable(GL_LINE_SMOOTH)
-        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
         while True:
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
 
             # Updates
             self.update(events)
+
             for player in self.__players:
                 player.update()
 
             # Draws
-
-            # Clear screen
             glClear(GL_COLOR_BUFFER_BIT)
+            glUseProgram(self.__shader)
 
-            # Set modelview matrix
-            glMatrixMode(GL_MODELVIEW)
-            glLoadIdentity()
-
-            # Draw all
             self.__game_field.draw()
+
             for player in self.__players:
                 player.draw()
-
-            self.__renderer.render_all()
 
             pygame.display.flip()
             self.__clock.tick(FPS)
