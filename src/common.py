@@ -1,7 +1,6 @@
 
 
 from OpenGL.GL import *  # type: ignore
-from OpenGL.GL.shaders import compileProgram, compileShader
 import numpy as np
 import pygame
 

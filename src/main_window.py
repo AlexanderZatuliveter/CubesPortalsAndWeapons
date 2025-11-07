@@ -1,6 +1,7 @@
 
 import sys
 from typing import Tuple
+import numpy as np
 import pygame
 from pygame import Surface
 from pygame.time import Clock
@@ -8,6 +9,7 @@ from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
+from bullets import Bullets
 from common import create_shader, ortho
 from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, RED, GREEN, YELLOW
 from game_field import GameField
@@ -41,12 +43,14 @@ class MainWindow:
 
         self.__game_field.load_from_file()
 
+        self.__bullets = Bullets()
+
         joysticks_count = pygame.joystick.get_count()
         colors = [BLUE, RED, GREEN, YELLOW]
 
         self.__players: list[Player] = []
         for num in range(joysticks_count):
-            self.__players.append(Player(self.__game_field, self.__shader, colors[num], num))
+            self.__players.append(Player(self.__game_field, self.__shader, colors[num], num, self.__bullets))
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -97,7 +101,9 @@ class MainWindow:
             self.update(events)
 
             for player in self.__players:
-                player.update()
+                player.update(events)
+
+            self.update_bullets()
 
             # Draws
             glClear(GL_COLOR_BUFFER_BIT)
@@ -107,6 +113,8 @@ class MainWindow:
 
             for player in self.__players:
                 player.draw()
+
+            self.__bullets.draw()
 
             pygame.display.flip()
             self.__clock.tick(FPS)
@@ -122,3 +130,18 @@ class MainWindow:
                     sys.exit()
             if event.type == pygame.VIDEORESIZE:
                 self.__resize_display(event.size)
+
+    def update_bullets(self):
+        self.__bullets.update()
+
+        for bullet in self.__bullets.get_bullets():
+            for player in self.__players:
+                if bullet.rect.colliderect(player.rect):
+                    player.damage()
+                    self.__bullets.destroy(bullet)
+            for (bx, by), block in np.ndenumerate(self.__game_field.field):
+                if block is not None:
+                    block_rect = self.__game_field._get_block_rect(bx, by)
+                    if bullet.rect.colliderect(block_rect):
+                        self.__bullets.destroy(bullet)
+                        break

@@ -1,12 +1,14 @@
 import numpy
 import pygame
 from OpenGL.GL import *  # type: ignore
-from OpenGL.GL.shaders import ShaderProgram
-from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, CHANGE_ANTI_GRAVITY, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED
+from bullet import Bullet
+from bullets import Bullets
+from consts import BLOCK_SIZE, BULLET_DAMAGE, BULLET_HEIGHT, BULLET_WIDTH, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, CHANGE_ANTI_GRAVITY, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED
 from direction_enum import DirectionEnum
 from float_rect import FloatRect
 from game_field import GameField
 from physics import Physics
+from pygame.event import Event
 
 
 class Player:
@@ -15,17 +17,19 @@ class Player:
         game_field: GameField,
         shader,
         color: tuple[float, float, float],
-        joystick_num: int
+        joystick_num: int,
+        bullets: Bullets
     ) -> None:
 
-        size = BLOCK_SIZE
-        start_pos = GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2 - 10.0
-        self.rect = FloatRect(*start_pos, size, size)
+        self.rect = FloatRect(GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2 - 10.0, BLOCK_SIZE, BLOCK_SIZE)
         self.__joystick = pygame.joystick.Joystick(joystick_num)
         self.__color = color
+        self.__health = PLAYER_HEALTH
+        self.__direction = DirectionEnum.LEFT
 
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)
+        self.__bullets = bullets
 
         self.velocity_y = 0.0
         self.max_velocity_y = 25.0
@@ -36,17 +40,16 @@ class Player:
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__jumping = False
 
-        self.__uPlayerPos = glGetUniformLocation(shader, "uPlayerPos")
-        self.__uColor = glGetUniformLocation(shader, "uColor")
-        self.__uIsPlayer = glGetUniformLocation(shader, "uIsPlayer")
+        self.__shader = shader
+        self.__uPlayerPos = glGetUniformLocation(self.__shader, "uPlayerPos")
+        self.__uIsPlayer = glGetUniformLocation(self.__shader, "uIsPlayer")
+        self.__uColor = glGetUniformLocation(self.__shader, "uColor")
 
-        # Create square vertices in local coordinates (0,0 to BLOCK_SIZE)
         vertices = numpy.array([
-            # Position (x, y)
-            0.0, 0.0,                    # Bottom-left
-            BLOCK_SIZE, 0.0,             # Bottom-right
-            BLOCK_SIZE, BLOCK_SIZE,      # Top-right
-            0.0, BLOCK_SIZE,             # Top-left
+            0.0, 0.0,
+            BLOCK_SIZE, 0.0,
+            BLOCK_SIZE, BLOCK_SIZE,
+            0.0, BLOCK_SIZE,
         ], dtype=numpy.float32)
 
         self.__vertex_count = 4
@@ -54,16 +57,20 @@ class Player:
         self.__vao = glGenVertexArrays(1)
         glBindVertexArray(self.__vao)
 
-        # Create and bind vertex buffer
         self.__vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, self.__vbo)
         glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
 
-        # Position attribute
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
 
-    def update(self) -> None:
+    def damage(self):
+        self.__health -= BULLET_DAMAGE
+
+        if self.__health <= 0.0:
+            print("player dead!")
+
+    def update(self, events: list[Event]) -> None:
 
         # left stick x
         axis_x = self.__joystick.get_axis(0)
@@ -75,6 +82,11 @@ class Player:
         difx = axis_x * self.speed
 
         is_block = self.__physics.side_blocks()
+
+        if difx > 0:
+            self.__direction = DirectionEnum.RIGHT
+        elif difx < 0:
+            self.__direction = DirectionEnum.LEFT
 
         if is_block is None:
             self.rect.x += difx
@@ -111,6 +123,22 @@ class Player:
         self.__physics.gravitation()
         self.__physics.side_blocks()
         self.__physics.borders_teleportation()
+
+        for event in events:
+            if event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 2:
+
+                    if self.__direction == DirectionEnum.RIGHT:
+                        x = self.rect.x + self.rect.width
+                    else:
+                        x = self.rect.x - BULLET_WIDTH
+
+                    self.__bullets.add_bullet(Bullet(
+                        x,
+                        self.rect.y + self.rect.height / 2 - BULLET_HEIGHT / 2,
+                        self.__direction,
+                        self.__shader
+                    ))
 
     def draw(self) -> None:
         glBindVertexArray(self.__vao)
