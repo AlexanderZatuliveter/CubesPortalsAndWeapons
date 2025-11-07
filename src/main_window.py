@@ -11,7 +11,7 @@ from OpenGL.GLU import *  # type: ignore
 
 from bullets import Bullets
 from common import create_shader, ortho
-from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, RED, GREEN, YELLOW
+from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, ORANGE, RED, GREEN
 from game_field import GameField
 from player import Player
 
@@ -46,7 +46,7 @@ class MainWindow:
         self.__bullets = Bullets()
 
         joysticks_count = pygame.joystick.get_count()
-        colors = [BLUE, RED, GREEN, YELLOW]
+        colors = [BLUE, RED, GREEN, ORANGE]
 
         self.__players: list[Player] = []
         for num in range(joysticks_count):

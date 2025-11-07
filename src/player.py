@@ -21,7 +21,8 @@ class Player:
         bullets: Bullets
     ) -> None:
 
-        self.rect = FloatRect(GAME_FIELD_WIDTH // 3, GAME_FIELD_HEIGHT - BLOCK_SIZE * 2 - 10.0, BLOCK_SIZE, BLOCK_SIZE)
+        self.__start_pos = BLOCK_SIZE * 12, GAME_FIELD_HEIGHT - BLOCK_SIZE * 3
+        self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
         self.__joystick = pygame.joystick.Joystick(joystick_num)
         self.__color = color
         self.__health = PLAYER_HEALTH
@@ -32,7 +33,7 @@ class Player:
         self.__bullets = bullets
 
         self.velocity_y = 0.0
-        self.max_velocity_y = 25.0
+        self.max_velocity_y = 75.0
         self.speed = PLAYER_SPEED
         self.anti_gravity = 0.0
         self.__max_anti_gravity = MAX_ANTI_GRAVITY
@@ -68,7 +69,9 @@ class Player:
         self.__health -= BULLET_DAMAGE
 
         if self.__health <= 0.0:
-            print("player dead!")
+            self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
+            self.__health = PLAYER_HEALTH
+            self.__bullets.clear_by_color(self.__color)
 
     def update(self, events: list[Event]) -> None:
 
@@ -126,7 +129,7 @@ class Player:
 
         for event in events:
             if event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 2:
+                if event.button == 2 and self.__joystick.get_button(2):
 
                     if self.__direction == DirectionEnum.RIGHT:
                         x = self.rect.x + self.rect.width
@@ -137,6 +140,7 @@ class Player:
                         x,
                         self.rect.y + self.rect.height / 2 - BULLET_HEIGHT / 2,
                         self.__direction,
+                        self.__color,
                         self.__shader
                     ))
 
