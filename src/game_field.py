@@ -154,11 +154,11 @@ class GameField:
                 positions[str(IntPosition(x, y))] = type(block).__name__
         map["positions"] = positions
         json_string = json.dumps(map, indent=2)
-        with open("first.map", "w") as json_file:
+        with open("./maps/first.map", "w") as json_file:
             json_file.write(json_string)
 
     def load_from_file(self) -> None:
-        with open("first.map", "r") as json_file:
+        with open("./maps/first.map", "r") as json_file:
             json_string = json_file.read()
 
         map_data = json.loads(json_string)
