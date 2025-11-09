@@ -9,7 +9,6 @@ from direction_enum import DirectionEnum
 from float_rect import FloatRect
 from game_field import GameField
 from physics import Physics
-from pygame.event import Event
 
 
 class Player:

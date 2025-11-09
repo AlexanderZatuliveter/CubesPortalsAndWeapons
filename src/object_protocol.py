@@ -8,3 +8,8 @@ class ObjectProtocol(Protocol):
     velocity_y: float
     max_velocity_y: float
     anti_gravity: float
+
+
+class DamageableObject(Protocol):
+    rect: FloatRect
+    def damage(self, bullet_damage: int): ...
