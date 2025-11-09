@@ -2,12 +2,15 @@
 
 from consts import GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GRAVITY
 from direction_enum import DirectionEnum
-
 from object_protocol import ObjectProtocol
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from game_field import GameField
 
 
 class Physics:
-    def __init__(self, object: ObjectProtocol, game_field) -> None:
+    def __init__(self, object: ObjectProtocol, game_field: "GameField") -> None:
         self.__object = object
         self.__game_field = game_field
 

@@ -53,7 +53,7 @@ class GameField:
         bottomy: float,
         topy: float,
         direction: DirectionEnum
-    ):
+    ) -> float:
 
         if direction == DirectionEnum.UP or direction == DirectionEnum.DOWN:
             distance = 0
@@ -87,6 +87,8 @@ class GameField:
                 else:
                     y -= 0.1
 
+        return 0
+
     def horizontal_block_distance(
         self,
         rightx: float,
@@ -94,7 +96,7 @@ class GameField:
         bottomy: float,
         topy: float,
         direction: DirectionEnum
-    ):
+    ) -> float:
 
         if direction == DirectionEnum.RIGHT or direction == DirectionEnum.LEFT:
             distance = 0
@@ -127,6 +129,7 @@ class GameField:
                     x += 0.1
                 else:
                     x -= 0.1
+        return 0
 
     def put_block_by_screen_pos(self, x: int, y: int) -> None:
         pos = self.get_block_field_position(x, y)
