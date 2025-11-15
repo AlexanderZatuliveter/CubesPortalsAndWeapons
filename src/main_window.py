@@ -1,7 +1,6 @@
 
 import sys
 from typing import Tuple
-import numpy as np
 import pygame
 from pygame.event import Event
 from pygame import Surface
@@ -12,9 +11,10 @@ from OpenGL.GLU import *  # type: ignore
 
 from bullets import Bullets
 from common import create_shader, ortho
-from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, ORANGE, RED, GREEN
+from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from damage import Damage
 from game_field import GameField
-from player import Player
+from players import Players
 
 
 class MainWindow:
@@ -44,11 +44,11 @@ class MainWindow:
 
         self.__game_field.load_from_file()
 
-        self.__colors = [BLUE, RED, GREEN, ORANGE]
+        self.__bullets = Bullets()
 
-        self.__players: dict[Player, int] = {}
+        self.__players = Players(self.__game_field, self.__shader, self.__bullets)
 
-        self.__bullets = Bullets(list(self.__players.keys()), self.__game_field)
+        self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -96,15 +96,12 @@ class MainWindow:
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
 
-            # self.__add_player()
-
             # Updates
             self.update(events)
 
-            for player in self.__players.keys():
-                player.update()
+            self.__players.update(events)
 
-            self.__bullets.update()
+            self.__damage.update()
 
             # Draws
             glClear(GL_COLOR_BUFFER_BIT)
@@ -112,7 +109,7 @@ class MainWindow:
 
             self.__game_field.draw()
 
-            for player in self.__players.keys():
+            for player in self.__players:
                 player.draw()
 
             self.__bullets.draw()
@@ -131,59 +128,3 @@ class MainWindow:
                     sys.exit()
             if event.type == pygame.VIDEORESIZE:
                 self.__resize_display(event.size)
-
-            if event.type == pygame.JOYDEVICEADDED:
-                print("JOYDEVICEADDED")
-
-                for player_key, player_value in self.__players.items():
-                    print(f"check player values: key={player_key}, value={player_value}")
-                    if player_value == 0:
-                        joystick = pygame.joystick.Joystick(len(self.__players) - 1)
-                        if "Receiver" in joystick.get_name():
-                            print("return, Receiver in joy_name #1")
-                            return
-                        joystick.init()
-                        self.__players[player_key] = id(joystick)
-                        list(self.__players.keys())[list(self.__players.keys()).index(
-                            player_key)].update_joystick(joystick)
-                        print(f"{list(self.__players.keys())[list(self.__players.keys()).index(
-                            player_key)]=}")
-                        print(f"new player value: key={player_key}, value={self.__players[player_key]}")
-                        print(f"{self.__players=}")
-                        return
-
-                print(f"last_{len(self.__players)=}")
-                if len(self.__players) > 0:
-                    joystick = pygame.joystick.Joystick(len(self.__players) - 1)
-                    color_index = len(self.__players) - 1
-                else:
-                    joystick = pygame.joystick.Joystick(0)
-                    color_index = 0
-
-                print(f"joy_name={joystick.get_name()}")
-                if "Receiver" in joystick.get_name():
-                    print("return, Receiver in joy_name #2")
-                    return
-
-                joy_id = id(joystick)
-                print(f"{joy_id=}")
-                if joy_id in self.__players.values():
-                    print(f"{joy_id} in self.__players ids")
-                    return
-
-                joystick.init()
-
-                self.__players[Player(
-                    self.__game_field,
-                    self.__shader,
-                    self.__colors[color_index],
-                    joystick,
-                    self.__bullets
-                )] = joy_id
-
-                print(f"{self.__players=}")
-
-            if event.type == pygame.JOYDEVICEREMOVED:
-                print("JOYDEVICEREMOVED")
-                self.__players[list(self.__players.keys())[0]] = 0
-                print(f"{self.__players=}")

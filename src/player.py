@@ -17,13 +17,12 @@ class Player:
         game_field: GameField,
         shader,
         color: tuple[float, float, float],
-        joystick: pygame.joystick.JoystickType,
         bullets: Bullets
     ) -> None:
 
         self.__start_pos = BLOCK_SIZE * 12, GAME_FIELD_HEIGHT - BLOCK_SIZE * 3
         self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
-        self.__joystick = joystick
+        self.__joystick: pygame.joystick.JoystickType | None = None
         pygame.joystick.init()
         self.__color = color
         self.__health = PLAYER_HEALTH
@@ -83,6 +82,10 @@ class Player:
             self.__bullets.clear_by_color(self.__color)
 
     def __shoot(self, bullet_type: BulletEnum):
+
+        if not self.__joystick:
+            return
+
         # параметры для обоих типов
         if bullet_type == BulletEnum.BIG:
             width, height = BIG_BULLET_WIDTH, BIG_BULLET_HEIGHT
@@ -125,7 +128,7 @@ class Player:
     def update(self) -> None:
 
         # left stick x
-        axis_x = self.__joystick.get_axis(0)
+        axis_x = self.__joystick.get_axis(0) if self.__joystick else 0
 
         dead_zone = 0.3
         if abs(axis_x) < dead_zone:
@@ -157,15 +160,15 @@ class Player:
         is_bottom_block = self.__physics.is_block(DirectionEnum.DOWN)
         is_upper_block = self.__physics.is_block(DirectionEnum.UP)
 
-        if self.__joystick.get_button(0) and is_bottom_block and not is_upper_block:
+        if self.__joystick and self.__joystick.get_button(0) and is_bottom_block and not is_upper_block:
             self.velocity_y = self.__jump_force
             self.__jumping = True
 
-        if not self.__joystick.get_button(0):
+        if self.__joystick and not self.__joystick.get_button(0):
             self.__jumping = False
             self.anti_gravity = 0
 
-        if self.__jumping and self.__joystick.get_button(0) and self.velocity_y < 0:
+        if self.__jumping and self.__joystick and self.__joystick.get_button(0) and self.velocity_y < 0:
             if self.anti_gravity < self.__max_anti_gravity:
                 self.anti_gravity += self.__change_anti_gravity
 
@@ -187,5 +190,8 @@ class Player:
         glDrawArrays(GL_TRIANGLE_FAN, 0, self.__vertex_count)
         glBindVertexArray(0)
 
-    def update_joystick(self, joystick: pygame.joystick.JoystickType):
+    def get_joystick(self) -> pygame.joystick.JoystickType | None:
+        return self.__joystick
+
+    def set_joystick(self, joystick: pygame.joystick.JoystickType):
         self.__joystick = joystick
