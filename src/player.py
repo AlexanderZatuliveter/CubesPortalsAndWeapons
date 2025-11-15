@@ -17,13 +17,14 @@ class Player:
         game_field: GameField,
         shader,
         color: tuple[float, float, float],
-        joystick_num: int,
+        joystick: pygame.joystick.JoystickType,
         bullets: Bullets
     ) -> None:
 
         self.__start_pos = BLOCK_SIZE * 12, GAME_FIELD_HEIGHT - BLOCK_SIZE * 3
         self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
-        self.__joystick = pygame.joystick.Joystick(joystick_num)
+        self.__joystick = joystick
+        pygame.joystick.init()
         self.__color = color
         self.__health = PLAYER_HEALTH
         self.__direction = DirectionEnum.LEFT
@@ -185,3 +186,6 @@ class Player:
         glUniform3f(self.__uColor, *self.__color)
         glDrawArrays(GL_TRIANGLE_FAN, 0, self.__vertex_count)
         glBindVertexArray(0)
+
+    def update_joystick(self, joystick: pygame.joystick.JoystickType):
+        self.__joystick = joystick

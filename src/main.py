@@ -10,6 +10,7 @@ from main_window import MainWindow
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 pygame.init()
+pygame.joystick.init()
 pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=100)
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), DOUBLEBUF | OPENGL | RESIZABLE)
