@@ -45,10 +45,12 @@ class MainWindow:
         self.__game_field.load_from_file()
 
         self.__bullets = Bullets()
-
         self.__players = Players(self.__game_field, self.__shader, self.__bullets)
-
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
+
+        self.__music_file = "./music/dynamic_game_theme.mp3"
+        pygame.mixer.music.load(self.__music_file)
+        pygame.mixer.music.play(-1)
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
