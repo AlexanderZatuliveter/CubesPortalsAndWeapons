@@ -1,8 +1,8 @@
 
 import sys
 from typing import Tuple
-import numpy as np
 import pygame
+from pygame.event import Event
 from pygame import Surface
 from pygame.time import Clock
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
@@ -11,9 +11,10 @@ from OpenGL.GLU import *  # type: ignore
 
 from bullets import Bullets
 from common import create_shader, ortho
-from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, BLUE, ORANGE, RED, GREEN
+from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from damage import Damage
 from game_field import GameField
-from player import Player
+from players import Players
 
 
 class MainWindow:
@@ -43,15 +44,13 @@ class MainWindow:
 
         self.__game_field.load_from_file()
 
-        joysticks_count = pygame.joystick.get_count()
-        colors = [BLUE, RED, GREEN, ORANGE]
+        self.__bullets = Bullets()
+        self.__players = Players(self.__game_field, self.__shader, self.__bullets)
+        self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
 
-        self.__players: list[Player] = []
-
-        self.__bullets = Bullets(self.__players, self.__game_field)
-
-        for num in range(joysticks_count):
-            self.__players.append(Player(self.__game_field, self.__shader, colors[num], num, self.__bullets))
+        self.__music_file = "./music/dynamic_game_theme.mp3"
+        pygame.mixer.music.load(self.__music_file)
+        pygame.mixer.music.play(-1)
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -95,16 +94,16 @@ class MainWindow:
         glClearColor(120 / 255, 120 / 255, 120 / 255, 1)
 
         while True:
+
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
 
             # Updates
             self.update(events)
 
-            for player in self.__players:
-                player.update()
+            self.__players.update(events)
 
-            self.__bullets.update()
+            self.__damage.update()
 
             # Draws
             glClear(GL_COLOR_BUFFER_BIT)
@@ -120,7 +119,7 @@ class MainWindow:
             pygame.display.flip()
             self.__clock.tick(FPS)
 
-    def update(self, events) -> None:
+    def update(self, events: list[Event]) -> None:
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
