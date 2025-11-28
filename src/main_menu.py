@@ -14,12 +14,12 @@ from music_manager import MusicManager
 from window_enum import WindowEnum
 
 
-class PauseMenu:
+class MainMenu:
     def __init__(self, game_state: GameState, screen: Surface, clock: Clock, music_manager: MusicManager) -> None:
-        self.__game_state = game_state
         self.__screen = screen
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
+        self.__game_state = game_state
 
         # Disable unnecessary OpenGL features for 2D rendering
         glDisable(GL_DEPTH_TEST)  # No depth testing needed for 2D
@@ -40,9 +40,8 @@ class PauseMenu:
         self.__buttons: list[Button] = []
 
         buttons = {
-            "Continue": self.__continue_button_func,
+            "Start": self.__start_button_func,
             "Options": None,
-            "Exit to Main Menu": self.__main_menu_button_func,
             "Exit to Desktop": self.__desktop_exit_button_func
         }
 
@@ -75,7 +74,7 @@ class PauseMenu:
         # Set background's color
         glClearColor(0.1, 0.1, 0.1, 1)
 
-        self.__music_manager.play_pause_music()
+        self.__music_manager.play_main_menu_music()
         self.__running = True
 
         while self.__running:
@@ -116,8 +115,8 @@ class PauseMenu:
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.__game_state.current_window = WindowEnum.MAIN_MENU
-                    self.__running = False
+                    pygame.quit()
+                    sys.exit()
             if event.type == pygame.VIDEORESIZE:
                 videoresize = resize_display(self.__screen, self.__shader, self.__past_screen_size, event.size)
 
@@ -128,10 +127,6 @@ class PauseMenu:
         pygame.quit()
         sys.exit()
 
-    def __continue_button_func(self) -> None:
+    def __start_button_func(self) -> None:
         self.__game_state.current_window = WindowEnum.MAIN_WINDOW
-        self.__running = False
-
-    def __main_menu_button_func(self) -> None:
-        self.__game_state.current_window = WindowEnum.MAIN_MENU
         self.__running = False

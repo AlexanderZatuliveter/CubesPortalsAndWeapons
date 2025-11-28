@@ -3,8 +3,12 @@ import ctypes
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 
 from consts import SCREEN_HEIGHT, SCREEN_WIDTH
+from main_menu import MainMenu
 from main_window import MainWindow
 from music_manager import MusicManager
+from pause_menu import PauseMenu
+from game_state import GameState
+from window_enum import WindowEnum
 
 
 # Set process DPI awareness. Use 1 for "System DPI Awareness", or 2 for "Per-Monitor DPI Awareness"
@@ -21,5 +25,16 @@ clock = pygame.time.Clock()
 
 music_manager = MusicManager()
 
-main_window = MainWindow(screen, clock, music_manager)
-main_window.show()
+game_state = GameState()
+
+main_menu = MainMenu(game_state, screen, clock, music_manager)
+pause_menu = PauseMenu(game_state, screen, clock, music_manager)
+main_window = MainWindow(game_state, screen, clock, music_manager)
+
+while True:
+    if game_state.current_window == WindowEnum.MAIN_MENU:
+        main_menu.show()
+    elif game_state.current_window == WindowEnum.MAIN_WINDOW:
+        main_window.show()
+    elif game_state.current_window == WindowEnum.PAUSE_MENU:
+        pause_menu.show()

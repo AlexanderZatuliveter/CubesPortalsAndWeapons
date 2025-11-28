@@ -27,3 +27,7 @@ class MusicManager:
     def play_pause_music(self) -> None:
         self.set_music("./music/pause_menu_music.mp3")
         self.play()
+
+    def play_main_menu_music(self) -> None:
+        self.set_music("./music/main_menu_music.mp3")
+        self.play()

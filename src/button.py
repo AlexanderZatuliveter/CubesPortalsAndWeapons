@@ -9,7 +9,7 @@ from consts import BLUE, BUTTON_HEIGHT, BUTTON_WIDTH, GREY, GREY_2, ORANGE
 
 
 class Button:
-    def __init__(self, x: float, y: float, text: str, shader: ShaderProgram, function) -> None:
+    def __init__(self, x: float, y: float, text: str, shader: ShaderProgram | None, function) -> None:
         self.__rect: pygame.Rect = pygame.Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
         self.__text = text
         self.__color = GREY
