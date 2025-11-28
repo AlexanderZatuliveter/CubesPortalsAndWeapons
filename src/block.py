@@ -11,8 +11,8 @@ class Block:
     def __init__(self, shader: ShaderProgram) -> None:
         self.rect = FloatRect(0.0, 0.0, BLOCK_SIZE, BLOCK_SIZE)
 
-        self.__uPlayerPos = glGetUniformLocation(shader, "uPlayerPos")
         self.__uIsPlayer = glGetUniformLocation(shader, "uIsPlayer")
+        self.__uUseTexture = glGetUniformLocation(shader, "uUseTexture")
         self.__uColor = glGetUniformLocation(shader, "uColor")
 
         self.__offset_x = 0.0
@@ -57,6 +57,7 @@ class Block:
 
     def draw(self) -> None:
         glBindVertexArray(self.__vao)
+        glUniform1i(self.__uUseTexture, 0)
         glUniform1i(self.__uIsPlayer, 0)
         glUniform3f(self.__uColor, *DARK_GREY)
         glDrawArrays(GL_TRIANGLE_FAN, 0, self.__vertex_count)

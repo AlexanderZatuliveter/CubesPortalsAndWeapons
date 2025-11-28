@@ -11,15 +11,17 @@ from OpenGL.GLU import *  # type: ignore
 
 from bullets import Bullets
 from common import create_shader, ortho
-from consts import BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from consts import BG_COLOR, BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from damage import Damage
 from game_field import GameField
+from music_manager import MusicManager
+from pause_menu import PauseMenu
 from players import Players
 
 
 class MainWindow:
 
-    def __init__(self, screen: Surface, clock: Clock) -> None:
+    def __init__(self, screen: Surface, clock: Clock, music_manager: MusicManager) -> None:
         self.__screen = screen
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
@@ -28,6 +30,9 @@ class MainWindow:
         glDisable(GL_DEPTH_TEST)  # No depth testing needed for 2D
         glDisable(GL_CULL_FACE)   # No backface culling needed
         glDisable(GL_MULTISAMPLE)  # No multisampling needed for pixel-perfect 2D
+        # Enable alpha blending by default for UI and textures
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         self.__shader = create_shader("./src/shaders/shader.vert", "./src/shaders/shader.frag")
         glUseProgram(self.__shader)
@@ -48,9 +53,10 @@ class MainWindow:
         self.__players = Players(self.__game_field, self.__shader, self.__bullets)
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
 
-        self.__music_file = "./music/dynamic_game_theme.mp3"
-        pygame.mixer.music.load(self.__music_file)
-        pygame.mixer.music.play(-1)
+        self.__music_manager = music_manager
+        self.__music_manager.play_game_theme()
+
+        self.__pause_menu = PauseMenu(self.__shader, self.__music_manager)
 
     def __resize_display(self, new_screen_size: Tuple[int, int]) -> None:
         """Handle window resizing while maintaining the aspect ratio."""
@@ -91,7 +97,7 @@ class MainWindow:
         self.__set_screen_size(self.__screen.get_size())
 
         # Set background's color
-        glClearColor(120 / 255, 120 / 255, 120 / 255, 1)
+        glClearColor(*BG_COLOR, 1)
 
         while True:
 
@@ -106,6 +112,7 @@ class MainWindow:
             self.__damage.update()
 
             # Draws
+            glEnable(GL_BLEND)
             glClear(GL_COLOR_BUFFER_BIT)
             glUseProgram(self.__shader)
 
@@ -125,8 +132,11 @@ class MainWindow:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
+                # if event.key == pygame.K_ESCAPE:
+                #     pygame.quit()
+                #     sys.exit()
+                if event.key == pygame.K_ESCAPE and not self.__pause_menu.is_active():
+                    self.__pause_menu.show()
+                    self.__music_manager.play_game_theme()
             if event.type == pygame.VIDEORESIZE:
                 self.__resize_display(event.size)

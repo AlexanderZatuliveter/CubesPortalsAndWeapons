@@ -4,6 +4,7 @@ from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 
 from consts import SCREEN_HEIGHT, SCREEN_WIDTH
 from main_window import MainWindow
+from music_manager import MusicManager
 
 
 # Set process DPI awareness. Use 1 for "System DPI Awareness", or 2 for "Per-Monitor DPI Awareness"
@@ -18,5 +19,7 @@ pygame.display.set_caption("Cubes, portals & weapons")
 
 clock = pygame.time.Clock()
 
-main_window = MainWindow(screen, clock)
+music_manager = MusicManager()
+
+main_window = MainWindow(screen, clock, music_manager)
 main_window.show()

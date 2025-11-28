@@ -2,10 +2,13 @@
 
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aOffset;
+layout (location = 2) in vec2 aTexCoord;
 
 uniform mat4 uProjection;
 uniform vec2 uPlayerPos;
 uniform int uIsPlayer;
+
+out vec2 vTexCoord;
 
 void main()
 {
@@ -16,4 +19,5 @@ void main()
         pos += uPlayerPos;
 
     gl_Position = uProjection * vec4(pos, 0.0, 1.0);
+    vTexCoord = aTexCoord;
 }

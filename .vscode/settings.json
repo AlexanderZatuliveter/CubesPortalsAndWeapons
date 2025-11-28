@@ -54,6 +54,7 @@
         "Scancode",
         "Shaderiv",
         "shcore",
+        "Storei",
         "texid",
         "topy",
         "Translatef",

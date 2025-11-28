@@ -56,6 +56,7 @@ class Bullet:
         self.__uPlayerPos = glGetUniformLocation(shader, "uPlayerPos")
         self.__uIsPlayer = glGetUniformLocation(shader, "uIsPlayer")
         self.__uColor = glGetUniformLocation(shader, "uColor")
+        self.__uUseTexture = glGetUniformLocation(shader, "uUseTexture")
 
     def update(self):
         if self.__direction == DirectionEnum.LEFT:
@@ -78,6 +79,7 @@ class Bullet:
 
     def draw(self):
         glBindVertexArray(self.__vao)
+        glUniform1i(self.__uUseTexture, 0)
         glUniform1i(self.__uIsPlayer, 1)
         glUniform2f(self.__uPlayerPos, self.rect.x, self.rect.y)
         glUniform3f(self.__uColor, *self.color)
