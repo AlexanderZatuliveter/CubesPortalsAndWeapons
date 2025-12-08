@@ -5,6 +5,7 @@ import ctypes
 
 import pygame
 
+from common import get_resource_path
 from consts import BLUE, BUTTON_HEIGHT, BUTTON_WIDTH, GREY, GREY_2, ORANGE
 
 
@@ -60,6 +61,8 @@ class Button:
         self._text_size = (0, 0)
         self.__text_vao = None
         self.__text_vbo = None
+        self.__font_file_path = get_resource_path("_content/fonts/Orbitron-VariableFont_wght.ttf")
+        self.__font = None
 
     def update(self, mouse_pos: tuple[int, int], mouse_pressed: tuple[bool, bool, bool]) -> None:
         if self.__rect.collidepoint(mouse_pos):
@@ -78,15 +81,15 @@ class Button:
             self.__active = False
             self.__perform_function()
 
-    def _create_text_texture(self, font: pygame.font.Font | None = None) -> None:
+    def _create_text_texture(self) -> None:
         """Render text to a pygame surface and upload as an OpenGL texture."""
-        if font is None:
+        if self.__font is None:
             # choose a size relative to button height
-            font_size = max(8, int(self.__rect.height * 0.6))
-            font = pygame.font.Font(None, font_size)
+            font_size = max(8, int(self.__rect.height * 0.5))
+            self.__font = pygame.font.Font(self.__font_file_path, font_size)
 
         # render text to surface with alpha
-        text_surf = font.render(self.__text, True, (255, 255, 255))
+        text_surf = self.__font.render(self.__text, True, (255, 255, 255))
         text_surf = text_surf.convert_alpha()
         w, h = text_surf.get_size()
 
@@ -142,7 +145,7 @@ class Button:
 
         glBindVertexArray(0)
 
-    def draw(self, font: pygame.font.Font | None = None) -> None:
+    def draw(self) -> None:
         glBindVertexArray(self.__vao)
 
         # update offset for background
@@ -159,7 +162,7 @@ class Button:
 
         # Prepare text texture if needed
         if not self._text_texture or self._text_size == (0, 0) or getattr(self, "_last_text", None) != self.__text:
-            self._create_text_texture(font)
+            self._create_text_texture()
             self._last_text = self.__text
 
         if not self._text_texture:

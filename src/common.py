@@ -1,5 +1,7 @@
 
 
+import os
+import sys
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
 import numpy as np
@@ -112,3 +114,14 @@ def load_texture(path: str):
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image)
 
     return texid, width, height
+
+
+def get_resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and PyInstaller """
+    if getattr(sys, 'frozen', False):
+        # Running in a PyInstaller bundle
+        base_path = sys._MEIPASS
+    else:
+        # Running in a normal Python environment
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
