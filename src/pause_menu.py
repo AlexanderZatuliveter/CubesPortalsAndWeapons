@@ -116,7 +116,7 @@ class PauseMenu:
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.__game_state.current_window = WindowEnum.MAIN_WINDOW
+                    self.__game_state.current_window = WindowEnum.GAME_WINDOW
                     self.__running = False
             if event.type == pygame.VIDEORESIZE:
                 videoresize = resize_display(self.__screen, self.__shader, self.__past_screen_size, event.size)
@@ -129,7 +129,7 @@ class PauseMenu:
         sys.exit()
 
     def __continue_button_func(self) -> None:
-        self.__game_state.current_window = WindowEnum.MAIN_WINDOW
+        self.__game_state.current_window = WindowEnum.GAME_WINDOW
         self.__running = False
 
     def __main_menu_button_func(self) -> None:

@@ -19,7 +19,7 @@ from players import Players
 from window_enum import WindowEnum
 
 
-class MainWindow:
+class GameWindow:
 
     def __init__(self, game_state: GameState, screen: Surface, clock: Clock, music_manager: MusicManager) -> None:
         self.__game_state = game_state

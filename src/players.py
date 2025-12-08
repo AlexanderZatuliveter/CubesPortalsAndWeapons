@@ -25,32 +25,12 @@ class Players(list[Player]):
             player.update()
 
     def __joystick_events(self, events: list[Event]):
+        self.__players_append()
 
         for event in events:
             if event.type == pygame.JOYDEVICEADDED:
                 print("JOYDEVICEADDED")
-                joysticks = {id(j): j for j in self.__get_joysticks()}
-                player_joysticks = {id(player.get_joystick()): player for player in self}
-
-                # получить список неактивных игроков
-                # найти не назначенные джойстики
-                # назначить им не назначенные джойстики
-                inactive_player_joystick_ids: set[int] = set(player_joysticks.keys()) - set(joysticks.keys())
-                inactive_joystick_ids = set(joysticks.keys()) - set(player_joysticks.keys())
-                for player_joystick_id in inactive_player_joystick_ids:
-                    if len(inactive_joystick_ids) > 0:
-                        joystick_id = inactive_joystick_ids.pop()
-                        player_joysticks[player_joystick_id].set_joystick(joysticks[joystick_id])
-
-                for inactive_joystick_id in inactive_joystick_ids:
-                    new_player = Player(
-                        self.__game_field,
-                        self.__shader,
-                        self.__colors[len(self)],
-                        self.__bullets
-                    )
-                    new_player.set_joystick(joysticks[inactive_joystick_id])
-                    self.append(new_player)
+                self.__players_append()
 
             # if event.type == pygame.JOYDEVICEREMOVED:
             #     print("JOYDEVICEREMOVED")
@@ -66,3 +46,27 @@ class Players(list[Player]):
             joystick.init()
             joysticks.append(joystick)
         return joysticks
+
+    def __players_append(self) -> None:
+        joysticks = {id(j): j for j in self.__get_joysticks()}
+        player_joysticks = {id(player.get_joystick()): player for player in self}
+
+        # получить список неактивных игроков
+        # найти не назначенные джойстики
+        # назначить им не назначенные джойстики
+        inactive_player_joystick_ids: set[int] = set(player_joysticks.keys()) - set(joysticks.keys())
+        inactive_joystick_ids = set(joysticks.keys()) - set(player_joysticks.keys())
+        for player_joystick_id in inactive_player_joystick_ids:
+            if len(inactive_joystick_ids) > 0:
+                joystick_id = inactive_joystick_ids.pop()
+                player_joysticks[player_joystick_id].set_joystick(joysticks[joystick_id])
+
+        for inactive_joystick_id in inactive_joystick_ids:
+            new_player = Player(
+                self.__game_field,
+                self.__shader,
+                self.__colors[len(self)],
+                self.__bullets
+            )
+            new_player.set_joystick(joysticks[inactive_joystick_id])
+            self.append(new_player)

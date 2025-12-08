@@ -128,5 +128,5 @@ class MainMenu:
         sys.exit()
 
     def __start_button_func(self) -> None:
-        self.__game_state.current_window = WindowEnum.MAIN_WINDOW
+        self.__game_state.current_window = WindowEnum.GAME_WINDOW
         self.__running = False
