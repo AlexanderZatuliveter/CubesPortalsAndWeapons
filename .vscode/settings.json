@@ -41,6 +41,7 @@
         "JOYDEVICEREMOVED",
         "KEYUP",
         "leftx",
+        "Lubrifont",
         "MODELVIEW",
         "MULTISAMPLE",
         "multisampling",
@@ -61,6 +62,7 @@
         "Translatef",
         "verts",
         "VIDEORESIZE",
+        "WDXL",
         "wght"
     ],
     "python.testing.pytestArgs": [

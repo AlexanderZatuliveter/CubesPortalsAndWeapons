@@ -9,6 +9,7 @@ from direction_enum import DirectionEnum
 from float_rect import FloatRect
 from game_field import GameField
 from physics import Physics
+from scores import Scores
 
 
 class Player:
@@ -24,13 +25,15 @@ class Player:
         self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
         self.__joystick: pygame.joystick.JoystickType | None = None
         pygame.joystick.init()
-        self.__color = color
+        self._color = color
         self.__health = PLAYER_HEALTH
         self.__direction = DirectionEnum.LEFT
+        self.__scores = 0
 
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)
         self.__bullets = bullets
+        self.__draw_scores = Scores(0, -BLOCK_SIZE * 1.25, str(self.__scores), shader, self._color)
 
         self.velocity_y = 0.0
         self.max_velocity_y = 75.0
@@ -80,7 +83,8 @@ class Player:
         if self.__health <= 0.0:
             self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
             self.__health = PLAYER_HEALTH
-            self.__bullets.clear_by_color(self.__color)
+            self.__bullets.clear_by_color(self._color)
+            return "kill"
 
     def __shoot(self, bullet_type: BulletEnum):
 
@@ -113,7 +117,7 @@ class Player:
                 x,
                 self.rect.y + self.rect.height / 2 - height / 2,
                 self.__direction,
-                self.__color,
+                self._color,
                 self.__shader,
                 bullet_type
             ))
@@ -188,8 +192,9 @@ class Player:
         glUniform1i(self.__uUseTexture, 0)
         glUniform1i(self.__uIsPlayer, 1)
         glUniform2f(self.__uPlayerPos, self.rect.x, self.rect.y)
-        glUniform3f(self.__uColor, *self.__color)
+        glUniform3f(self.__uColor, *self._color)
         glDrawArrays(GL_TRIANGLE_FAN, 0, self.__vertex_count)
+        self.__draw_scores.draw()
         glBindVertexArray(0)
 
     def get_joystick(self) -> pygame.joystick.JoystickType | None:
@@ -197,3 +202,7 @@ class Player:
 
     def set_joystick(self, joystick: pygame.joystick.JoystickType):
         self.__joystick = joystick
+
+    def add_score(self) -> None:
+        self.__scores += 1
+        self.__draw_scores.update_text(str(self.__scores))

@@ -27,8 +27,15 @@ class Damage:
         for bullet in self.__bullets:
             for player in self.__damageables:
                 if bullet.rect.colliderect(player.rect):
-                    player.damage(bullet.damage)
-                    self.__destroy(bullet)
+                    is_dead = player.damage(bullet.damage)
+
+                    for p in self.__damageables:
+                        if p._color == bullet.color and player._color != bullet.color and is_dead == "kill":
+                            p.add_score()
+                            self.__destroy(bullet)
+                            return
+
+                        self.__destroy(bullet)
             for (bx, by), block in np.ndenumerate(self.__game_field.field):
                 if block is not None:
                     block_rect = self.__game_field._get_block_rect(bx, by)
