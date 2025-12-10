@@ -53,6 +53,7 @@ class Player:
         self.__uPlayerPos = glGetUniformLocation(self.__shader, "uPlayerPos")
         self.__uIsPlayer = glGetUniformLocation(self.__shader, "uIsPlayer")
         self.__uColor = glGetUniformLocation(self.__shader, "uColor")
+        self.__uUseTexture = glGetUniformLocation(self.__shader, "uUseTexture")
 
         vertices = numpy.array([
             0.0, 0.0,
@@ -184,6 +185,7 @@ class Player:
 
     def draw(self) -> None:
         glBindVertexArray(self.__vao)
+        glUniform1i(self.__uUseTexture, 0)
         glUniform1i(self.__uIsPlayer, 1)
         glUniform2f(self.__uPlayerPos, self.rect.x, self.rect.y)
         glUniform3f(self.__uColor, *self.__color)

@@ -48,17 +48,20 @@
         "ndarray",
         "ndenumerate",
         "OPENGL",
+        "Orbitron",
         "Parameteri",
         "Programiv",
         "rightx",
         "Scancode",
         "Shaderiv",
         "shcore",
+        "Storei",
         "texid",
         "topy",
         "Translatef",
         "verts",
-        "VIDEORESIZE"
+        "VIDEORESIZE",
+        "wght"
     ],
     "python.testing.pytestArgs": [
         ".",    // path to search unit tests

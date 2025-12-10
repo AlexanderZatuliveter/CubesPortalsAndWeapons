@@ -1,9 +1,22 @@
 #version 330 core
 
 uniform vec3 uColor;
+uniform int uUseTexture;
+uniform sampler2D uTexture;
+
+in vec2 vTexCoord;
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(uColor, 1.0);
+    if(uUseTexture == 1)
+    {
+        vec4 tex = texture(uTexture, vTexCoord);
+        // Multiply sampled color by uniform color to allow tinting
+        FragColor = tex * vec4(uColor, 1.0);
+    }
+    else
+    {
+        FragColor = vec4(uColor, 1.0);
+    }
 }
