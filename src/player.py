@@ -33,7 +33,7 @@ class Player:
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)
         self.__bullets = bullets
-        self.__draw_scores = Scores(0, -BLOCK_SIZE * 1.25, str(self.__scores), shader, self._color)
+        self.__draw_scores = Scores(0, -BLOCK_SIZE * 1.85, str(self.__scores), shader, self._color)
 
         self.velocity_y = 0.0
         self.max_velocity_y = 75.0
@@ -206,3 +206,6 @@ class Player:
     def add_score(self) -> None:
         self.__scores += 1
         self.__draw_scores.update_text(str(self.__scores))
+
+    def get_scores(self) -> int:
+        return self.__scores

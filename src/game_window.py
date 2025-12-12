@@ -9,7 +9,7 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 from bullets import Bullets
-from common import create_shader, ortho, resize_display, set_screen_size
+from opengl_common import create_shader, ortho, resize_display, set_screen_size
 from consts import BG_COLOR, BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from damage import Damage
 from game_field import GameField
@@ -79,6 +79,11 @@ class GameWindow:
             self.__players.update(events)
 
             self.__damage.update()
+
+            for player in self.__players:
+                if player.get_scores() >= 25:
+                    self.__game_state.current_window = WindowEnum.VICTORY_MENU
+                    return
 
             # Draws
             glEnable(GL_BLEND)

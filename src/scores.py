@@ -7,6 +7,7 @@ import pygame
 
 from common import get_resource_path
 from consts import SCORES_HEIGHT, SCORES_WIDTH
+from text_worker import TextWorker
 
 
 class Scores:
@@ -23,30 +24,6 @@ class Scores:
         self.__color = color
         self.__text = text
 
-        # Shader uniform locations
-        self.__uColor = glGetUniformLocation(shader, "uColor")
-        self.__uUseTexture = glGetUniformLocation(shader, "uUseTexture")
-        self.__uTexture = glGetUniformLocation(shader, "uTexture")
-
-        # Background quad (uses positions in screen/game units)
-        vertices = np.array([
-            0.0, 0.0,
-            SCORES_WIDTH, 0.0,
-            SCORES_WIDTH, SCORES_HEIGHT,
-            0.0, SCORES_HEIGHT,
-        ], dtype=np.float32)
-
-        # VAO/VBO for background rectangle
-        self.__vao = glGenVertexArrays(1)
-        glBindVertexArray(self.__vao)
-
-        self.__vbo = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, self.__vbo)
-        glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
-
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
-
         # Dynamic offset buffer (we'll update it per-draw)
         self.__offset_vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, self.__offset_vbo)
@@ -59,116 +36,20 @@ class Scores:
 
         glBindVertexArray(0)
 
-        # Text rendering objects (created lazily)
-        self._text_texture = 0
-        self._text_size = (0, 0)
-        self.__text_vao = None
-        self.__text_vbo = None
-        self.__font_file_path = get_resource_path("_content/fonts/WDXLLubrifontSC-Regular.ttf")
-        self.__font = None
-
-    def _create_text_texture(self) -> None:
-        """Render text to a pygame surface and upload as an OpenGL texture."""
-        if self.__font is None:
-            # choose a size relative to button height
-            font_size = max(8, int(self.__rect.height))
-            self.__font = pygame.font.Font(self.__font_file_path, font_size)
-
-        # render text to surface with alpha
-        text_surf = self.__font.render(self.__text, True, (255, 255, 255))
-        text_surf = text_surf.convert_alpha()
-        w, h = text_surf.get_size()
-
-        # get pixel data (flipped vertically for GL)
-        pixel_data = pygame.image.tostring(text_surf, "RGBA", True)
-
-        # create or replace texture
-        if self._text_texture:
-            glDeleteTextures([self._text_texture])
-
-        tex = glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, tex)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel_data)
-        glBindTexture(GL_TEXTURE_2D, 0)
-
-        self._text_texture = tex
-        self._text_size = (w, h)
-
-        # create text VAO/VBO (positions are absolute in screen/game units)
-        if not self.__text_vao:
-            self.__text_vao = glGenVertexArrays(1)
-            self.__text_vbo = glGenBuffers(1)
-
-    def _update_text_vbo(self, x: float, y: float) -> None:
-        """Upload vertex+texcoord data for the text quad positioned at (x,y)."""
-        if not self._text_texture:
-            return
-
-        w, h = self._text_size
-
-        # vertices: x,y,u,v  (triangle fan)
-        verts = np.array([
-            x, y, 0.0, 0.0,
-            x + w, y, 1.0, 0.0,
-            x + w, y - h, 1.0, 1.0,
-            x, y - h, 0.0, 1.0,
-        ], dtype=np.float32)
-
-        glBindVertexArray(self.__text_vao)
-        glBindBuffer(GL_ARRAY_BUFFER, self.__text_vbo)
-        glBufferData(GL_ARRAY_BUFFER, verts.nbytes, verts, GL_DYNAMIC_DRAW)
-
-        stride = 4 * 4  # 4 floats per vertex, 4 bytes each
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
-        glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(8))
-
-        glBindVertexArray(0)
+        self.__text_worker = TextWorker(
+            x=self.__rect.x,
+            y=self.__rect.y + SCORES_HEIGHT,
+            text=self.__text,
+            rect_size=(self.__rect.width, self.__rect.height),
+            font=None,
+            font_file_path=get_resource_path("_content/fonts/WDXLLubrifontSC-Regular.ttf"),
+            shader=shader,
+            color=self.__color
+        )
 
     def draw(self) -> None:
-        glBindVertexArray(self.__vao)
-
-        # Prepare text texture if needed
-        if not self._text_texture or self._text_size == (0, 0) or getattr(self, "_last_text", None) != self.__text:
-            self._create_text_texture()
-            self._last_text = self.__text
-
-        if not self._text_texture:
-            return
-
-        # compute centered position for the text inside the button rect
-        text_width, text_height = self._text_size
-        text_x = self.__rect.x + (self.__rect.width - text_width) / 2.0
-        text_y = self.__rect.y + (self.__rect.height + text_height) / 2.0
-
-        # update VBO for text quad
-        self._update_text_vbo(text_x, text_y)
-
-        # enable blending for text alpha
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-        # bind texture and draw the quad
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self._text_texture)
-        glUniform1i(self.__uTexture, 0)
-        glUniform1i(self.__uUseTexture, 1)
-        # keep color as white so text renders in original color, but you can tint
-        glUniform3f(self.__uColor, *self.__color)
-
-        glBindVertexArray(self.__text_vao)
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
-        glBindVertexArray(0)
-        glBindTexture(GL_TEXTURE_2D, 0)
-
-        # Ensure shader not left in textured mode for subsequent draws
-        glUniform1i(self.__uUseTexture, 0)
+        self.__text_worker.draw()
 
     def update_text(self, text: str) -> None:
         self.__text = text
+        self.__text_worker.update_text(text)

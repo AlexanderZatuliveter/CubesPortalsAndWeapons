@@ -7,7 +7,7 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 from button import Button
-from common import create_shader, ortho, resize_display, set_screen_size
+from opengl_common import create_shader, ortho, resize_display, set_screen_size
 from consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from game_state import GameState
 from music_manager import MusicManager

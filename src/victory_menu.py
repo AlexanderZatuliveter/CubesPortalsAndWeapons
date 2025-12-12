@@ -7,19 +7,21 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 from button import Button
+from common import get_resource_path
 from opengl_common import create_shader, ortho, resize_display, set_screen_size
-from consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, VICTORY_TEXT_HEIGHT, VICTORY_TEXT_WIDTH, WHITE
 from game_state import GameState
 from music_manager import MusicManager
+from text_worker import TextWorker
 from window_enum import WindowEnum
 
 
-class MainMenu:
+class VictoryMenu:
     def __init__(self, game_state: GameState, screen: Surface, clock: Clock, music_manager: MusicManager) -> None:
+        self.__game_state = game_state
         self.__screen = screen
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
-        self.__game_state = game_state
 
         # Disable unnecessary OpenGL features for 2D rendering
         glDisable(GL_DEPTH_TEST)  # No depth testing needed for 2D
@@ -40,12 +42,13 @@ class MainMenu:
         self.__buttons: list[Button] = []
 
         buttons = {
-            "Start": self.__start_button_func,
+            "Restart": self.__restart_button_func,
             "Options": None,
+            "Exit to Main Menu": self.__main_menu_button_func,
             "Exit to Desktop": self.__desktop_exit_button_func
         }
 
-        start_y = GAME_FIELD_HEIGHT / 2 - BUTTON_HEIGHT * \
+        start_y = GAME_FIELD_HEIGHT / 3 * 2 - BUTTON_HEIGHT * \
             len(buttons) // 2 - BUTTON_OFFSET * len(buttons) // 2 - BUTTON_OFFSET * 0.5
 
         button_x = GAME_FIELD_WIDTH / 2 - BUTTON_WIDTH / 2
@@ -63,6 +66,25 @@ class MainMenu:
 
             self.__buttons.append(button)
 
+        self.__rect = pygame.rect.Rect(
+            GAME_FIELD_WIDTH / 2 - VICTORY_TEXT_WIDTH * 0.5,
+            GAME_FIELD_HEIGHT / 3.5 - VICTORY_TEXT_HEIGHT * 0.5,
+            VICTORY_TEXT_WIDTH,
+            VICTORY_TEXT_HEIGHT
+        )
+        self.__text = "YOU WIN"
+
+        self.__text_worker = TextWorker(
+            x=self.__rect.x,
+            y=self.__rect.y + BUTTON_HEIGHT * 0.25,
+            text=self.__text,
+            rect_size=(self.__rect.width, self.__rect.height * 0.5),
+            font=None,
+            font_file_path=get_resource_path("_content/fonts/Orbitron-VariableFont_wght.ttf"),
+            shader=self.__shader,
+            color=WHITE
+        )
+
         self.__music_manager = music_manager
 
         self.__running = True
@@ -74,7 +96,7 @@ class MainMenu:
         # Set background's color
         glClearColor(0.1, 0.1, 0.1, 1)
 
-        self.__music_manager.play_main_menu_music()
+        self.__music_manager.play_pause_music()
         self.__running = True
 
         while self.__running:
@@ -90,7 +112,7 @@ class MainMenu:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        break
+                        self.__running = False
 
             self.update(events)
 
@@ -105,6 +127,8 @@ class MainMenu:
             for button in self.__buttons:
                 button.draw()
 
+            self.__text_worker.draw()
+
             pygame.display.flip()
             self.__clock.tick(FPS)
 
@@ -115,8 +139,8 @@ class MainMenu:
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
+                    self.__game_state.current_window = WindowEnum.GAME_WINDOW
+                    self.__running = False
             if event.type == pygame.VIDEORESIZE:
                 videoresize = resize_display(self.__screen, self.__shader, self.__past_screen_size, event.size)
 
@@ -127,6 +151,10 @@ class MainMenu:
         pygame.quit()
         sys.exit()
 
-    def __start_button_func(self) -> None:
+    def __restart_button_func(self) -> None:
         self.__game_state.current_window = WindowEnum.GAME_WINDOW
+        self.__running = False
+
+    def __main_menu_button_func(self) -> None:
+        self.__game_state.current_window = WindowEnum.MAIN_MENU
         self.__running = False
