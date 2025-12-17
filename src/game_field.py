@@ -161,7 +161,7 @@ class GameField:
             json_file.write(json_string)
 
     def load_from_file(self) -> None:
-        with open("./_content/maps/first.map", "r") as json_file:
+        with open("src/_content/maps/first.map", "r") as json_file:
             json_string = json_file.read()
 
         map_data = json.loads(json_string)

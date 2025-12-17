@@ -31,16 +31,21 @@ game_state = GameState()
 main_menu = MainMenu(game_state, screen, clock, music_manager)
 pause_menu = PauseMenu(game_state, screen, clock, music_manager)
 game_window = GameWindow(game_state, screen, clock, music_manager)
-victory_menu = VictoryMenu(game_state, screen, clock, music_manager)
 
 while True:
     if game_state.current_window == WindowEnum.MAIN_MENU:
         main_menu.show()
         game_window = GameWindow(game_state, screen, clock, music_manager)
+
     elif game_state.current_window == WindowEnum.GAME_WINDOW:
-        game_window.show()
+        variable = game_window.show()
+        if variable is not None:
+            winner_color = variable
+
     elif game_state.current_window == WindowEnum.PAUSE_MENU:
         pause_menu.show()
+
     elif game_state.current_window == WindowEnum.VICTORY_MENU:
+        victory_menu = VictoryMenu(winner_color, game_state, screen, clock, music_manager)
         victory_menu.show()
         game_window = GameWindow(game_state, screen, clock, music_manager)

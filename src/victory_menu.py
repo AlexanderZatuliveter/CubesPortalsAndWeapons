@@ -9,7 +9,7 @@ from OpenGL.GLU import *  # type: ignore
 from button import Button
 from common import get_resource_path
 from opengl_common import create_shader, ortho, resize_display, set_screen_size
-from consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, VICTORY_TEXT_HEIGHT, VICTORY_TEXT_WIDTH, WHITE
+from consts import BLUE, BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GREEN, ORANGE, RED, VICTORY_TEXT_HEIGHT, VICTORY_TEXT_WIDTH, WHITE
 from game_state import GameState
 from music_manager import MusicManager
 from text_worker import TextWorker
@@ -17,11 +17,21 @@ from window_enum import WindowEnum
 
 
 class VictoryMenu:
-    def __init__(self, game_state: GameState, screen: Surface, clock: Clock, music_manager: MusicManager) -> None:
+    def __init__(
+        self,
+        winner_color: tuple[float, float, float],
+        game_state: GameState,
+        screen: Surface,
+        clock: Clock,
+        music_manager: MusicManager
+    ) -> None:
+
         self.__game_state = game_state
         self.__screen = screen
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
+
+        self.__winner_color = winner_color
 
         # Disable unnecessary OpenGL features for 2D rendering
         glDisable(GL_DEPTH_TEST)  # No depth testing needed for 2D
@@ -72,7 +82,12 @@ class VictoryMenu:
             VICTORY_TEXT_WIDTH,
             VICTORY_TEXT_HEIGHT
         )
-        self.__text = "YOU WIN"
+
+        for consts_color in [BLUE, RED, GREEN, ORANGE]:
+            if consts_color == self.__winner_color:
+                for name, value in globals().items():
+                    if value is consts_color:
+                        self.__text = f"{name} PLAYER WIN"
 
         self.__text_worker = TextWorker(
             x=self.__rect.x,
@@ -80,9 +95,9 @@ class VictoryMenu:
             text=self.__text,
             rect_size=(self.__rect.width, self.__rect.height * 0.5),
             font=None,
-            font_file_path=get_resource_path("_content/fonts/Orbitron-VariableFont_wght.ttf"),
+            font_file_path=get_resource_path("src/_content/fonts/Orbitron-VariableFont_wght.ttf"),
             shader=self.__shader,
-            color=WHITE
+            color=self.__winner_color
         )
 
         self.__music_manager = music_manager
@@ -96,7 +111,7 @@ class VictoryMenu:
         # Set background's color
         glClearColor(0.1, 0.1, 0.1, 1)
 
-        self.__music_manager.play_pause_music()
+        self.__music_manager.play_victory_menu_music()
         self.__running = True
 
         while self.__running:

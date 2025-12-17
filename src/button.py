@@ -63,7 +63,7 @@ class Button:
             text=self.__text,
             rect_size=(self.__rect.width, self.__rect.height * 0.5),
             font=None,
-            font_file_path=get_resource_path("_content/fonts/Orbitron-VariableFont_wght.ttf"),
+            font_file_path=get_resource_path("src/_content/fonts/Orbitron-VariableFont_wght.ttf"),
             shader=shader,
             color=WHITE
         )

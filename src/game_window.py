@@ -58,7 +58,7 @@ class GameWindow:
 
         self.__running = True
 
-    def show(self) -> None:
+    def show(self) -> None | tuple[float, float, float]:
 
         self.__screen = set_screen_size(self.__screen, self.__shader, self.__screen.get_size())
 
@@ -83,7 +83,7 @@ class GameWindow:
             for player in self.__players:
                 if player.get_scores() >= 25:
                     self.__game_state.current_window = WindowEnum.VICTORY_MENU
-                    return
+                    return player._color
 
             # Draws
             glEnable(GL_BLEND)

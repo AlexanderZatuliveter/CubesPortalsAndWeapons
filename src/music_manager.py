@@ -5,9 +5,10 @@ import pygame
 
 class MusicManager:
     def __init__(self) -> None:
-        self.__main_menu_music = "./_content/music/main_menu_music.mp3"
-        self.__pause_menu_music = "./_content/music/pause_menu_music.mp3"
-        self.__game_music = "./_content/music/dynamic_game_theme.mp3"
+        self.__main_menu_music = "src/_content/music/main_menu_music.mp3"
+        self.__pause_menu_music = "src/_content/music/pause_menu_music.mp3"
+        self.__game_music = "src/_content/music/dynamic_game_theme.mp3"
+        self.__victory_menu_music = "src/_content/music/victory_menu_music.mp3"
 
     def set_volume(self, volume: float) -> None:
         pygame.mixer.music.set_volume(volume)
@@ -30,3 +31,7 @@ class MusicManager:
     def play_main_menu_music(self) -> None:
         self.set_volume(1.0)
         self.play(self.__main_menu_music)
+        
+    def play_victory_menu_music(self) -> None:
+        self.set_volume(1.0)
+        self.play(self.__victory_menu_music)
