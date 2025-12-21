@@ -28,7 +28,7 @@ class Player:
         self._color = color
         self.__health = PLAYER_HEALTH
         self.__direction = DirectionEnum.LEFT
-        self.__scores = 24
+        self.__scores = 0
 
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)

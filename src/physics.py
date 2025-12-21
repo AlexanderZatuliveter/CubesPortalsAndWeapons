@@ -66,14 +66,18 @@ class Physics:
         return is_block
 
     def borders_teleportation(self) -> None:
-        if self.__object.rect.left < 0:
-            self.__object.rect.right = GAME_FIELD_WIDTH
-        elif self.__object.rect.right > GAME_FIELD_WIDTH:
-            self.__object.rect.left = 0
-        elif self.__object.rect.bottom > GAME_FIELD_HEIGHT:
-            self.__object.rect.top = 0
-        elif self.__object.rect.top < 0:
-            self.__object.rect.bottom = GAME_FIELD_HEIGHT
+        coefficient = 0.75
+        teleport_rect_width = self.__object.rect.width * coefficient
+        teleport_rect_height = self.__object.rect.height * coefficient
+
+        if self.__object.rect.left < 0 - teleport_rect_width:
+            self.__object.rect.right = GAME_FIELD_WIDTH + teleport_rect_width
+        elif self.__object.rect.right > GAME_FIELD_WIDTH + teleport_rect_width:
+            self.__object.rect.left = 0 - teleport_rect_width
+        elif self.__object.rect.bottom > GAME_FIELD_HEIGHT + teleport_rect_height:
+            self.__object.rect.top = 0 - teleport_rect_height
+        elif self.__object.rect.top < 0 - teleport_rect_height:
+            self.__object.rect.bottom = GAME_FIELD_HEIGHT + teleport_rect_height
 
     def side_blocks(self) -> DirectionEnum | None:
 
