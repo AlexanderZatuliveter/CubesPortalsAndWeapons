@@ -44,6 +44,9 @@ class Player:
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__jumping = False
 
+        self.__rumble_end_time = 0
+        self.__rumbling = False
+
         self._big_shot_cooldown = 1000
         self._big_shot_time = 0
         self._is_big_shot = False
@@ -80,11 +83,21 @@ class Player:
     def damage(self, bullet_damage: int):
         self.__health -= bullet_damage
 
-        if self.__health <= 0.0:
+        if self.__health <= 0:
+            self.__start_rumble(0.3)
+
             self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
             self.__health = PLAYER_HEALTH
             self.__bullets.clear_by_color(self._color)
             return "kill"
+
+    def __start_rumble(self, seconds: float = 5.0):
+        if not self.__joystick:
+            return
+
+        self.__joystick.rumble(1.0, 1.0, 0)
+        self.__rumble_end_time = pygame.time.get_ticks() + int(seconds * 1000)
+        self.__rumbling = True
 
     def __shoot(self, bullet_type: BulletEnum):
 
@@ -187,6 +200,11 @@ class Player:
         if self._is_big_shot and pygame.time.get_ticks() - self._big_shot_time >= self._big_shot_cooldown:
             self._is_big_shot = False
             self._big_shot_time = 0
+
+        if self.__rumbling:
+            if pygame.time.get_ticks() >= self.__rumble_end_time:
+                self.__joystick.stop_rumble()
+                self.__rumbling = False
 
     def draw(self) -> None:
         glBindVertexArray(self.__vao)
