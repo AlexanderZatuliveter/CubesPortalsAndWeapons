@@ -44,13 +44,13 @@ class Player:
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__jumping = False
 
-        self.big_shot_cooldown = 750
-        self.big_shot_time = 0
-        self.is_big_shot = False
+        self._big_shot_cooldown = 1000
+        self._big_shot_time = 0
+        self._is_big_shot = False
 
-        self.small_shot_cooldown = 250
-        self.small_shot_time = 0
-        self.is_small_shot = False
+        self._small_shot_cooldown = 350
+        self._small_shot_time = 0
+        self._is_small_shot = False
 
         self.__shader = shader
         self.__uPlayerPos = glGetUniformLocation(self.__shader, "uPlayerPos")
@@ -94,41 +94,27 @@ class Player:
         # параметры для обоих типов
         if bullet_type == BulletEnum.BIG:
             width, height = BIG_BULLET_WIDTH, BIG_BULLET_HEIGHT
-            is_pressed = self.__joystick.get_button(2) or self.__joystick.get_axis(4) > 0
-            cooldown_flag = "is_big_shot"
-            cooldown_time = "big_shot_time"
-            cooldown_dif = self.big_shot_cooldown
+            cooldown_flag = "_is_big_shot"
+            cooldown_time = "_big_shot_time"
         else:  # SMALL
             width, height = SMALL_BULLET_WIDTH, SMALL_BULLET_HEIGHT
-            is_pressed = self.__joystick.get_button(1) or self.__joystick.get_axis(5) > 0
-            cooldown_flag = "is_small_shot"
-            cooldown_time = "small_shot_time"
-            cooldown_dif = self.small_shot_cooldown
-
-        # текущее состояние
-        is_shot = getattr(self, cooldown_flag)
-        last_time = getattr(self, cooldown_time)
+            cooldown_flag = "_is_small_shot"
+            cooldown_time = "_small_shot_time"
 
         # попытка выстрела
-        if is_pressed and not is_shot:
-            x = (self.rect.x + self.rect.width) if self.__direction == DirectionEnum.RIGHT else (self.rect.x - width)
+        x = (self.rect.x + self.rect.width) if self.__direction == DirectionEnum.RIGHT else (self.rect.x - width)
 
-            self.__bullets.add_bullet(Bullet(
-                x,
-                self.rect.y + self.rect.height / 2 - height / 2,
-                self.__direction,
-                self._color,
-                self.__shader,
-                bullet_type
-            ))
+        self.__bullets.add_bullet(Bullet(
+            x,
+            self.rect.y + self.rect.height / 2 - height / 2,
+            self.__direction,
+            self._color,
+            self.__shader,
+            bullet_type
+        ))
 
-            setattr(self, cooldown_flag, True)
-            setattr(self, cooldown_time, pygame.time.get_ticks())
-
-        # откат перезарядки
-        if is_shot and pygame.time.get_ticks() - last_time >= cooldown_dif:
-            setattr(self, cooldown_flag, False)
-            setattr(self, cooldown_time, 0)
+        setattr(self, cooldown_flag, True)
+        setattr(self, cooldown_time, pygame.time.get_ticks())
 
     def update(self) -> None:
 
@@ -184,8 +170,23 @@ class Player:
         self.__physics.side_blocks()
         self.__physics.borders_teleportation()
 
-        self.__shoot(bullet_type=BulletEnum.BIG)
-        self.__shoot(bullet_type=BulletEnum.SMALL)
+        if not self.__joystick:
+            return
+
+        is_shot = not self._is_big_shot and not self._is_small_shot
+
+        if is_shot:
+            if (self.__joystick.get_button(1) or self.__joystick.get_axis(5) > 0):
+                self.__shoot(bullet_type=BulletEnum.SMALL)
+            elif (self.__joystick.get_button(2) or self.__joystick.get_axis(4) > 0):
+                self.__shoot(bullet_type=BulletEnum.BIG)
+
+        if self._is_small_shot and pygame.time.get_ticks() - self._small_shot_time >= self._small_shot_cooldown:
+            self._is_small_shot = False
+            self._small_shot_time = 0
+        if self._is_big_shot and pygame.time.get_ticks() - self._big_shot_time >= self._big_shot_cooldown:
+            self._is_big_shot = False
+            self._big_shot_time = 0
 
     def draw(self) -> None:
         glBindVertexArray(self.__vao)
