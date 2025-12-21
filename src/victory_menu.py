@@ -130,6 +130,9 @@ class VictoryMenu:
                         self.__running = False
 
             self.update(events)
+            
+            scale = self.__screen.get_width() / pygame.display.get_window_size()[0]
+            mouse_pos = (int(mouse_pos[0] * scale), int(mouse_pos[1] * scale))
 
             for button in self.__buttons:
                 button.update(mouse_pos, mouse_pressed)
