@@ -27,7 +27,7 @@ class Damage:
         for bullet in self.__bullets:
             for player in self.__damageables:
                 if bullet.rect.colliderect(player.rect):
-                    is_dead = player.damage(bullet.damage)
+                    is_dead = player.damage(bullet)
 
                     for p in self.__damageables:
                         if p._color == bullet.color and player._color != bullet.color and is_dead == "kill":

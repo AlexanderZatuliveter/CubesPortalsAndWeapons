@@ -1,4 +1,5 @@
 from typing import Protocol
+from bullet import Bullet
 from float_rect import FloatRect
 
 
@@ -12,4 +13,4 @@ class ObjectProtocol(Protocol):
 
 class DamageableObject(Protocol):
     rect: FloatRect
-    def damage(self, bullet_damage: int) -> None | str: ...
+    def damage(self, bullet: Bullet) -> None | str: ...

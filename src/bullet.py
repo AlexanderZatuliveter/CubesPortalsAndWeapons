@@ -20,6 +20,7 @@ class Bullet:
             self.__max_distance = BIG_BULLET_MAX_DISTANCE
             width = BIG_BULLET_WIDTH
             height = BIG_BULLET_HEIGHT
+            self._type = BulletEnum.BIG
 
         elif bullet_type == BulletEnum.SMALL:
             self.damage = SMALL_BULLET_DAMAGE
@@ -27,6 +28,7 @@ class Bullet:
             self.__max_distance = SMALL_BULLET_MAX_DISTANCE
             width = SMALL_BULLET_WIDTH
             height = SMALL_BULLET_HEIGHT
+            self._type = BulletEnum.SMALL
 
         self.rect = FloatRect(x, y, width, height)
         self.color = color
