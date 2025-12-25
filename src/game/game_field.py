@@ -1,10 +1,11 @@
 import numpy as np
-from block import Block
-from direction_enum import DirectionEnum
-from float_rect import FloatRect
-from position import IntPosition
 import json
-from consts import BLOCK_SIZE
+
+from game.entities.block import Block
+from game.enums.direction_enum import DirectionEnum
+from game.systems.float_rect import FloatRect
+from game.systems.position import IntPosition
+from game.consts import BLOCK_SIZE
 
 
 class GameField:

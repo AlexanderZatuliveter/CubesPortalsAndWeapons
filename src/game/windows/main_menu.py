@@ -6,14 +6,14 @@ from pygame.time import Clock
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from button import Button
-from consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
-from display_manager import DisplayManager
-from game_state import GameState
-from music_manager import MusicManager
-from opengl_utils import OpenGLUtils
-from shader_utils import ShaderUtils
-from window_enum import WindowEnum
+from engine.ui.button import Button
+from game.consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from engine.graphics.display_manager import DisplayManager
+from game.systems.game_state import GameState
+from engine.music_manager import MusicManager
+from engine.graphics.opengl_utils import OpenGLUtils
+from engine.shader_utils import ShaderUtils
+from game.enums.window_enum import WindowEnum
 
 
 class MainMenu:
@@ -27,7 +27,7 @@ class MainMenu:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        self.__shader = ShaderUtils.create_shader("./src/shaders/shader.vert", "./src/shaders/shader.frag")
+        self.__shader = ShaderUtils.create_shader("./src/game/_shaders/shader.vert", "./src/game/_shaders/shader.frag")
         glUseProgram(self.__shader)
 
         uProjection = glGetUniformLocation(self.__shader, "uProjection")

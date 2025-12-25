@@ -2,14 +2,14 @@ import pygame
 import ctypes
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 
-from consts import SCREEN_HEIGHT, SCREEN_WIDTH
-from main_menu import MainMenu
-from game_window import GameWindow
-from music_manager import MusicManager
-from pause_menu import PauseMenu
-from game_state import GameState
-from victory_menu import VictoryMenu
-from window_enum import WindowEnum
+from game.consts import SCREEN_HEIGHT, SCREEN_WIDTH
+from game.windows.main_menu import MainMenu
+from game.windows.game_window import GameWindow
+from engine.music_manager import MusicManager
+from game.windows.pause_menu import PauseMenu
+from game.systems.game_state import GameState
+from game.windows.victory_menu import VictoryMenu
+from game.enums.window_enum import WindowEnum
 
 
 # Set process DPI awareness. Use 1 for "System DPI Awareness", or 2 for "Per-Monitor DPI Awareness"

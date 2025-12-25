@@ -1,12 +1,12 @@
 
 
-from consts import GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GRAVITY
-from direction_enum import DirectionEnum
-from object_protocol import ObjectProtocol
+from game.consts import GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GRAVITY
+from game.enums.direction_enum import DirectionEnum
+from game.systems.object_protocol import ObjectProtocol
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from game_field import GameField
+    from game.game_field import GameField
 
 
 class Physics:

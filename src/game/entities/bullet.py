@@ -2,12 +2,13 @@
 import ctypes
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
-from bullet_enum import BulletEnum
-from consts import BIG_BULLET_DAMAGE, BIG_BULLET_HEIGHT, BIG_BULLET_MAX_DISTANCE, BIG_BULLET_SPEED, BIG_BULLET_WIDTH, GAME_FIELD_WIDTH, SMALL_BULLET_DAMAGE, SMALL_BULLET_HEIGHT, SMALL_BULLET_MAX_DISTANCE, SMALL_BULLET_SPEED, SMALL_BULLET_WIDTH
-from direction_enum import DirectionEnum
-from float_rect import FloatRect
-from opengl_utils import OpenGLUtils
-from renderer import Renderer
+
+from game.enums.bullet_enum import BulletEnum
+from game.consts import BIG_BULLET_DAMAGE, BIG_BULLET_HEIGHT, BIG_BULLET_MAX_DISTANCE, BIG_BULLET_SPEED, BIG_BULLET_WIDTH, GAME_FIELD_WIDTH, SMALL_BULLET_DAMAGE, SMALL_BULLET_HEIGHT, SMALL_BULLET_MAX_DISTANCE, SMALL_BULLET_SPEED, SMALL_BULLET_WIDTH
+from game.enums.direction_enum import DirectionEnum
+from game.systems.float_rect import FloatRect
+from engine.graphics.opengl_utils import OpenGLUtils
+from engine.graphics.renderer import Renderer
 
 
 class Bullet:

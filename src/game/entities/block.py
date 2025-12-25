@@ -4,10 +4,10 @@ from OpenGL.GL.shaders import ShaderProgram
 import numpy as np
 import ctypes
 
-from consts import BLOCK_SIZE, DARK_GREY
-from float_rect import FloatRect
-from opengl_utils import OpenGLUtils
-from renderer import Renderer
+from game.consts import BLOCK_SIZE, DARK_GREY
+from game.systems.float_rect import FloatRect
+from engine.graphics.opengl_utils import OpenGLUtils
+from engine.graphics.renderer import Renderer
 
 
 class Block:

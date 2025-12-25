@@ -1,4 +1,4 @@
-from bullet import Bullet
+from game.entities.bullet import Bullet
 
 
 class Bullets(list[Bullet]):

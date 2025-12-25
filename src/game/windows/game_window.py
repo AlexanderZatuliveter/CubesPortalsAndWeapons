@@ -8,17 +8,17 @@ from pygame.time import Clock
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from bullets import Bullets
-from consts import BG_COLOR, BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
-from damage import Damage
-from display_manager import DisplayManager
-from game_field import GameField
-from game_state import GameState
-from music_manager import MusicManager
-from opengl_utils import OpenGLUtils
-from players import Players
-from shader_utils import ShaderUtils
-from window_enum import WindowEnum
+from game.entities.bullets import Bullets
+from game.consts import BG_COLOR, BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from game.systems.damage import Damage
+from engine.graphics.display_manager import DisplayManager
+from game.game_field import GameField
+from game.systems.game_state import GameState
+from engine.music_manager import MusicManager
+from engine.graphics.opengl_utils import OpenGLUtils
+from game.entities.players import Players
+from engine.shader_utils import ShaderUtils
+from game.enums.window_enum import WindowEnum
 
 
 class GameWindow:
@@ -38,7 +38,7 @@ class GameWindow:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        self.__shader = ShaderUtils.create_shader("./src/shaders/shader.vert", "./src/shaders/shader.frag")
+        self.__shader = ShaderUtils.create_shader("./src/game/_shaders/shader.vert", "./src/game/_shaders/shader.frag")
         glUseProgram(self.__shader)
 
         uProjection = glGetUniformLocation(self.__shader, "uProjection")

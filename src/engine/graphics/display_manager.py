@@ -4,8 +4,8 @@ from OpenGL.GL import *  # type: ignore
 import pygame
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 
-from consts import GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
-from opengl_utils import OpenGLUtils
+from game.consts import GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from engine.graphics.opengl_utils import OpenGLUtils
 
 
 class DisplayManager:

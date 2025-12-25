@@ -2,7 +2,7 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
 import pygame
 
-from text_common import create_text_texture, update_text_vbo
+from engine.text_common import create_text_texture, update_text_vbo
 
 
 class TextWorker:

@@ -2,12 +2,11 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
 import numpy as np
 import ctypes
-
 import pygame
 
-from common import get_resource_path
-from consts import SCORES_HEIGHT, SCORES_WIDTH
-from text_worker import TextWorker
+from engine.common import get_resource_path
+from game.consts import SCORES_HEIGHT, SCORES_WIDTH
+from engine.ui.text_worker import TextWorker
 
 
 class Scores:

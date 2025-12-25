@@ -5,9 +5,9 @@ import ctypes
 
 import pygame
 
-from common import get_resource_path
-from consts import BLUE, BUTTON_HEIGHT, BUTTON_WIDTH, GREY, GREY_2, ORANGE, WHITE
-from text_worker import TextWorker
+from engine.common import get_resource_path
+from game.consts import BLUE, BUTTON_HEIGHT, BUTTON_WIDTH, GREY, GREY_2, ORANGE, WHITE
+from engine.ui.text_worker import TextWorker
 
 
 class Button:

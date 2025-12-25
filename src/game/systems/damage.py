@@ -1,9 +1,10 @@
 from typing import Sequence
 import numpy as np
-from bullet import Bullet
-from bullets import Bullets
-from game_field import GameField
-from object_protocol import DamageableObject
+
+from game.entities.bullet import Bullet
+from game.entities.bullets import Bullets
+from game.game_field import GameField
+from game.systems.object_protocol import DamageableObject
 
 
 class Damage:
@@ -30,8 +31,8 @@ class Damage:
                     is_dead = player.damage(bullet)
 
                     for p in self.__damageables:
-                        if p._color == bullet._color and player._color != bullet._color and is_dead == "kill":
-                            p.add_score()
+                        if p._color == bullet._color and player._color != bullet._color and is_dead == "kill":  # type: ignore
+                            p.add_score()  # type: ignore
                             self.__destroy(bullet)
                             return
 

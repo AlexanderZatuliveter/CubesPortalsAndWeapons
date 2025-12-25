@@ -1,17 +1,18 @@
 
 import pygame
 from OpenGL.GL import *  # type: ignore
-from bullet import Bullet
-from bullet_enum import BulletEnum
-from bullets import Bullets
-from consts import BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED, SMALL_BULLET_HEIGHT, SMALL_BULLET_WIDTH
-from direction_enum import DirectionEnum
-from float_rect import FloatRect
-from game_field import GameField
-from opengl_utils import OpenGLUtils
-from physics import Physics
-from renderer import Renderer
-from scores import Scores
+
+from game.entities.bullet import Bullet
+from game.enums.bullet_enum import BulletEnum
+from game.entities.bullets import Bullets
+from game.consts import BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED, SMALL_BULLET_HEIGHT, SMALL_BULLET_WIDTH
+from game.enums.direction_enum import DirectionEnum
+from game.systems.float_rect import FloatRect
+from game.game_field import GameField
+from engine.graphics.opengl_utils import OpenGLUtils
+from game.systems.physics import Physics
+from engine.graphics.renderer import Renderer
+from game.systems.scores import Scores
 
 
 class Player:

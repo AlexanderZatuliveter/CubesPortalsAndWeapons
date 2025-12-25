@@ -1,14 +1,15 @@
 import sys
 import pygame
-from consts import BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
-from mouse_buttons import Mouse
-from game_field import GameField
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from opengl_utils import create_shader, ortho, resize_display, set_screen_size
-
+from game_field import GameField
+from mouse_buttons import Mouse
+from game.consts import BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
+from engine.shader_utils import ShaderUtils
+from engine.graphics.opengl_utils import OpenGLUtils
+from engine.graphics.display_manager import DisplayManager
 
 pygame.init()
 
@@ -26,11 +27,11 @@ past_screen_size = screen.get_size()
 glEnable(GL_BLEND)
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-shader = create_shader("./src/shaders/shader.vert", "./src/shaders/shader.frag")
+shader = ShaderUtils.create_shader("./src/game/_shaders/shader.vert", "./src/game/_shaders/shader.frag")
 glUseProgram(shader)
 
 uProjection = glGetUniformLocation(shader, "uProjection")
-projection = ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
+projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
 glUniformMatrix4fv(uProjection, 1, GL_FALSE, projection.T)
 
 mouse = Mouse()
@@ -41,9 +42,11 @@ game_field = GameField(
 )
 clock = pygame.time.Clock()
 
+display_manager = DisplayManager()
+
 
 # Настройка OpenGL один раз после создания окна
-screen = set_screen_size(screen, shader, screen.get_size())
+screen = display_manager.set_screen_size(screen, shader, screen.get_size())
 
 # Set background's color
 glClearColor(*BG_COLOR, 1)
@@ -66,7 +69,7 @@ while True:
             game_field.load_from_file()
 
         if event.type == pygame.VIDEORESIZE:
-            videoresize = resize_display(screen, shader, past_screen_size, event.size)
+            videoresize = display_manager.resize_display(screen, shader, past_screen_size, event.size)
 
             if videoresize is not None:
                 screen, past_screen_size = videoresize

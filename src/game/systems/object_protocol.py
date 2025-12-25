@@ -1,6 +1,6 @@
 from typing import Protocol
-from bullet import Bullet
-from float_rect import FloatRect
+from game.entities.bullet import Bullet
+from game.systems.float_rect import FloatRect
 
 
 class ObjectProtocol(Protocol):

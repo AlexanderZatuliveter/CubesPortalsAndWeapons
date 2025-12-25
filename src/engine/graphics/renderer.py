@@ -1,7 +1,7 @@
 
 from OpenGL.GL import *  # type: ignore
 import numpy as np
-from float_rect import FloatRect
+from game.systems.float_rect import FloatRect
 
 
 class Renderer:

@@ -1,10 +1,11 @@
 
-from bullets import Bullets
-from consts import BLUE, RED, GREEN, ORANGE
-from game_field import GameField
-from player import Player
 from pygame.event import Event
 import pygame
+
+from game.entities.bullets import Bullets
+from game.consts import BLUE, RED, GREEN, ORANGE
+from game.game_field import GameField
+from game.entities.player import Player
 
 
 class Players(list[Player]):

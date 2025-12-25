@@ -1,5 +1,5 @@
 
-from window_enum import WindowEnum
+from game.enums.window_enum import WindowEnum
 
 
 class GameState:
