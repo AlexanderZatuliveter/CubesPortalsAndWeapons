@@ -2,6 +2,7 @@ from OpenGL.GL import *  # type: ignore
 
 import numpy as np
 import pygame
+import ctypes
 
 
 def create_text_texture(

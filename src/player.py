@@ -1,4 +1,4 @@
-import numpy
+
 import pygame
 from OpenGL.GL import *  # type: ignore
 from bullet import Bullet
@@ -8,7 +8,9 @@ from consts import BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_H
 from direction_enum import DirectionEnum
 from float_rect import FloatRect
 from game_field import GameField
+from opengl_utils import OpenGLUtils
 from physics import Physics
+from renderer import Renderer
 from scores import Scores
 
 
@@ -33,7 +35,7 @@ class Player:
         self.__game_field = game_field
         self.__physics = Physics(self, self.__game_field)
         self.__bullets = bullets
-        self.__draw_scores = Scores(0, -BLOCK_SIZE * 1.85, str(self.__scores), shader, self._color)
+        self.__draw_scores = Scores(self.rect.x, self.rect.y, str(self.__scores), shader, self._color)
 
         self.velocity_y = 0.0
         self.max_velocity_y = 75.0
@@ -53,26 +55,16 @@ class Player:
         self._is_small_shot = False
 
         self.__shader = shader
+        self.__renderer = Renderer()
+
         self.__uPlayerPos = glGetUniformLocation(self.__shader, "uPlayerPos")
         self.__uIsPlayer = glGetUniformLocation(self.__shader, "uIsPlayer")
         self.__uColor = glGetUniformLocation(self.__shader, "uColor")
         self.__uUseTexture = glGetUniformLocation(self.__shader, "uUseTexture")
 
-        vertices = numpy.array([
-            0.0, 0.0,
-            BLOCK_SIZE, 0.0,
-            BLOCK_SIZE, BLOCK_SIZE,
-            0.0, BLOCK_SIZE,
-        ], dtype=numpy.float32)
-
+        vertices = OpenGLUtils.create_square_vertices(BLOCK_SIZE)
         self.__vertex_count = 4
-
-        self.__vao = glGenVertexArrays(1)
-        glBindVertexArray(self.__vao)
-
-        self.__vbo = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, self.__vbo)
-        glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
+        self.__vao, self.__vbo = self.__renderer.create_vao_vbo(vertices)
 
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
@@ -194,15 +186,16 @@ class Player:
             self._is_big_shot = False
             self._big_shot_time = 0
 
+        self.__draw_scores.update_pos(self.rect.x, self.rect.y - BLOCK_SIZE * 0.9)
+
     def draw(self) -> None:
-        glBindVertexArray(self.__vao)
-        glUniform1i(self.__uUseTexture, 0)
-        glUniform1i(self.__uIsPlayer, 1)
-        glUniform2f(self.__uPlayerPos, self.rect.x, self.rect.y)
-        glUniform3f(self.__uColor, *self._color)
-        glDrawArrays(GL_TRIANGLE_FAN, 0, self.__vertex_count)
         self.__draw_scores.draw()
-        glBindVertexArray(0)
+        self.__renderer.draw_square(
+            self.__vao, (self.__uUseTexture, False),
+            (self.__uIsPlayer, True), self.__uPlayerPos,
+            self.__uColor, self.rect, self._color,
+            self.__vertex_count
+        )
 
     def get_joystick(self) -> pygame.joystick.JoystickType | None:
         return self.__joystick

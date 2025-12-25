@@ -30,7 +30,7 @@ class Damage:
                     is_dead = player.damage(bullet)
 
                     for p in self.__damageables:
-                        if p._color == bullet.color and player._color != bullet.color and is_dead == "kill":
+                        if p._color == bullet._color and player._color != bullet._color and is_dead == "kill":
                             p.add_score()
                             self.__destroy(bullet)
                             return

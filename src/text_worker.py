@@ -1,6 +1,5 @@
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
-import numpy as np
 import pygame
 
 from text_common import create_text_texture, update_text_vbo
@@ -19,7 +18,7 @@ class TextWorker:
         color: tuple[float, float, float]
     ) -> None:
 
-        self.__rect: pygame.Rect = pygame.Rect(x, y, *rect_size)
+        self.__rect = pygame.Rect(x, y, *rect_size)
         self.__color = color
         self.__text = text
 
@@ -72,6 +71,7 @@ class TextWorker:
         glBindTexture(GL_TEXTURE_2D, self._text_texture)
         glUniform1i(self.__uTexture, 0)
         glUniform1i(self.__uUseTexture, 1)
+
         # keep color as white so text renders in original color, but you can tint
         glUniform3f(self.__uColor, *self.__color)
 
@@ -85,3 +85,7 @@ class TextWorker:
 
     def update_text(self, text: str) -> None:
         self.__text = text
+
+    def update_pos(self, x: float, y: float) -> None:
+        rect = pygame.Rect(x, y, self.__rect.w, self.__rect.h)
+        self.__rect = rect

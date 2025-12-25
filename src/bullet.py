@@ -1,6 +1,4 @@
 
-
-import numpy
 import ctypes
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
@@ -8,6 +6,8 @@ from bullet_enum import BulletEnum
 from consts import BIG_BULLET_DAMAGE, BIG_BULLET_HEIGHT, BIG_BULLET_MAX_DISTANCE, BIG_BULLET_SPEED, BIG_BULLET_WIDTH, GAME_FIELD_WIDTH, SMALL_BULLET_DAMAGE, SMALL_BULLET_HEIGHT, SMALL_BULLET_MAX_DISTANCE, SMALL_BULLET_SPEED, SMALL_BULLET_WIDTH
 from direction_enum import DirectionEnum
 from float_rect import FloatRect
+from opengl_utils import OpenGLUtils
+from renderer import Renderer
 
 
 class Bullet:
@@ -31,26 +31,16 @@ class Bullet:
             self._type = BulletEnum.SMALL
 
         self.rect = FloatRect(x, y, width, height)
-        self.color = color
+        self._color = color
         self.__distance = 0.0
         self.__direction = direction
         self.__is_destroyed = False
 
-        vertices = numpy.array([
-            0.0, 0.0,
-            width, 0.0,
-            width, height,
-            0.0, height,
-        ], dtype=numpy.float32)
+        self.__renderer = Renderer()
 
+        vertices = OpenGLUtils.create_rectangle_vertices(width, height)
         self.__vertex_count = 4
-
-        self.__vao = glGenVertexArrays(1)
-        glBindVertexArray(self.__vao)
-
-        self.__vbo = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, self.__vbo)
-        glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
+        self.__vao, self.__vbo = self.__renderer.create_vao_vbo(vertices)
 
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
@@ -79,11 +69,10 @@ class Bullet:
     def is_destroyed(self):
         return self.__is_destroyed
 
-    def draw(self):
-        glBindVertexArray(self.__vao)
-        glUniform1i(self.__uUseTexture, 0)
-        glUniform1i(self.__uIsPlayer, 1)
-        glUniform2f(self.__uPlayerPos, self.rect.x, self.rect.y)
-        glUniform3f(self.__uColor, *self.color)
-        glDrawArrays(GL_TRIANGLE_FAN, 0, self.__vertex_count)
-        glBindVertexArray(0)
+    def draw(self) -> None:
+        self.__renderer.draw_square(
+            self.__vao, (self.__uUseTexture, False),
+            (self.__uIsPlayer, True), self.__uPlayerPos,
+            self.__uColor, self.rect, self._color,
+            self.__vertex_count
+        )

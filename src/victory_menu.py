@@ -8,10 +8,12 @@ from OpenGL.GLU import *  # type: ignore
 
 from button import Button
 from common import get_resource_path
-from opengl_common import create_shader, ortho, resize_display, set_screen_size
 from consts import BLUE, BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GREEN, ORANGE, RED, VICTORY_TEXT_HEIGHT, VICTORY_TEXT_WIDTH, WHITE
+from display_manager import DisplayManager
 from game_state import GameState
 from music_manager import MusicManager
+from opengl_utils import OpenGLUtils
+from shader_utils import ShaderUtils
 from text_worker import TextWorker
 from window_enum import WindowEnum
 
@@ -33,19 +35,15 @@ class VictoryMenu:
 
         self.__winner_color = winner_color
 
-        # Disable unnecessary OpenGL features for 2D rendering
-        glDisable(GL_DEPTH_TEST)  # No depth testing needed for 2D
-        glDisable(GL_CULL_FACE)   # No backface culling needed
-        glDisable(GL_MULTISAMPLE)  # No multisampling needed for pixel-perfect 2D
         # Enable alpha blending by default for UI and textures
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        self.__shader = create_shader("./src/shaders/shader.vert", "./src/shaders/shader.frag")
+        self.__shader = ShaderUtils.create_shader("./src/shaders/shader.vert", "./src/shaders/shader.frag")
         glUseProgram(self.__shader)
 
         uProjection = glGetUniformLocation(self.__shader, "uProjection")
-        self.__projection = ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
+        self.__projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
         glUniformMatrix4fv(uProjection, 1, GL_FALSE, self.__projection.T)
 
         # make buttons
@@ -53,7 +51,6 @@ class VictoryMenu:
 
         buttons = {
             "Restart": self.__restart_button_func,
-            "Options": None,
             "Exit to Main Menu": self.__main_menu_button_func,
             "Exit to Desktop": self.__desktop_exit_button_func
         }
@@ -100,13 +97,14 @@ class VictoryMenu:
             color=self.__winner_color
         )
 
+        self.__display_manager = DisplayManager()
         self.__music_manager = music_manager
 
         self.__running = True
 
     def show(self) -> None:
 
-        self.__screen = set_screen_size(self.__screen, self.__shader, self.__screen.get_size())
+        self.__screen = self.__display_manager.set_screen_size(self.__screen, self.__shader, self.__screen.get_size())
 
         # Set background's color
         glClearColor(0.1, 0.1, 0.1, 1)
@@ -130,7 +128,7 @@ class VictoryMenu:
                         self.__running = False
 
             self.update(events)
-            
+
             scale = self.__screen.get_width() / pygame.display.get_window_size()[0]
             mouse_pos = (int(mouse_pos[0] * scale), int(mouse_pos[1] * scale))
 
@@ -160,7 +158,8 @@ class VictoryMenu:
                     self.__game_state.current_window = WindowEnum.GAME_WINDOW
                     self.__running = False
             if event.type == pygame.VIDEORESIZE:
-                videoresize = resize_display(self.__screen, self.__shader, self.__past_screen_size, event.size)
+                videoresize = self.__display_manager.resize_display(
+                    self.__screen, self.__shader, self.__past_screen_size, event.size)
 
                 if videoresize is not None:
                     self.__screen, self.__past_screen_size = videoresize

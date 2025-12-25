@@ -23,6 +23,7 @@ class Scores:
         self.__rect: pygame.Rect = pygame.Rect(x, y, SCORES_WIDTH, SCORES_HEIGHT)
         self.__color = color
         self.__text = text
+        self.__shader = shader
 
         # Dynamic offset buffer (we'll update it per-draw)
         self.__offset_vbo = glGenBuffers(1)
@@ -43,7 +44,7 @@ class Scores:
             rect_size=(self.__rect.width, self.__rect.height),
             font=None,
             font_file_path=get_resource_path("src/_content/fonts/WDXLLubrifontSC-Regular.ttf"),
-            shader=shader,
+            shader=self.__shader,
             color=self.__color
         )
 
@@ -53,3 +54,6 @@ class Scores:
     def update_text(self, text: str) -> None:
         self.__text = text
         self.__text_worker.update_text(text)
+
+    def update_pos(self, x: float, y: float):
+        self.__text_worker.update_pos(x, y)

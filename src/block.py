@@ -1,3 +1,4 @@
+
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
 import numpy as np
@@ -5,6 +6,8 @@ import ctypes
 
 from consts import BLOCK_SIZE, DARK_GREY
 from float_rect import FloatRect
+from opengl_utils import OpenGLUtils
+from renderer import Renderer
 
 
 class Block:
@@ -18,21 +21,11 @@ class Block:
         self.__offset_x = 0.0
         self.__offset_y = 0.0
 
-        vertices = np.array([
-            0.0, 0.0,
-            BLOCK_SIZE, 0.0,
-            BLOCK_SIZE, BLOCK_SIZE,
-            0.0, BLOCK_SIZE,
-        ], dtype=np.float32)
+        self.__renderer = Renderer()
 
+        vertices = OpenGLUtils.create_square_vertices(BLOCK_SIZE)
         self.__vertex_count = 4
-
-        self.__vao = glGenVertexArrays(1)
-        glBindVertexArray(self.__vao)
-
-        self.__vbo = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, self.__vbo)
-        glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
+        self.__vao, self.__vbo = self.__renderer.create_vao_vbo(vertices)
 
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
@@ -56,9 +49,9 @@ class Block:
         glBufferData(GL_ARRAY_BUFFER, offset_data.nbytes, offset_data, GL_DYNAMIC_DRAW)
 
     def draw(self) -> None:
-        glBindVertexArray(self.__vao)
-        glUniform1i(self.__uUseTexture, 0)
-        glUniform1i(self.__uIsPlayer, 0)
-        glUniform3f(self.__uColor, *DARK_GREY)
-        glDrawArrays(GL_TRIANGLE_FAN, 0, self.__vertex_count)
-        glBindVertexArray(0)
+        self.__renderer.draw_square(
+            self.__vao, (self.__uUseTexture, False),
+            (self.__uIsPlayer, False), None,
+            self.__uColor, self.rect, DARK_GREY,
+            self.__vertex_count
+        )

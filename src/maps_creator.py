@@ -1,13 +1,13 @@
 import sys
-from typing import Tuple
 import pygame
-from consts import BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
+from consts import BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
 from mouse_buttons import Mouse
 from game_field import GameField
-from renderer import Renderer   # импортируем Renderer
-from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE, VIDEORESIZE
+from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
+
+from opengl_utils import create_shader, ortho, resize_display, set_screen_size
 
 
 pygame.init()
@@ -20,27 +20,33 @@ screen_size = (target_width, target_height)
 # Создаём окно с поддержкой OpenGL
 screen: pygame.Surface = pygame.display.set_mode(screen_size, DOUBLEBUF | OPENGL | RESIZABLE)
 
+past_screen_size = screen.get_size()
+
+# Enable alpha blending by default for UI and textures
+glEnable(GL_BLEND)
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+shader = create_shader("./src/shaders/shader.vert", "./src/shaders/shader.frag")
+glUseProgram(shader)
+
+uProjection = glGetUniformLocation(shader, "uProjection")
+projection = ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
+glUniformMatrix4fv(uProjection, 1, GL_FALSE, projection.T)
+
 mouse = Mouse()
-renderer = Renderer()  # создаём общий рендерер
 game_field = GameField(
     int(GAME_FIELD_WIDTH // BLOCK_SIZE),
     int(GAME_FIELD_HEIGHT // BLOCK_SIZE),
-    renderer   # передаём в GameField рендерер
+    shader
 )
 clock = pygame.time.Clock()
 
 
-def set_screen_size(screen_size: Tuple[int, int]) -> None:
-    glViewport(0, 0, *screen_size)
-
-    # Reset projection matrix
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    glOrtho(0, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT, 0, -1, 1)
-
-
 # Настройка OpenGL один раз после создания окна
-set_screen_size(screen_size)
+screen = set_screen_size(screen, shader, screen.get_size())
+
+# Set background's color
+glClearColor(*BG_COLOR, 1)
 
 
 while True:
@@ -59,21 +65,20 @@ while True:
             print('loaded')
             game_field.load_from_file()
 
-        if event.type == VIDEORESIZE:
-            screen = pygame.display.set_mode(event.size, DOUBLEBUF | OPENGL | RESIZABLE)
-            set_screen_size(event.size)
+        if event.type == pygame.VIDEORESIZE:
+            videoresize = resize_display(screen, shader, past_screen_size, event.size)
+
+            if videoresize is not None:
+                screen, past_screen_size = videoresize
 
     # Очистка экрана и установка фона
-    glClearColor(100 / 255, 100 / 255, 100 / 255, 1)
+    glEnable(GL_BLEND)
     glClear(GL_COLOR_BUFFER_BIT)
-
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
+    glUseProgram(shader)
 
     # === Отрисовка ===
-    game_field.draw()      # только добавляет объекты в renderer
+    game_field.draw()
     mouse.update(game_field)
-    renderer.render_all()  # а вот тут реально всё рисуется
 
     clock.tick(60)
     pygame.display.flip()
