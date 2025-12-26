@@ -51,7 +51,7 @@ class GameWindow:
             self.__shader
         )
 
-        self.__game_field.load_from_file()
+        self.__game_field.load_from_file("third.map")
 
         self.__bullets = Bullets()
         self.__players = Players(self.__game_field, self.__shader, self.__bullets)

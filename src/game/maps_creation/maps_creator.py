@@ -70,11 +70,11 @@ while True:
 
         if keys[pygame.K_s]:
             print('saved')
-            game_field.save_to_file("second.map")
+            game_field.save_to_file("third.map")
 
         if keys[pygame.K_l]:
             print('loaded')
-            game_field.load_from_file("first.map")
+            game_field.load_from_file("third.map")
 
         if event.type == pygame.VIDEORESIZE:
             videoresize = display_manager.resize_display(screen, shader, past_screen_size, event.size)
