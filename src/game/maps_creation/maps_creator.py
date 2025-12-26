@@ -1,15 +1,24 @@
-import sys
+
+
 import pygame
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from game_field import GameField
-from mouse_buttons import Mouse
-from game.consts import BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
-from engine.shader_utils import ShaderUtils
-from engine.graphics.opengl_utils import OpenGLUtils
+import sys
+import os
+
+# --- ФИКС ИМПОРТОВ ---
+# Добавляем путь к src в sys.path, чтобы видеть модуль game
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
+from game.game_field import GameField
 from engine.graphics.display_manager import DisplayManager
+from engine.graphics.opengl_utils import OpenGLUtils
+from engine.shader_utils import ShaderUtils
+from game.consts import BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
+from mouse_buttons import Mouse
+
 
 pygame.init()
 
@@ -45,7 +54,6 @@ clock = pygame.time.Clock()
 display_manager = DisplayManager()
 
 
-# Настройка OpenGL один раз после создания окна
 screen = display_manager.set_screen_size(screen, shader, screen.get_size())
 
 # Set background's color
@@ -62,11 +70,11 @@ while True:
 
         if keys[pygame.K_s]:
             print('saved')
-            game_field.save_to_file()
+            game_field.save_to_file("second.map")
 
         if keys[pygame.K_l]:
             print('loaded')
-            game_field.load_from_file()
+            game_field.load_from_file("first.map")
 
         if event.type == pygame.VIDEORESIZE:
             videoresize = display_manager.resize_display(screen, shader, past_screen_size, event.size)
@@ -74,12 +82,12 @@ while True:
             if videoresize is not None:
                 screen, past_screen_size = videoresize
 
-    # Очистка экрана и установка фона
+    # Cleaning the screen and setting the background
     glEnable(GL_BLEND)
     glClear(GL_COLOR_BUFFER_BIT)
     glUseProgram(shader)
 
-    # === Отрисовка ===
+    # Draw
     game_field.draw()
     mouse.update(game_field)
 

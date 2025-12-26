@@ -150,7 +150,7 @@ class GameField:
         pos = self.get_block_field_position(x, y)
         self.hit_block(pos)
 
-    def save_to_file(self) -> None:
+    def save_to_file(self, path: str) -> None:
         map = {}
         positions = {}
         for (x, y), block in np.ndenumerate(self.field):
@@ -158,11 +158,11 @@ class GameField:
                 positions[str(IntPosition(x, y))] = type(block).__name__
         map["positions"] = positions
         json_string = json.dumps(map, indent=2)
-        with open("./maps/first.map", "w") as json_file:
+        with open(f"src/_content/maps/{path}", "w") as json_file:
             json_file.write(json_string)
 
-    def load_from_file(self) -> None:
-        with open("src/_content/maps/first.map", "r") as json_file:
+    def load_from_file(self, path: str) -> None:
+        with open(f"src/_content/maps/{path}", "r") as json_file:
             json_string = json_file.read()
 
         map_data = json.loads(json_string)

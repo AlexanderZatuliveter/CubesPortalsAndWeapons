@@ -1,5 +1,5 @@
 import pygame
-from game_field import GameField
+from game.game_field import GameField
 
 
 class Mouse:
