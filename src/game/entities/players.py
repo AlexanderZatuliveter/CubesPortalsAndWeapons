@@ -20,10 +20,10 @@ class Players(list[Player]):
         self.__shader = shader
         self.__game_field = game_field
 
-    def update(self, events: list[Event]):
+    def update(self, events: list[Event], dt: float):
         self.__joystick_events(events)
         for player in self:
-            player.update()
+            player.update(dt)
 
     def __joystick_events(self, events: list[Event]):
         self.__players_append()

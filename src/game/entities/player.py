@@ -5,7 +5,7 @@ from OpenGL.GL import *  # type: ignore
 from game.entities.bullet import Bullet
 from game.enums.bullet_enum import BulletEnum
 from game.entities.bullets import Bullets
-from game.consts import BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_SPEED, SMALL_BULLET_HEIGHT, SMALL_BULLET_WIDTH
+from game.consts import ANTI_GRAVITY_DECAY, BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SMALL_BULLET_HEIGHT, SMALL_BULLET_WIDTH
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -39,11 +39,12 @@ class Player:
         self.__draw_scores = Scores(self.rect.x, self.rect.y, str(self.__scores), shader, self._color)
 
         self.velocity_y = 0.0
-        self.max_velocity_y = 75.0
+        self.max_velocity_y = PLAYER_MAX_VELOCITY_Y
         self.speed = PLAYER_SPEED
         self.anti_gravity = 0.0
         self.__max_anti_gravity = MAX_ANTI_GRAVITY
         self.__change_anti_gravity = CHANGE_ANTI_GRAVITY
+        self.__anti_gravity_decay = ANTI_GRAVITY_DECAY
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__jumping = False
 
@@ -115,7 +116,7 @@ class Player:
         setattr(self, cooldown_flag, True)
         setattr(self, cooldown_time, pygame.time.get_ticks())
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
 
         # left stick x
         axis_x = self.__joystick.get_axis(0) if self.__joystick else 0
@@ -124,9 +125,9 @@ class Player:
         if abs(axis_x) < dead_zone:
             axis_x = 0
 
-        difx = axis_x * self.speed
+        difx = axis_x * self.speed * dt
 
-        is_block = self.__physics.side_blocks()
+        is_block = self.__physics.side_blocks(dt)
 
         if difx > 0:
             self.__direction = DirectionEnum.RIGHT
@@ -147,8 +148,8 @@ class Player:
             elif difx > 0 and is_block == DirectionEnum.LEFT:
                 self.rect.x += difx
 
-        is_bottom_block = self.__physics.is_block(DirectionEnum.DOWN)
-        is_upper_block = self.__physics.is_block(DirectionEnum.UP)
+        is_bottom_block = self.__physics.is_block(DirectionEnum.DOWN, dt)
+        is_upper_block = self.__physics.is_block(DirectionEnum.UP, dt)
 
         if self.__joystick and self.__joystick.get_button(0) and is_bottom_block and not is_upper_block:
             self.velocity_y = self.__jump_force
@@ -160,13 +161,12 @@ class Player:
 
         if self.__jumping and self.__joystick and self.__joystick.get_button(0) and self.velocity_y < 0:
             if self.anti_gravity < self.__max_anti_gravity:
-                self.anti_gravity += self.__change_anti_gravity
+                self.anti_gravity += self.__change_anti_gravity * dt
 
         if self.__jumping == True and self.anti_gravity > 0:
-            self.anti_gravity -= 0.005
+            self.anti_gravity -= self.__anti_gravity_decay * dt
 
-        self.__physics.gravitation()
-        self.__physics.side_blocks()
+        self.__physics.gravitation(dt)
         self.__physics.borders_teleportation()
 
         if not self.__joystick:

@@ -8,7 +8,7 @@ from OpenGL.GLU import *  # type: ignore
 
 from engine.ui.button import Button
 from engine.common import get_resource_path
-from game.consts import BLUE, BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GREEN, ORANGE, RED, VICTORY_TEXT_HEIGHT, VICTORY_TEXT_WIDTH, WHITE
+from game.consts import BLUE, BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, MENU_FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GREEN, ORANGE, RED, VICTORY_TEXT_HEIGHT, VICTORY_TEXT_WIDTH
 from engine.graphics.display_manager import DisplayManager
 from game.systems.game_state import GameState
 from engine.music_manager import MusicManager
@@ -146,7 +146,7 @@ class VictoryMenu:
             self.__text_worker.draw()
 
             pygame.display.flip()
-            self.__clock.tick(FPS)
+            self.__clock.tick(MENU_FPS)
 
     def update(self, events: list[Event]) -> None:
         for event in events:

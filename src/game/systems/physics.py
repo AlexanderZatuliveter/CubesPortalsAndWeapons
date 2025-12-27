@@ -1,5 +1,3 @@
-
-
 from game.consts import GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GRAVITY
 from game.enums.direction_enum import DirectionEnum
 from game.systems.object_protocol import ObjectProtocol
@@ -14,52 +12,52 @@ class Physics:
         self.__object = object
         self.__game_field = game_field
 
-    def collidepoints(self, direction: DirectionEnum) -> tuple[tuple[float, float], tuple[float, float]]:
+    def collidepoints(self, direction: DirectionEnum, dt: float) -> tuple[tuple[float, float], tuple[float, float]]:
 
         if direction == DirectionEnum.DOWN:
             x1 = self.__object.rect.x + 2.0
             x2 = self.__object.rect.x + self.__object.rect.width - 2.0
-            y1 = y2 = self.__object.rect.y + self.__object.rect.height + self.__object.velocity_y
+            y1 = y2 = self.__object.rect.y + self.__object.rect.height + self.__object.velocity_y * dt
             return ((x1, y1), (x2, y2))
         elif direction == DirectionEnum.UP:
             x1 = self.__object.rect.x + 2.0
             x2 = self.__object.rect.x + self.__object.rect.width - 2.0
-            y1 = y2 = self.__object.rect.y + self.__object.velocity_y
+            y1 = y2 = self.__object.rect.y + self.__object.velocity_y * dt
             return ((x1, y1), (x2, y2))
         elif direction == DirectionEnum.LEFT:
-            x1 = x2 = self.__object.rect.x - self.__object.speed
+            x1 = x2 = self.__object.rect.x - self.__object.speed * dt
             y1 = self.__object.rect.y + 2.0
             y2 = self.__object.rect.y + self.__object.rect.height - 2.0
             return ((x1, y1), (x2, y2))
         elif direction == DirectionEnum.RIGHT:
-            x1 = x2 = self.__object.rect.x + self.__object.rect.width + self.__object.speed
+            x1 = x2 = self.__object.rect.x + self.__object.rect.width + self.__object.speed * dt
             y1 = self.__object.rect.y + 2.0
             y2 = self.__object.rect.y + self.__object.rect.height - 2.0
             return ((x1, y1), (x2, y2))
 
-    def is_block(self, direction: DirectionEnum) -> bool:
+    def is_block(self, direction: DirectionEnum, dt: float) -> bool:
 
         if direction == DirectionEnum.DOWN:
-            point1, point2 = self.collidepoints(direction)
-            rect = self.__object.rect.move(0, self.__object.velocity_y)
+            point1, point2 = self.collidepoints(direction, dt)
+            rect = self.__object.rect.move(0, self.__object.velocity_y * dt)
             is_block = self.__game_field.colliderect_with(*point1, rect) or \
                 self.__game_field.colliderect_with(*point2, rect)
 
         elif direction == DirectionEnum.UP:
-            point1, point2 = self.collidepoints(direction)
-            rect = self.__object.rect.move(0, self.__object.velocity_y)
+            point1, point2 = self.collidepoints(direction, dt)
+            rect = self.__object.rect.move(0, self.__object.velocity_y * dt)
             is_block = self.__game_field.colliderect_with(*point1, rect) or \
                 self.__game_field.colliderect_with(*point2, rect)
 
         elif direction == DirectionEnum.RIGHT:
-            point1, point2 = self.collidepoints(direction)
-            rect = self.__object.rect.move(self.__object.speed, 0)
+            point1, point2 = self.collidepoints(direction, dt)
+            rect = self.__object.rect.move(self.__object.speed * dt, 0)
             is_block = self.__game_field.colliderect_with(*point1, rect) or \
                 self.__game_field.colliderect_with(*point2, rect)
 
         elif direction == DirectionEnum.LEFT:
-            point1, point2 = self.collidepoints(direction)
-            rect = self.__object.rect.move(-self.__object.speed, 0)
+            point1, point2 = self.collidepoints(direction, dt)
+            rect = self.__object.rect.move(-self.__object.speed * dt, 0)
             is_block = self.__game_field.colliderect_with(*point1, rect) \
                 or self.__game_field.colliderect_with(*point2, rect)
 
@@ -79,10 +77,10 @@ class Physics:
         elif self.__object.rect.top < 0 - teleport_rect_height:
             self.__object.rect.bottom = GAME_FIELD_HEIGHT + teleport_rect_height
 
-    def side_blocks(self) -> DirectionEnum | None:
+    def side_blocks(self, dt: float) -> DirectionEnum | None:
 
-        is_left_block = self.is_block(direction=DirectionEnum.LEFT)
-        is_right_block = self.is_block(direction=DirectionEnum.RIGHT)
+        is_left_block = self.is_block(direction=DirectionEnum.LEFT, dt=dt)
+        is_right_block = self.is_block(direction=DirectionEnum.RIGHT, dt=dt)
         is_block = is_left_block or is_right_block
 
         if is_block:
@@ -107,9 +105,9 @@ class Physics:
 
             return direction
 
-    def gravitation(self) -> None:
+    def gravitation(self, dt: float) -> None:
 
-        is_bottom_block = self.is_block(direction=DirectionEnum.DOWN)
+        is_bottom_block = self.is_block(direction=DirectionEnum.DOWN, dt=dt)
 
         if is_bottom_block:
 
@@ -127,11 +125,11 @@ class Physics:
             self.__object.velocity_y = 0
         else:
             if self.__object.velocity_y < self.__object.max_velocity_y:
-                self.__object.velocity_y += (GRAVITY - self.__object.anti_gravity)
+                self.__object.velocity_y += (GRAVITY - self.__object.anti_gravity) * dt
 
-            self.__object.rect.move_ip(0, self.__object.velocity_y)
+            self.__object.rect.move_ip(0, self.__object.velocity_y * dt)
 
-        is_upper_block = self.is_block(direction=DirectionEnum.UP)
+        is_upper_block = self.is_block(direction=DirectionEnum.UP, dt=dt)
 
         if is_upper_block:
 

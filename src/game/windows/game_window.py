@@ -1,5 +1,6 @@
 
 import sys
+import time
 import pygame
 from pygame.event import Event
 from pygame import Surface
@@ -9,7 +10,7 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 from game.entities.bullets import Bullets
-from game.consts import BG_COLOR, BLOCK_SIZE, FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from game.consts import BG_COLOR, BLOCK_SIZE, DRAW_DT, UPDATE_DT, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from game.systems.damage import Damage
 from engine.graphics.display_manager import DisplayManager
 from game.game_field import GameField
@@ -72,37 +73,51 @@ class GameWindow:
         self.__music_manager.play_game_theme()
         self.__running = True
 
+        last_time = time.perf_counter()
+        update_accumulator = 0.0
+        draw_accumulator = 0.0
+
         while self.__running:
+            now = time.perf_counter()
+            frame_time = now - last_time
+            last_time = now
+
+            update_accumulator += frame_time
+            draw_accumulator += frame_time
 
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
 
-            # Updates
             self.update(events)
 
-            self.__players.update(events)
+            # Updates
+            while update_accumulator >= UPDATE_DT:
+                self.__players.update(events, UPDATE_DT)
+                self.__damage.update()
 
-            self.__damage.update()
+                for player in self.__players:
+                    if player.get_scores() >= 25:
+                        self.__game_state.current_window = WindowEnum.VICTORY_MENU
+                        return player._color
 
-            for player in self.__players:
-                if player.get_scores() >= 25:
-                    self.__game_state.current_window = WindowEnum.VICTORY_MENU
-                    return player._color
+                update_accumulator -= UPDATE_DT
 
             # Draws
-            glEnable(GL_BLEND)
-            glClear(GL_COLOR_BUFFER_BIT)
-            glUseProgram(self.__shader)
+            while draw_accumulator >= DRAW_DT:
+                glEnable(GL_BLEND)
+                glClear(GL_COLOR_BUFFER_BIT)
+                glUseProgram(self.__shader)
 
-            self.__game_field.draw()
+                self.__game_field.draw()
 
-            for player in self.__players:
-                player.draw()
+                for player in self.__players:
+                    player.draw()
 
-            self.__bullets.draw()
+                self.__bullets.draw()
 
-            pygame.display.flip()
-            self.__clock.tick(FPS)
+                pygame.display.flip()
+
+                draw_accumulator -= DRAW_DT
 
     def update(self, events: list[Event]) -> None:
         for event in events:
