@@ -19,11 +19,11 @@ class Damage:
         self.__damageables = damageables
         self.__game_field = game_field
 
-    def update(self):
+    def update(self, dt: float):
         for bullet in self.__bullets:
             if bullet.is_destroyed() == True:
                 self.__destroy(bullet)
-            bullet.update()
+            bullet.update(dt)
 
         for bullet in self.__bullets:
             for player in self.__damageables:

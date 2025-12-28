@@ -93,7 +93,7 @@ class GameWindow:
             # Updates
             while update_accumulator >= UPDATE_DT:
                 self.__players.update(events, UPDATE_DT)
-                self.__damage.update()
+                self.__damage.update(UPDATE_DT)
 
                 for player in self.__players:
                     if player.get_scores() >= 25:

@@ -51,13 +51,13 @@ class Bullet:
         self.__uColor = glGetUniformLocation(shader, "uColor")
         self.__uUseTexture = glGetUniformLocation(shader, "uUseTexture")
 
-    def update(self):
+    def update(self, dt: float):
         if self.__direction == DirectionEnum.LEFT:
-            self.rect.x -= self.__bullet_speed
+            self.rect.x -= self.__bullet_speed * dt
         elif self.__direction == DirectionEnum.RIGHT:
-            self.rect.x += self.__bullet_speed
+            self.rect.x += self.__bullet_speed * dt
 
-        self.__distance += self.__bullet_speed
+        self.__distance += self.__bullet_speed * dt
 
         if self.rect.right <= 0.0:
             self.rect.right = GAME_FIELD_WIDTH
