@@ -1,6 +1,7 @@
 
 import pygame
 from OpenGL.GL import *  # type: ignore
+import ctypes
 
 from game.entities.bullet import Bullet
 from game.enums.bullet_enum import BulletEnum
@@ -68,6 +69,22 @@ class Player:
         self.__vertex_count = 4
         self.__vao, self.__vbo = self.__renderer.create_vao_vbo(vertices)
 
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
+
+        size_1 = BLOCK_SIZE * 0.66
+        self.__health_vertices_1 = OpenGLUtils.create_square_vertices(size_1)
+        self.__health_vao_1, self.__health_vbo_1 = self.__renderer.create_vao_vbo(self.__health_vertices_1)
+
+        # Position attribute must be at location 0 like the main VAO
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
+
+        size_2 = BLOCK_SIZE * 0.32
+        self.__health_vertices_2 = OpenGLUtils.create_square_vertices(size_2)
+        self.__health_vao_2, self.__health_vbo_2 = self.__renderer.create_vao_vbo(self.__health_vertices_2)
+
+        # Position attribute must be at location 0 like the main VAO
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
 
@@ -191,10 +208,34 @@ class Player:
 
     def draw(self) -> None:
         self.__draw_scores.draw()
+
+        dark_color = (self._color[0] - 0.25, self._color[1] - 0.25, self._color[2] - 0.25)
+
         self.__renderer.draw_square(
             self.__vao, (self.__uUseTexture, False),
             (self.__uIsPlayer, True), self.__uPlayerPos,
-            self.__uColor, self.rect, self._color,
+            self.__uColor, self.rect, dark_color,
+            self.__vertex_count
+        )
+
+        if self.__health < 0:
+            return
+
+        health = self.__health / PLAYER_HEALTH
+        size = self.rect.w * health
+        rect = FloatRect(self.rect.x + (self.rect.w - size) / 2, self.rect.y + (self.rect.h - size) / 2, size, size)
+
+        if health == 0.66:
+            health_vao = self.__health_vao_1
+        elif health == 0.32:
+            health_vao = self.__health_vao_2
+        else:
+            health_vao = self.__vao
+
+        self.__renderer.draw_square(
+            health_vao, (self.__uUseTexture, False),
+            (self.__uIsPlayer, True), self.__uPlayerPos,
+            self.__uColor, rect, self._color,
             self.__vertex_count
         )
 
