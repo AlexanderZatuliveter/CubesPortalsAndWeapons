@@ -207,6 +207,9 @@ class Player:
         self.__draw_scores.update_pos(self.rect.x, self.rect.y - BLOCK_SIZE * 0.9)
 
     def draw(self) -> None:
+
+        glUniform1i(self.__uIsPlayer, GL_FALSE)
+
         self.__draw_scores.draw()
 
         dark_color = (self._color[0] - 0.25, self._color[1] - 0.25, self._color[2] - 0.25)
