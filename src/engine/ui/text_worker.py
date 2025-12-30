@@ -15,7 +15,7 @@ class TextWorker:
         font: pygame.font.Font | None,
         font_file_path: str,
         shader: ShaderProgram | None,
-        color: tuple[float, float, float]
+        color: tuple[float, float, float, float]
     ) -> None:
 
         self.__rect = pygame.Rect(x, y, *rect_size)
@@ -73,7 +73,7 @@ class TextWorker:
         glUniform1i(self.__uUseTexture, 1)
 
         # keep color as white so text renders in original color, but you can tint
-        glUniform3f(self.__uColor, *self.__color)
+        glUniform4f(self.__uColor, *self.__color)
 
         glBindVertexArray(self.__text_vao)
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4)

@@ -22,7 +22,7 @@ from game.enums.window_enum import WindowEnum
 class VictoryMenu:
     def __init__(
         self,
-        winner_color: tuple[float, float, float],
+        winner_color: tuple[float, float, float, float],
         game_state: GameState,
         screen: Surface,
         clock: Clock,

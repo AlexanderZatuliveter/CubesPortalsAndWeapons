@@ -23,7 +23,7 @@ class Renderer:
         uPlayerPos,
         uColor,
         rect: FloatRect,
-        color: tuple[float, float, float],
+        color: tuple[float, float, float, float],
         vertex_count: int = 4
     ) -> None:
 
@@ -35,6 +35,6 @@ class Renderer:
             if uIsPlayer[1] and uPlayerPos is not None:
                 glUniform2f(uPlayerPos, rect.x, rect.y)
 
-        glUniform3f(uColor, *color)
+        glUniform4f(uColor, *color)
         glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count)
         glBindVertexArray(0)

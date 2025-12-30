@@ -114,7 +114,7 @@ class Button:
         glUniform1i(self.__uIsPlayer, 0)
         glUniform1i(self.__uUseTexture, 0)
         # send RGBA with alpha=1.0
-        glUniform3f(self.__uColor, *self.__color)
+        glUniform4f(self.__uColor, *self.__color)
         glDrawArrays(GL_TRIANGLE_FAN, 0, self.__vertex_count)
         glBindVertexArray(0)
 

@@ -203,13 +203,13 @@ def main():
 
         # === Draw INSTANCED OBJECTS ===
         glUniform1i(uIsPlayer, 0)
-        glUniform3f(uColor, 0.5, 0.5, 0.5)
+        glUniform4f(uColor, 0.5, 0.5, 0.5, 1.0)
         glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, NUM)
 
         # === Draw PLAYER ===
         glUniform1i(uIsPlayer, 1)
         glUniform2f(uPlayerPos, x, y)
-        glUniform3f(uColor, 0.1, 0.7, 1.0)
+        glUniform4f(uColor, 0.1, 0.7, 1.0, 1.0)
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
 
         pygame.display.flip()

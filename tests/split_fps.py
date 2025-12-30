@@ -39,7 +39,7 @@ def draw():
     glClear(GL_COLOR_BUFFER_BIT)
 
     glBegin(GL_QUADS)
-    glColor3f(0.2, 0.8, 0.3)
+    glColor4f(0.2, 0.8, 0.3, 1.0)
     glVertex2f(x, -0.2)
     glVertex2f(x + 0.2, -0.2)
     glVertex2f(x + 0.2, 0.2)

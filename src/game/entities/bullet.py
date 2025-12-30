@@ -13,7 +13,7 @@ from engine.graphics.renderer import Renderer
 
 class Bullet:
     def __init__(self, x: float, y: float, direction: DirectionEnum,
-                 color: tuple[float, float, float], shader: ShaderProgram, bullet_type: BulletEnum):
+                 color: tuple[float, float, float, float], shader: ShaderProgram, bullet_type: BulletEnum):
 
         if bullet_type == BulletEnum.BIG:
             self.damage = BIG_BULLET_DAMAGE

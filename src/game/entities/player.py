@@ -21,7 +21,7 @@ class Player:
         self,
         game_field: GameField,
         shader,
-        color: tuple[float, float, float],
+        color: tuple[float, float, float, float],
         bullets: Bullets
     ) -> None:
 
@@ -212,12 +212,12 @@ class Player:
 
         self.__draw_scores.draw()
 
-        dark_color = (self._color[0] - 0.25, self._color[1] - 0.25, self._color[2] - 0.25)
+        blur_color = (self._color[0], self._color[1], self._color[2], 0.4)
 
         self.__renderer.draw_square(
             self.__vao, (self.__uUseTexture, False),
             (self.__uIsPlayer, True), self.__uPlayerPos,
-            self.__uColor, self.rect, dark_color,
+            self.__uColor, self.rect, blur_color,
             self.__vertex_count
         )
 

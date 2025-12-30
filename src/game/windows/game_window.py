@@ -69,12 +69,12 @@ class GameWindow:
 
         self.__running = True
 
-    def show(self) -> None | tuple[float, float, float]:
+    def show(self) -> None | tuple[float, float, float, float]:
 
         self.__screen = self.__display_manager.set_screen_size(self.__screen, self.__shader, self.__screen.get_size())
 
         # Set background's color
-        glClearColor(*BG_COLOR, 1)
+        glClearColor(*BG_COLOR)
 
         self.__music_manager.play_game_theme()
         self.__running = True

@@ -14,7 +14,7 @@ class Scores:
         y: float,
         text: str,
         shader: ShaderProgram | None,
-        color: tuple[float, float, float]
+        color: tuple[float, float, float, float]
     ) -> None:
 
         self.__rect: pygame.Rect = pygame.Rect(x, y, SCORES_WIDTH, SCORES_HEIGHT)
