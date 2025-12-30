@@ -36,6 +36,7 @@
         "Dinamic",
         "DOUBLEBUF",
         "guids",
+        "JOYAXISMOTION",
         "JOYBUTTONDOWN",
         "JOYDEVICEADDED",
         "JOYDEVICEREMOVED",
@@ -64,7 +65,8 @@
         "verts",
         "VIDEORESIZE",
         "WDXL",
-        "wght"
+        "wght",
+        "стика"
     ],
     "python.testing.pytestArgs": [
         ".",    // path to search unit tests

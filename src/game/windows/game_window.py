@@ -4,13 +4,13 @@ import time
 import pygame
 from pygame.event import Event
 from pygame import Surface
-from pygame.time import Clock
 
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 from game.entities.bullets import Bullets
 from game.consts import BG_COLOR, BLOCK_SIZE, DRAW_DT, UPDATE_DT, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from engine.joysticks_manager import JoysticksManager
 from game.systems.damage import Damage
 from engine.graphics.display_manager import DisplayManager
 from game.game_field import GameField
@@ -24,10 +24,16 @@ from game.enums.window_enum import WindowEnum
 
 class GameWindow:
 
-    def __init__(self, game_state: GameState, screen: Surface, clock: Clock, music_manager: MusicManager) -> None:
+    def __init__(
+        self,
+        game_state: GameState,
+        screen: Surface,
+        music_manager: MusicManager,
+        joysticks_manager: JoysticksManager
+    ) -> None:
+
         self.__game_state = game_state
         self.__screen = screen
-        self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
 
         # Disable unnecessary OpenGL features for 2D rendering
@@ -55,7 +61,7 @@ class GameWindow:
         self.__game_field.load_from_file("third.map")
 
         self.__bullets = Bullets()
-        self.__players = Players(self.__game_field, self.__shader, self.__bullets)
+        self.__players = Players(self.__game_field, joysticks_manager, self.__shader, self.__bullets)
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
 
         self.__display_manager = DisplayManager()
@@ -124,10 +130,10 @@ class GameWindow:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    self.__game_state.current_window = WindowEnum.PAUSE_MENU
-                    self.__running = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or \
+                    (event.type == pygame.JOYBUTTONDOWN and event.button == 7):
+                self.__game_state.current_window = WindowEnum.PAUSE_MENU
+                self.__running = False
             if event.type == pygame.VIDEORESIZE:
                 videoresize = self.__display_manager.resize_display(
                     self.__screen, self.__shader, self.__past_screen_size, event.size)

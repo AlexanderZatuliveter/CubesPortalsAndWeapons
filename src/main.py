@@ -3,6 +3,7 @@ import ctypes
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 
 from game.consts import SCREEN_HEIGHT, SCREEN_WIDTH
+from engine.joysticks_manager import JoysticksManager
 from game.windows.main_menu import MainMenu
 from game.windows.game_window import GameWindow
 from engine.music_manager import MusicManager
@@ -25,17 +26,18 @@ pygame.display.set_caption("Cubes, portals & weapons")
 clock = pygame.time.Clock()
 
 music_manager = MusicManager()
+joysticks_manager = JoysticksManager()
 
 game_state = GameState()
 
-main_menu = MainMenu(game_state, screen, clock, music_manager)
-pause_menu = PauseMenu(game_state, screen, clock, music_manager)
-game_window = GameWindow(game_state, screen, clock, music_manager)
+main_menu = MainMenu(game_state, screen, clock, music_manager, joysticks_manager)
+pause_menu = PauseMenu(game_state, screen, clock, music_manager, joysticks_manager)
+game_window = GameWindow(game_state, screen, music_manager, joysticks_manager)
 
 while True:
     if game_state.current_window == WindowEnum.MAIN_MENU:
         main_menu.show()
-        game_window = GameWindow(game_state, screen, clock, music_manager)
+        game_window = GameWindow(game_state, screen, music_manager, joysticks_manager)
 
     elif game_state.current_window == WindowEnum.GAME_WINDOW:
         variable = game_window.show()
@@ -46,6 +48,6 @@ while True:
         pause_menu.show()
 
     elif game_state.current_window == WindowEnum.VICTORY_MENU:
-        victory_menu = VictoryMenu(winner_color, game_state, screen, clock, music_manager)
+        victory_menu = VictoryMenu(winner_color, game_state, screen, clock, music_manager, joysticks_manager)
         victory_menu.show()
-        game_window = GameWindow(game_state, screen, clock, music_manager)
+        game_window = GameWindow(game_state, screen, music_manager, joysticks_manager)

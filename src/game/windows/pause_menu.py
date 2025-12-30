@@ -9,6 +9,7 @@ from OpenGL.GLU import *  # type: ignore
 from engine.ui.button import Button
 from game.consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, MENU_FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from engine.graphics.display_manager import DisplayManager
+from engine.joysticks_manager import JoysticksManager
 from game.systems.game_state import GameState
 from engine.music_manager import MusicManager
 from engine.graphics.opengl_utils import OpenGLUtils
@@ -17,8 +18,17 @@ from game.enums.window_enum import WindowEnum
 
 
 class PauseMenu:
-    def __init__(self, game_state: GameState, screen: Surface, clock: Clock, music_manager: MusicManager) -> None:
+    def __init__(
+        self,
+        game_state: GameState,
+        screen: Surface,
+        clock: Clock,
+        music_manager: MusicManager,
+        joysticks_manager: JoysticksManager
+    ) -> None:
+
         self.__game_state = game_state
+        self.__joysticks_manager = joysticks_manager
         self.__screen = screen
         self.__clock = clock
         self.__past_screen_size = self.__screen.get_size()
@@ -84,21 +94,14 @@ class PauseMenu:
             mouse_pos = pygame.mouse.get_pos()
             mouse_pressed = pygame.mouse.get_pressed()
 
-            for event in events:
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        self.__running = False
-
             self.update(events)
+            self.__joysticks_manager.update_joystick_selection(events, self.__buttons)
 
             scale = self.__screen.get_width() / pygame.display.get_window_size()[0]
             mouse_pos = (int(mouse_pos[0] * scale), int(mouse_pos[1] * scale))
 
             for button in self.__buttons:
-                button.update(mouse_pos, mouse_pressed)
+                button.update()
 
             # Draws
             glEnable(GL_BLEND)
@@ -116,14 +119,13 @@ class PauseMenu:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    self.__game_state.current_window = WindowEnum.GAME_WINDOW
-                    self.__running = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or \
+                    (event.type == pygame.JOYBUTTONDOWN and event.button == 7):
+                self.__game_state.current_window = WindowEnum.GAME_WINDOW
+                self.__running = False
             if event.type == pygame.VIDEORESIZE:
                 videoresize = self.__display_manager.resize_display(
                     self.__screen, self.__shader, self.__past_screen_size, event.size)
-
                 if videoresize is not None:
                     self.__screen, self.__past_screen_size = videoresize
 

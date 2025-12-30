@@ -6,12 +6,14 @@ from game.entities.bullets import Bullets
 from game.consts import BLUE, RED, GREEN, ORANGE
 from game.game_field import GameField
 from game.entities.player import Player
+from engine.joysticks_manager import JoysticksManager
 
 
 class Players(list[Player]):
     def __init__(
         self,
         game_field: GameField,
+        joysticks_manager: JoysticksManager,
         shader,
         bullets: Bullets
     ) -> None:
@@ -19,6 +21,7 @@ class Players(list[Player]):
         self.__bullets = bullets
         self.__shader = shader
         self.__game_field = game_field
+        self.__joystick_manager = joysticks_manager
 
     def update(self, events: list[Event], dt: float):
         self.__joystick_events(events)
@@ -38,18 +41,8 @@ class Players(list[Player]):
             #     self.__players[list(self.__players.keys())[0]] = 0
             #     print(f"{self.__players=}")
 
-    def __get_joysticks(self) -> list[pygame.joystick.JoystickType]:
-        joysticks: list = []
-        for num in range(pygame.joystick.get_count()):
-            joystick = pygame.joystick.Joystick(num)
-            if 'Receiver' in joystick.get_name():
-                continue
-            joystick.init()
-            joysticks.append(joystick)
-        return joysticks
-
     def __players_append(self) -> None:
-        joysticks = {id(j): j for j in self.__get_joysticks()}
+        joysticks = {id(j): j for j in self.__joystick_manager.get_joysticks()}
         player_joysticks = {id(player.get_joystick()): player for player in self}
 
         # получить список неактивных игроков

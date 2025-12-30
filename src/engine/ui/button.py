@@ -2,7 +2,6 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
 import numpy as np
 import ctypes
-
 import pygame
 
 from engine.common import get_resource_path
@@ -16,7 +15,7 @@ class Button:
         self.__text = text
         self.__color = GREY
         self.__active = False
-        self.__prev_pressed = False
+        self.__current_button = False
         self.__function = function
 
         # Shader uniform locations
@@ -68,27 +67,41 @@ class Button:
             color=WHITE
         )
 
-    def update(self, mouse_pos: tuple[int, int], mouse_pressed: tuple[bool, bool, bool]) -> None:
-        left = mouse_pressed[0]
+    def update(self) -> None:
 
-        mouse_down = left and not self.__prev_pressed
-        mouse_up = not left and self.__prev_pressed
+        # # MOUSE
+        # left = mouse_pressed[0]
 
-        if self.__rect.collidepoint(mouse_pos):
-            if mouse_down:
-                self.__color = BLUE
-                self.__active = True
-            elif not self.__active:
-                self.__color = ORANGE
-        else:
-            if not self.__active:
-                self.__color = GREY_2
+        # mouse_down = left and not self.__prev_pressed
+        # mouse_up = not left and self.__prev_pressed
 
-        if mouse_up and self.__active:
-            self.__active = False
+        # if self.__rect.collidepoint(mouse_pos):
+        #     if mouse_down:
+        #         self.__color = BLUE
+        #         self.__active = True
+        #     elif not self.__active:
+        #         self.__color = ORANGE
+        # else:
+        #     if not self.__active:
+        #         self.__color = GREY_2
+
+        # if mouse_up and self.__active:
+        #     self.__active = False
+        #     self.__perform_function()
+
+        # self.__prev_pressed = left
+
+        # JOYSTICK
+        if self.__current_button:
+            self.__color = ORANGE
+
+        if self.__active:
+            self.__color = BLUE
+            self.__current_button = self.__active = False
             self.__perform_function()
 
-        self.__prev_pressed = left
+        if not self.__current_button:
+            self.__color = GREY_2
 
     def draw(self) -> None:
         glBindVertexArray(self.__vao)
@@ -111,3 +124,15 @@ class Button:
         if self.__function is None:
             return
         self.__function()
+
+    def set_current_button(self) -> None:
+        self.__current_button = True
+
+    def unset_current_button(self) -> None:
+        self.__current_button = False
+
+    def is_current(self) -> bool:
+        return self.__current_button
+
+    def set_active(self) -> None:
+        self.__active = True
