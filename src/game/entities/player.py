@@ -6,7 +6,7 @@ import ctypes
 from game.entities.bullet import Bullet
 from game.enums.bullet_enum import BulletEnum
 from game.entities.bullets import Bullets
-from game.consts import ANTI_GRAVITY_DECAY, BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SMALL_BULLET_HEIGHT, SMALL_BULLET_WIDTH
+from game.consts import ANTI_GRAVITY_DECAY, BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SMALL_BULLET_HEIGHT, SMALL_BULLET_WIDTH
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -43,11 +43,19 @@ class Player:
         self.max_velocity_y = PLAYER_MAX_VELOCITY_Y
         self.speed = PLAYER_SPEED
         self.anti_gravity = 0.0
+
         self.__max_anti_gravity = MAX_ANTI_GRAVITY
         self.__change_anti_gravity = CHANGE_ANTI_GRAVITY
         self.__anti_gravity_decay = ANTI_GRAVITY_DECAY
+
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__jumping = False
+
+        self.__is_dashing = False
+        self.__dash_duration = PLAYER_DASH_DURATION
+        self.__dash_speed = PLAYER_DASH_SPEED
+        self.__dash_start_time = 0
+        self.__dash_last_time = 0
 
         self._big_shot_cooldown = 1000
         self._big_shot_time = 0
@@ -151,6 +159,7 @@ class Player:
         elif difx < 0:
             self.__direction = DirectionEnum.LEFT
 
+        # Right and left movement
         if is_block is None:
             self.rect.x += difx
         else:
@@ -164,6 +173,24 @@ class Player:
                 self.rect.x += difx
             elif difx > 0 and is_block == DirectionEnum.LEFT:
                 self.rect.x += difx
+
+        # Dash
+        current_time = pygame.time.get_ticks()
+
+        if current_time - self.__dash_last_time > 1000 and not self.__is_dashing:
+            if self.__joystick and self.__joystick.get_button(2):
+                self.__is_dashing = True
+                self.__dash_start_time = current_time
+                self.__dash_last_time = current_time
+
+        if self.__is_dashing:
+            if current_time - self.__dash_start_time < self.__dash_duration:
+                if self.__direction == DirectionEnum.RIGHT:
+                    self.rect.x += self.__dash_speed * dt
+                else:
+                    self.rect.x -= self.__dash_speed * dt
+            else:
+                self.__is_dashing = False
 
         is_bottom_block = self.__physics.is_block(DirectionEnum.DOWN, dt)
         is_upper_block = self.__physics.is_block(DirectionEnum.UP, dt)
@@ -183,18 +210,20 @@ class Player:
         if self.__jumping == True and self.anti_gravity > 0:
             self.anti_gravity -= self.__anti_gravity_decay * dt
 
+        # Physics
         self.__physics.gravitation(dt)
         self.__physics.borders_teleportation()
 
+        # Bullets
         if not self.__joystick:
             return
 
         is_shot = not self._is_big_shot and not self._is_small_shot
 
         if is_shot:
-            if (self.__joystick.get_button(1) or self.__joystick.get_axis(5) > 0):
+            if self.__joystick.get_axis(5) > 0:
                 self.__shoot(bullet_type=BulletEnum.SMALL)
-            elif (self.__joystick.get_button(2) or self.__joystick.get_axis(4) > 0):
+            elif self.__joystick.get_axis(4) > 0:
                 self.__shoot(bullet_type=BulletEnum.BIG)
 
         if self._is_small_shot and pygame.time.get_ticks() - self._small_shot_time >= self._small_shot_cooldown:
@@ -204,6 +233,7 @@ class Player:
             self._is_big_shot = False
             self._big_shot_time = 0
 
+        # Update scores
         self.__draw_scores.update_pos(self.rect.x, self.rect.y - BLOCK_SIZE * 0.9)
 
     def draw(self) -> None:
