@@ -3,6 +3,7 @@
 import ctypes
 import numpy as np
 from OpenGL.GL import *  # type: ignore
+import pygame
 
 from engine.common import load_texture
 from engine.graphics.renderer import Renderer
@@ -10,25 +11,35 @@ from game.consts import BLOCK_SIZE
 
 
 class Weapon:
-    def __init__(self, image_shader, image_path: str, flip_x: bool = False, flip_y: bool = True) -> None:
+    def __init__(
+        self,
+        image_shader,
+        image_path: str,
+        position: tuple[float, float],
+        flip_x: bool = False,
+        flip_y: bool = True
+    ) -> None:
+
         self.__shader = image_shader
         self.__renderer = Renderer()
 
         self.__texture, ratio = load_texture(image_path)
 
-        w = BLOCK_SIZE * ratio[0]
-        h = BLOCK_SIZE * ratio[1]
+        self.__width = BLOCK_SIZE * ratio[0]
+        self.__height = BLOCK_SIZE * ratio[1]
         x = 0
         y = 0
+
+        self.rect = pygame.Rect(*position, self.__width, self.__height)
 
         u0, u1 = (1.0, 0.0) if flip_x else (0.0, 1.0)
         v0, v1 = (1.0, 0.0) if flip_y else (0.0, 1.0)
 
         vertices = np.array([
             x, y, u0, v0,
-            x + w, y, u1, v0,
-            x + w, y + h, u1, v1,
-            x, y + h, u0, v1,
+            x + self.__width, y, u1, v0,
+            x + self.__width, y + self.__height, u1, v1,
+            x, y + self.__height, u0, v1,
         ], dtype=np.float32)
 
         self.__vao, self.__vbo = self.__renderer.create_vao_vbo(vertices)
@@ -52,9 +63,9 @@ class Weapon:
         self.__uColor = glGetUniformLocation(self.__shader, "uColor")
         glUseProgram(0)
 
-    def draw(self, position=(100, 100)):
+    def draw(self) -> None:
         self.__renderer.draw_texture(
-            position, self.__vao, self.__shader,
+            self.rect.topleft, self.__vao, self.__shader,
             self.__uPlayerPos, self.__uIsPlayer,
             self.__uUseTexture, self.__uTexture,
             self.__texture, self.__uColor

@@ -5,7 +5,7 @@ import ctypes
 
 from game.entities.bullet import Bullet
 from game.enums.bullet_enum import BulletEnum
-from game.entities.bullets import Bullets
+from game.systems.bullets import Bullets
 from game.consts import ANTI_GRAVITY_DECAY, BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SMALL_BULLET_HEIGHT, SMALL_BULLET_WIDTH
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect

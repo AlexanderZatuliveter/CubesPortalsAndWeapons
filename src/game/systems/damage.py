@@ -2,7 +2,7 @@ from typing import Sequence
 import numpy as np
 
 from game.entities.bullet import Bullet
-from game.entities.bullets import Bullets
+from game.systems.bullets import Bullets
 from game.game_field import GameField
 from game.systems.object_protocol import DamageableObject
 

@@ -2,7 +2,7 @@
 from pygame.event import Event
 import pygame
 
-from game.entities.bullets import Bullets
+from game.systems.bullets import Bullets
 from game.consts import BLUE, RED, GREEN, ORANGE
 from game.game_field import GameField
 from game.entities.player import Player

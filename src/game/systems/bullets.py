@@ -10,4 +10,4 @@ class Bullets(list[Bullet]):
         self.append(bullet)
 
     def clear_by_color(self, color: tuple[float, float, float, float]):
-        self = [b for b in self if b._color != color]
+        self[:] = [b for b in self if b._color != color]

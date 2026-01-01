@@ -4,6 +4,13 @@ import pygame
 from OpenGL.GL import *  # type: ignore
 
 
+def get_screen_resolution() -> tuple[float, float]:
+    ctypes.windll.user32.SetProcessDPIAware()
+    width = ctypes.windll.user32.GetSystemMetrics(0)
+    height = ctypes.windll.user32.GetSystemMetrics(1)
+    return width, height
+
+
 def get_resource_path(relative_path):
     """ Get absolute path to resource, works for dev and PyInstaller """
     if getattr(sys, 'frozen', False):
@@ -21,7 +28,6 @@ def load_texture(path):
 
     # ratio = image.get_width() / image.get_height(), image.get_height() / image.get_height()
     ratio = image.get_width() / image.get_width() * 2, image.get_height() / image.get_width() * 2
-    print(ratio)
 
     # 2. Переворачиваем и преобразуем в байты
     # OpenGL считает (0,0) левым нижним углом, а Pygame - верхним левым.

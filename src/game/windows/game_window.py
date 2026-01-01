@@ -1,4 +1,5 @@
 
+import random
 import sys
 import time
 import pygame
@@ -8,19 +9,19 @@ from pygame import Surface
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from game.entities.bullets import Bullets
+from game.systems.bullets import Bullets
 from game.consts import BG_COLOR, BLOCK_SIZE, DRAW_DT, UPDATE_DT, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from engine.joysticks_manager import JoysticksManager
-from game.entities.weapon import Weapon
 from game.systems.damage import Damage
 from engine.graphics.display_manager import DisplayManager
 from game.game_field import GameField
 from game.systems.game_state import GameState
 from engine.music_manager import MusicManager
 from engine.graphics.opengl_utils import OpenGLUtils
-from game.entities.players import Players
+from game.systems.players import Players
 from engine.shader_utils import ShaderUtils
 from game.enums.window_enum import WindowEnum
+from game.systems.weapons import Weapons
 
 
 class GameWindow:
@@ -70,12 +71,13 @@ class GameWindow:
             self.__shader
         )
 
+        # Load map first so block positions are available for weapon placement
         self.__game_field.load_from_file("third.map")
 
         self.__bullets = Bullets()
         self.__players = Players(self.__game_field, joysticks_manager, self.__shader, self.__bullets)
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
-        self.__weapon = Weapon(self.__image_shader, "src/_content/images/bazooka.png")
+        self.__weapons = Weapons(self.__game_field, self.__image_shader)
 
         self.__display_manager = DisplayManager()
         self.__music_manager = music_manager
@@ -134,7 +136,7 @@ class GameWindow:
 
                 self.__bullets.draw()
 
-                self.__weapon.draw()
+                self.__weapons.draw()
 
                 pygame.display.flip()
 

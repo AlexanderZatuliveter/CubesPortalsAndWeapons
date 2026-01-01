@@ -47,6 +47,18 @@ class GameField:
 
         return False
 
+    def return_block_positions(self) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+        none_positions = []
+        block_positions = []
+        for (bx, by), block in np.ndenumerate(self.field):
+            if not block:
+                pos = self._get_block_position(bx, by)
+                none_positions.append(pos)
+            else:
+                pos = self._get_block_position(bx, by)
+                block_positions.append(pos)
+        return (none_positions, block_positions)
+
     def vertical_block_distance(
         self,
         rightx: float,

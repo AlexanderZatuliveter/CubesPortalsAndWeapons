@@ -20,7 +20,7 @@ class Renderer:
         vao,
         uUseTexture: tuple[int, bool],
         uIsPlayer: tuple[int, bool] | None,
-        uPlayerPos: int,
+        uPlayerPos: int | None,
         uColor: int,
         rect: FloatRect,
         color: tuple[float, float, float, float],
