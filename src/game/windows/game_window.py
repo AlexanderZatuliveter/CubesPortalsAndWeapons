@@ -11,6 +11,7 @@ from OpenGL.GLU import *  # type: ignore
 from game.entities.bullets import Bullets
 from game.consts import BG_COLOR, BLOCK_SIZE, DRAW_DT, UPDATE_DT, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from engine.joysticks_manager import JoysticksManager
+from game.entities.weapon import Weapon
 from game.systems.damage import Damage
 from engine.graphics.display_manager import DisplayManager
 from game.game_field import GameField
@@ -36,6 +37,9 @@ class GameWindow:
         self.__screen = screen
         self.__past_screen_size = self.__screen.get_size()
 
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
         # Disable unnecessary OpenGL features for 2D rendering
         glDisable(GL_DEPTH_TEST)  # No depth testing needed for 2D
         glDisable(GL_CULL_FACE)   # No backface culling needed
@@ -52,6 +56,14 @@ class GameWindow:
         self.__projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
         glUniformMatrix4fv(uProjection, 1, GL_FALSE, self.__projection.T)
 
+        self.__image_shader = ShaderUtils.create_shader(
+            "./src/game/_shaders/shader.vert", "./src/game/_shaders/shader.frag")
+        glUseProgram(self.__image_shader)
+
+        uImageProjection = glGetUniformLocation(self.__image_shader, "uProjection")
+        self.__image_projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
+        glUniformMatrix4fv(uImageProjection, 1, GL_FALSE, self.__image_projection.T)
+
         self.__game_field = GameField(
             int(GAME_FIELD_WIDTH // BLOCK_SIZE),
             int(GAME_FIELD_HEIGHT // BLOCK_SIZE),
@@ -63,6 +75,7 @@ class GameWindow:
         self.__bullets = Bullets()
         self.__players = Players(self.__game_field, joysticks_manager, self.__shader, self.__bullets)
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
+        self.__weapon = Weapon(self.__image_shader, "src/_content/images/bazooka.png")
 
         self.__display_manager = DisplayManager()
         self.__music_manager = music_manager
@@ -120,6 +133,8 @@ class GameWindow:
                     player.draw()
 
                 self.__bullets.draw()
+
+                self.__weapon.draw()
 
                 pygame.display.flip()
 

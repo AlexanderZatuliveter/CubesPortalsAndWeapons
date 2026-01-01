@@ -20,8 +20,8 @@ class Renderer:
         vao,
         uUseTexture: tuple[int, bool],
         uIsPlayer: tuple[int, bool] | None,
-        uPlayerPos,
-        uColor,
+        uPlayerPos: int,
+        uColor: int,
         rect: FloatRect,
         color: tuple[float, float, float, float],
         vertex_count: int = 4
@@ -38,3 +38,41 @@ class Renderer:
         glUniform4f(uColor, *color)
         glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count)
         glBindVertexArray(0)
+
+    def draw_texture(
+        self,
+        position: tuple[float, float],
+        vao,
+        shader,
+        uPlayerPos: int,
+        uIsPlayer: int,
+        uUseTexture: int,
+        uTexture: int,
+        texture,
+        uColor: int
+    ) -> None:
+
+        glUseProgram(shader)
+
+        if uPlayerPos != -1 and position is not None:
+            glUniform2f(uPlayerPos, float(position[0]), float(position[1]))
+
+        if uIsPlayer != -1:
+            glUniform1i(uIsPlayer, 1)
+
+        if uUseTexture != -1:
+            glUniform1i(uUseTexture, 1)
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, texture)
+        if uTexture != -1:
+            glUniform1i(uTexture, 0)
+
+        # Устанавливаем цвет в белый (чтобы текстура отображалась без изменения)
+        if uColor != -1:
+            glUniform4f(uColor, 1.0, 1.0, 1.0, 1.0)
+
+        # Отрисовка
+        glBindVertexArray(vao)
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
+        glBindVertexArray(0)
+        glUseProgram(0)

@@ -36,6 +36,7 @@
         "Dinamic",
         "DOUBLEBUF",
         "guids",
+        "itemsize",
         "JOYAXISMOTION",
         "JOYBUTTONDOWN",
         "JOYDEVICEADDED",
