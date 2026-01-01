@@ -3,9 +3,9 @@ import ctypes
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
 
-from game.enums.bullet_enum import BulletEnum
-from game.consts import BIG_BULLET_DAMAGE, BIG_BULLET_HEIGHT, BIG_BULLET_MAX_DISTANCE, BIG_BULLET_SPEED, BIG_BULLET_WIDTH, GAME_FIELD_WIDTH, SMALL_BULLET_DAMAGE, SMALL_BULLET_HEIGHT, SMALL_BULLET_MAX_DISTANCE, SMALL_BULLET_SPEED, SMALL_BULLET_WIDTH
+from game.consts import BAZOOKA_BULLET_DAMAGE, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_SPEED, BAZOOKA_BULLET_WIDTH, GAME_FIELD_WIDTH, LASER_GUN_BULLET_DAMAGE, LASER_GUN_BULLET_HEIGHT, LASER_GUN_BULLET_SPEED, LASER_GUN_BULLET_WIDTH, MACHINE_GUN_BULLET_DAMAGE, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_SPEED, MACHINE_GUN_BULLET_WIDTH
 from game.enums.direction_enum import DirectionEnum
+from game.enums.weapon_enum import WeaponEnum
 from game.systems.float_rect import FloatRect
 from engine.graphics.opengl_utils import OpenGLUtils
 from engine.graphics.renderer import Renderer
@@ -13,23 +13,28 @@ from engine.graphics.renderer import Renderer
 
 class Bullet:
     def __init__(self, x: float, y: float, direction: DirectionEnum,
-                 color: tuple[float, float, float, float], shader: ShaderProgram, bullet_type: BulletEnum):
+                 color: tuple[float, float, float, float], shader: ShaderProgram, bullet_type: WeaponEnum):
 
-        if bullet_type == BulletEnum.BIG:
-            self.damage = BIG_BULLET_DAMAGE
-            self.__bullet_speed = BIG_BULLET_SPEED
-            self.__max_distance = BIG_BULLET_MAX_DISTANCE
-            width = BIG_BULLET_WIDTH
-            height = BIG_BULLET_HEIGHT
-            self._type = BulletEnum.BIG
+        if bullet_type == WeaponEnum.BAZOOKA:
+            self.damage = BAZOOKA_BULLET_DAMAGE
+            self.__bullet_speed = BAZOOKA_BULLET_SPEED
+            width = BAZOOKA_BULLET_WIDTH
+            height = BAZOOKA_BULLET_HEIGHT
+            self._type = WeaponEnum.BAZOOKA
 
-        elif bullet_type == BulletEnum.SMALL:
-            self.damage = SMALL_BULLET_DAMAGE
-            self.__bullet_speed = SMALL_BULLET_SPEED
-            self.__max_distance = SMALL_BULLET_MAX_DISTANCE
-            width = SMALL_BULLET_WIDTH
-            height = SMALL_BULLET_HEIGHT
-            self._type = BulletEnum.SMALL
+        elif bullet_type == WeaponEnum.MACHINE_GUN:
+            self.damage = MACHINE_GUN_BULLET_DAMAGE
+            self.__bullet_speed = MACHINE_GUN_BULLET_SPEED
+            width = MACHINE_GUN_BULLET_WIDTH
+            height = MACHINE_GUN_BULLET_HEIGHT
+            self._type = WeaponEnum.MACHINE_GUN
+
+        elif bullet_type == WeaponEnum.LASER_GUN:
+            self.damage = LASER_GUN_BULLET_DAMAGE
+            self.__bullet_speed = LASER_GUN_BULLET_SPEED
+            width = LASER_GUN_BULLET_WIDTH
+            height = LASER_GUN_BULLET_HEIGHT
+            self._type = WeaponEnum.LASER_GUN
 
         self.rect = FloatRect(x, y, width, height)
         self._color = color
@@ -64,8 +69,8 @@ class Bullet:
         elif self.rect.left >= GAME_FIELD_WIDTH:
             self.rect.left = 0.0
 
-        if self.__distance >= self.__max_distance:
-            self.__is_destroyed = True
+        # if self.__distance >= self.__max_distance:
+        #     self.__is_destroyed = True
 
     def is_destroyed(self):
         return self.__is_destroyed

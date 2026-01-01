@@ -4,10 +4,11 @@ from OpenGL.GL.shaders import ShaderProgram
 
 from game.consts import BLOCK_SIZE
 from game.entities.weapon import Weapon
+from game.enums.weapon_enum import WeaponEnum
 from game.game_field import GameField
 
 
-class Weapons:
+class Weapons(list[Weapon]):
     def __init__(self, game_field: GameField, shader: ShaderProgram | None) -> None:
         self.__shader = shader
 
@@ -20,14 +21,13 @@ class Weapons:
 
         none_positions, block_positions = game_field.return_block_positions()
 
-        self.__weapons: list[Weapon] = []
         if block_positions:
             for num in range(5):
                 while True:
                     new_weapon = self.__create_weapon(weapon_image_paths, block_positions, none_positions)
 
                     invalid = False
-                    for weapon in self.__weapons:
+                    for weapon in self:
                         if new_weapon.rect.colliderect(weapon.rect):
                             invalid = True
                             break
@@ -35,7 +35,7 @@ class Weapons:
                     if invalid:
                         continue
 
-                    self.__weapons.append(new_weapon)
+                    self.append(new_weapon)
                     break
 
     def __create_weapon(
@@ -65,8 +65,16 @@ class Weapons:
                 or image_path == "src/_content/images/shotgun.png":
             flip_x = True
 
-        return Weapon(self.__shader, image_path, weapon_pos, flip_x=flip_x)
+        weapon_type = WeaponEnum.MACHINE_GUN
+        if image_path == "src/_content/images/machine_gun.png":
+            weapon_type = WeaponEnum.MACHINE_GUN
+        elif image_path == "src/_content/images/laser_gun.png":
+            weapon_type = WeaponEnum.LASER_GUN
+        elif image_path == "src/_content/images/bazooka.png":
+            weapon_type = WeaponEnum.BAZOOKA
+
+        return Weapon(self.__shader, image_path, weapon_pos, weapon_type, flip_x=flip_x)
 
     def draw(self) -> None:
-        for weapon in self.__weapons:
+        for weapon in self:
             weapon.draw()

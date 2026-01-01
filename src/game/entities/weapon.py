@@ -8,6 +8,8 @@ import pygame
 from engine.common import load_texture
 from engine.graphics.renderer import Renderer
 from game.consts import BLOCK_SIZE
+from game.enums.weapon_enum import WeaponEnum
+from game.systems.float_rect import FloatRect
 
 
 class Weapon:
@@ -16,6 +18,7 @@ class Weapon:
         image_shader,
         image_path: str,
         position: tuple[float, float],
+        type: WeaponEnum,
         flip_x: bool = False,
         flip_y: bool = True
     ) -> None:
@@ -23,6 +26,7 @@ class Weapon:
         self.__shader = image_shader
         self.__renderer = Renderer()
 
+        self.__type = type
         self.__texture, ratio = load_texture(image_path)
 
         self.__width = BLOCK_SIZE * ratio[0]
@@ -30,7 +34,7 @@ class Weapon:
         x = 0
         y = 0
 
-        self.rect = pygame.Rect(*position, self.__width, self.__height)
+        self.rect = FloatRect(*position, self.__width, self.__height)
 
         u0, u1 = (1.0, 0.0) if flip_x else (0.0, 1.0)
         v0, v1 = (1.0, 0.0) if flip_y else (0.0, 1.0)
@@ -70,3 +74,6 @@ class Weapon:
             self.__uUseTexture, self.__uTexture,
             self.__texture, self.__uColor
         )
+
+    def get_type(self) -> WeaponEnum:
+        return self.__type

@@ -4,9 +4,9 @@ from OpenGL.GL import *  # type: ignore
 import ctypes
 
 from game.entities.bullet import Bullet
-from game.enums.bullet_enum import BulletEnum
+from game.enums.weapon_enum import WeaponEnum
 from game.systems.bullets import Bullets
-from game.consts import ANTI_GRAVITY_DECAY, BLOCK_SIZE, BIG_BULLET_HEIGHT, BIG_BULLET_WIDTH, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SMALL_BULLET_HEIGHT, SMALL_BULLET_WIDTH
+from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, LASER_GUN_BULLET_HEIGHT, LASER_GUN_BULLET_WIDTH, LASER_GUN_COOLDOWN, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -57,13 +57,10 @@ class Player:
         self.__dash_start_time = 0
         self.__dash_last_time = 0
 
-        self._big_shot_cooldown = 1000
-        self._big_shot_time = 0
-        self._is_big_shot = False
+        self.update_weapon(WeaponEnum.MACHINE_GUN)
 
-        self._small_shot_cooldown = 350
-        self._small_shot_time = 0
-        self._is_small_shot = False
+        self._shot_time = 0
+        self._is_shot = False
 
         self.__shader = shader
         self.__renderer = Renderer()
@@ -96,13 +93,28 @@ class Player:
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
 
+    def update_weapon(self, weapon_type: WeaponEnum):
+        self.__current_weapon = weapon_type
+
+        if self.__current_weapon == WeaponEnum.MACHINE_GUN:
+            self._shot_cooldown = MACHINE_GUN_COOLDOWN
+            self.__bullet_width, self.__bullet_height = MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_BULLET_HEIGHT
+        if self.__current_weapon == WeaponEnum.LASER_GUN:
+            self._shot_cooldown = LASER_GUN_COOLDOWN
+            self.__bullet_width, self.__bullet_height = LASER_GUN_BULLET_WIDTH, LASER_GUN_BULLET_HEIGHT
+        if self.__current_weapon == WeaponEnum.BAZOOKA:
+            self._shot_cooldown = BAZOOKA_COOLDOWN
+            self.__bullet_width, self.__bullet_height = BAZOOKA_BULLET_WIDTH, BAZOOKA_BULLET_HEIGHT
+
     def damage(self, bullet: Bullet):
         self.__health -= bullet.damage
 
         if self.__joystick:
-            if bullet._type == BulletEnum.SMALL:
+            if bullet._type == WeaponEnum.MACHINE_GUN:
                 self.__joystick.rumble(0.0, 0.3, 100)
-            if bullet._type == BulletEnum.BIG:
+            if bullet._type == WeaponEnum.LASER_GUN:
+                self.__joystick.rumble(0.0, 0.35, 100)
+            if bullet._type == WeaponEnum.BAZOOKA:
                 self.__joystick.rumble(0.2, 0.4, 150)
 
         if self.__health <= 0:
@@ -111,35 +123,30 @@ class Player:
             self.__bullets.clear_by_color(self._color)
             return "kill"
 
-    def __shoot(self, bullet_type: BulletEnum):
+    def __shoot(self, bullet_type: WeaponEnum):
 
         if not self.__joystick:
             return
 
-        # параметры для обоих типов
-        if bullet_type == BulletEnum.BIG:
-            width, height = BIG_BULLET_WIDTH, BIG_BULLET_HEIGHT
-            cooldown_flag = "_is_big_shot"
-            cooldown_time = "_big_shot_time"
-        else:  # SMALL
-            width, height = SMALL_BULLET_WIDTH, SMALL_BULLET_HEIGHT
-            cooldown_flag = "_is_small_shot"
-            cooldown_time = "_small_shot_time"
-
         # попытка выстрела
-        x = (self.rect.x + self.rect.width) if self.__direction == DirectionEnum.RIGHT else (self.rect.x - width)
+        x = (
+            self.rect.x +
+            self.rect.width) if self.__direction == DirectionEnum.RIGHT else (
+            self.rect.x -
+            self.__bullet_width
+        )
 
         self.__bullets.add_bullet(Bullet(
             x,
-            self.rect.y + self.rect.height / 2 - height / 2,
+            self.rect.y + self.rect.height / 2 - self.__bullet_height / 2,
             self.__direction,
             self._color,
             self.__shader,
             bullet_type
         ))
 
-        setattr(self, cooldown_flag, True)
-        setattr(self, cooldown_time, pygame.time.get_ticks())
+        self._is_shot = True
+        self._shot_time = pygame.time.get_ticks()
 
     def update(self, dt: float) -> None:
 
@@ -218,20 +225,15 @@ class Player:
         if not self.__joystick:
             return
 
-        is_shot = not self._is_big_shot and not self._is_small_shot
-
-        if is_shot:
+        if not self._is_shot:
             if self.__joystick.get_axis(5) > 0:
-                self.__shoot(bullet_type=BulletEnum.SMALL)
-            elif self.__joystick.get_axis(4) > 0:
-                self.__shoot(bullet_type=BulletEnum.BIG)
+                self.__shoot(bullet_type=self.__current_weapon)
 
-        if self._is_small_shot and pygame.time.get_ticks() - self._small_shot_time >= self._small_shot_cooldown:
-            self._is_small_shot = False
-            self._small_shot_time = 0
-        if self._is_big_shot and pygame.time.get_ticks() - self._big_shot_time >= self._big_shot_cooldown:
-            self._is_big_shot = False
-            self._big_shot_time = 0
+        print(f"{pygame.time.get_ticks() - self._shot_time=}")
+
+        if self._is_shot and pygame.time.get_ticks() - self._shot_time >= self._shot_cooldown:
+            self._is_shot = False
+            self._shot_time = 0
 
         # Update scores
         self.__draw_scores.update_pos(self.rect.x, self.rect.y - BLOCK_SIZE * 0.9)

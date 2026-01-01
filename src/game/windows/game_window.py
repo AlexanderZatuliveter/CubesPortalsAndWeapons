@@ -121,6 +121,12 @@ class GameWindow:
                         self.__game_state.current_window = WindowEnum.VICTORY_MENU
                         return player._color
 
+                for weapon in self.__weapons:
+                    for player in self.__players:
+                        if player.rect.colliderect(weapon.rect):
+                            player.update_weapon(weapon.get_type())
+                            self.__weapons.remove(weapon)
+
                 update_accumulator -= UPDATE_DT
 
             # Draws
