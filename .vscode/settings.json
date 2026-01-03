@@ -35,6 +35,7 @@
         "dify",
         "Dinamic",
         "DOUBLEBUF",
+        "glfw",
         "guids",
         "itemsize",
         "JOYAXISMOTION",
@@ -67,7 +68,8 @@
         "VIDEORESIZE",
         "WDXL",
         "wght",
-        "стика"
+        "стика",
+        "хардкода"
     ],
     "python.testing.pytestArgs": [
         ".",    // path to search unit tests

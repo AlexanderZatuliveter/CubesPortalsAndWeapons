@@ -86,7 +86,7 @@ def look_at(eye, target, up):
 
 
 def rotate(angle):
-    return rotate_y(90)
+    return rotate_y(angle)
 
 # Вращение вокруг оси X (как сальто)
 
@@ -142,30 +142,28 @@ def load_and_normalize_mesh(file_path):
     if isinstance(mesh, trimesh.Scene):
         mesh = mesh.dump(concatenate=True)
 
-    # === ИСПРАВЛЕНИЕ ОРИЕНТАЦИИ ===
-    # Поворачиваем модель на -90 градусов вокруг оси X.
-    # Это превращает "Z-вверх" (CAD) в "Y-вверх" (OpenGL)
+    # === ИСПРАВЛЕНИЕ ОРИЕНТАЦИИ (X-90 и Y+90) ===
 
-    # Создаем матрицу поворота вручную
-    angle = -np.pi / 2  # -90 градусов
-    c = np.cos(angle)
-    s = np.sin(angle)
-    rotation_matrix = np.array([
-        [1, 0, 0, 0],
-        [0, c, -s, 0],
-        [0, s, c, 0],
-        [0, 0, 0, 1]
-    ])
+    # 1. Поворот по X на -90 градусов (исправляет вертикальное положение)
+    angle_x = -np.pi / 2
+    rot_x = trimesh.transformations.rotation_matrix(angle_x, [1, 0, 0])
 
-    # Применяем поворот к самому мешу
-    mesh.apply_transform(rotation_matrix)
-    # ==============================
+    # 2. Поворот по Y на 90 градусов (ваш запрос)
+    angle_y = np.pi / 2
+    rot_y = trimesh.transformations.rotation_matrix(angle_y, [0, 1, 0])
 
-    # 1. Центрируем модель ПОСЛЕ поворота
+    # Объединяем трансформации (порядок: сначала X, потом Y)
+    full_transform = trimesh.transformations.concatenate_matrices(rot_y, rot_x)
+
+    # Применяем к мешу
+    mesh.apply_transform(full_transform)
+    # ===========================================
+
     if isinstance(mesh, trimesh.Trimesh):
+        # Центрируем модель после всех поворотов
         mesh.vertices -= mesh.center_mass
 
-        # 2. Масштабируем
+        # Масштабируем до единичного размера
         max_scale = np.max(mesh.extents)
         if max_scale > 0:
             mesh.vertices /= max_scale
