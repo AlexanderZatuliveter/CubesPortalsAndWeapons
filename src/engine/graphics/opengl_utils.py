@@ -34,3 +34,23 @@ class OpenGLUtils:
             [0, 0, -2 / (f - n), -(f + n) / (f - n)],
             [0, 0, 0, 1],
         ], dtype=np.float32)
+
+    @staticmethod
+    def look_at(eye, target, up):
+
+        def normalize(v):
+            norm = np.linalg.norm(v)
+            if norm == 0:
+                return v
+            return v / norm
+
+        f = normalize(target - eye)
+        s = normalize(np.cross(f, up))
+        u = np.cross(s, f)
+
+        return np.array([
+            [s[0], u[0], -f[0], -np.dot(s, eye)],
+            [s[1], u[1], -f[1], -np.dot(u, eye)],
+            [s[2], u[2], -f[2], np.dot(f, eye)],
+            [0, 0, 0, 1]
+        ], dtype=np.float32)

@@ -229,8 +229,6 @@ class Player:
             if self.__joystick.get_axis(5) > 0:
                 self.__shoot(bullet_type=self.__current_weapon)
 
-        print(f"{pygame.time.get_ticks() - self._shot_time=}")
-
         if self._is_shot and pygame.time.get_ticks() - self._shot_time >= self._shot_cooldown:
             self._is_shot = False
             self._shot_time = 0

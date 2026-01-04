@@ -7,7 +7,7 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 from engine.ui.button import Button
-from game.consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, MENU_FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from game.consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, MENU_BG_COLOR, MENU_FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from engine.graphics.display_manager import DisplayManager
 from engine.joysticks_manager import JoysticksManager
 from game.systems.game_state import GameState
@@ -37,7 +37,11 @@ class PauseMenu:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        self.__shader = ShaderUtils.create_shader("./src/game/_shaders/shader.vert", "./src/game/_shaders/shader.frag")
+        self.__shader = ShaderUtils.create_shader(
+            "./src/game/_shaders/2d_shader.vert",
+            "./src/game/_shaders/2d_shader.frag"
+        )
+
         glUseProgram(self.__shader)
 
         uProjection = glGetUniformLocation(self.__shader, "uProjection")
@@ -82,7 +86,7 @@ class PauseMenu:
         self.__screen = self.__display_manager.set_screen_size(self.__screen, self.__shader, self.__screen.get_size())
 
         # Set background's color
-        glClearColor(0.1, 0.1, 0.1, 1)
+        glClearColor(*MENU_BG_COLOR)
 
         self.__music_manager.play_pause_music()
         self.__running = True
@@ -104,8 +108,11 @@ class PauseMenu:
                 button.update()
 
             # Draws
+            glEnable(GL_DEPTH_TEST)
+
             glEnable(GL_BLEND)
-            glClear(GL_COLOR_BUFFER_BIT)
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
             glUseProgram(self.__shader)
 
             for button in self.__buttons:

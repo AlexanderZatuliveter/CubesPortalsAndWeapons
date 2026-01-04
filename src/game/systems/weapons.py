@@ -1,6 +1,7 @@
 
 import random
 from OpenGL.GL.shaders import ShaderProgram
+import numpy as np
 
 from game.consts import BLOCK_SIZE
 from game.entities.weapon import Weapon
@@ -9,14 +10,15 @@ from game.game_field import GameField
 
 
 class Weapons(list[Weapon]):
-    def __init__(self, game_field: GameField, shader: ShaderProgram | None) -> None:
+    def __init__(self, game_field: GameField, shader: ShaderProgram | None, shader_2d: ShaderProgram | None) -> None:
         self.__shader = shader
+        self.__shader_2d = shader_2d
 
-        weapon_image_paths = [
-            "src/_content/images/bazooka.png",
-            "src/_content/images/machine_gun.png",
-            "src/_content/images/laser_gun.png",
-            "src/_content/images/shotgun.png"
+        weapon_models_paths = [
+            "src/_content/3D_models/bazooka.STL",
+            "src/_content/3D_models/machine_gun.STL",
+            "src/_content/3D_models/laser_gun.STL",
+            "src/_content/3D_models/shotgun.STL"
         ]
 
         none_positions, block_positions = game_field.return_block_positions()
@@ -24,7 +26,7 @@ class Weapons(list[Weapon]):
         if block_positions:
             for num in range(5):
                 while True:
-                    new_weapon = self.__create_weapon(weapon_image_paths, block_positions, none_positions)
+                    new_weapon = self.__create_weapon(weapon_models_paths, block_positions, none_positions)
 
                     invalid = False
                     for weapon in self:
@@ -45,7 +47,7 @@ class Weapons(list[Weapon]):
             none_positions: list[tuple[int, int]]
     ) -> Weapon:
 
-        image_path = random.choice(image_paths)
+        model_path = random.choice(image_paths)
 
         while True:
             weapon_pos = random.choice(none_positions)
@@ -61,20 +63,21 @@ class Weapons(list[Weapon]):
             break
 
         flip_x = False
-        if image_path == "src/_content/images/machine_gun.png" \
-                or image_path == "src/_content/images/shotgun.png":
+        if model_path == "src/_content/3D_models/machine_gun.STL" \
+                or model_path == "src/_content/3D_models/shotgun.STL":
             flip_x = True
 
         weapon_type = WeaponEnum.MACHINE_GUN
-        if image_path == "src/_content/images/machine_gun.png":
+        if model_path == "src/_content/3D_models/machine_gun.STL":
             weapon_type = WeaponEnum.MACHINE_GUN
-        elif image_path == "src/_content/images/laser_gun.png":
+        elif model_path == "src/_content/3D_models/laser_gun.STL":
             weapon_type = WeaponEnum.LASER_GUN
-        elif image_path == "src/_content/images/bazooka.png":
+        elif model_path == "src/_content/3D_models/bazooka.STL":
             weapon_type = WeaponEnum.BAZOOKA
 
-        return Weapon(self.__shader, image_path, weapon_pos, weapon_type, flip_x=flip_x)
+        return Weapon(self.__shader, self.__shader_2d, weapon_pos, weapon_type, model_path)
 
-    def draw(self) -> None:
+    def draw(self, projection: 'np.ndarray', view: 'np.ndarray', t: float,
+             light_pos: 'np.ndarray', camera_pos: 'np.ndarray') -> None:
         for weapon in self:
-            weapon.draw()
+            weapon.draw(projection, view, t, light_pos, camera_pos)

@@ -1,7 +1,7 @@
 
-import random
 import sys
 import time
+import numpy as np
 import pygame
 from pygame.event import Event
 from pygame import Surface
@@ -10,7 +10,7 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 from game.systems.bullets import Bullets
-from game.consts import BG_COLOR, BLOCK_SIZE, DRAW_DT, UPDATE_DT, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from game.consts import GAME_BG_COLOR, BLOCK_SIZE, DRAW_DT, UPDATE_DT, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from engine.joysticks_manager import JoysticksManager
 from game.systems.damage import Damage
 from engine.graphics.display_manager import DisplayManager
@@ -18,6 +18,7 @@ from game.game_field import GameField
 from game.systems.game_state import GameState
 from engine.music_manager import MusicManager
 from engine.graphics.opengl_utils import OpenGLUtils
+from engine.graphics.opengl_3d_utils import OpenGL_3D_Utils
 from game.systems.players import Players
 from engine.shader_utils import ShaderUtils
 from game.enums.window_enum import WindowEnum
@@ -50,34 +51,37 @@ class GameWindow:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        self.__shader = ShaderUtils.create_shader("./src/game/_shaders/shader.vert", "./src/game/_shaders/shader.frag")
-        glUseProgram(self.__shader)
+        self.__2d_shader = ShaderUtils.create_shader(
+            "./src/game/_shaders/2d_shader.vert",
+            "./src/game/_shaders/2d_shader.frag")
+        glUseProgram(self.__2d_shader)
 
-        uProjection = glGetUniformLocation(self.__shader, "uProjection")
-        self.__projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
-        glUniformMatrix4fv(uProjection, 1, GL_FALSE, self.__projection.T)
+        u2dProjection = glGetUniformLocation(self.__2d_shader, "uProjection")
+        self.__2d_projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
+        glUniformMatrix4fv(u2dProjection, 1, GL_FALSE, self.__2d_projection.T)
 
-        self.__image_shader = ShaderUtils.create_shader(
-            "./src/game/_shaders/shader.vert", "./src/game/_shaders/shader.frag")
-        glUseProgram(self.__image_shader)
+        self.__3d_shader = ShaderUtils.create_shader(
+            "./src/game/_shaders/3d_shader.vert",
+            "./src/game/_shaders/3d_shader.frag")
+        glUseProgram(self.__3d_shader)
 
-        uImageProjection = glGetUniformLocation(self.__image_shader, "uProjection")
-        self.__image_projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
-        glUniformMatrix4fv(uImageProjection, 1, GL_FALSE, self.__image_projection.T)
+        u3dProjection = glGetUniformLocation(self.__3d_shader, "uProjection")
+        self.__3d_projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT, 0, -150, 150)
+        glUniformMatrix4fv(u3dProjection, 1, GL_FALSE, self.__3d_projection.T)
 
         self.__game_field = GameField(
             int(GAME_FIELD_WIDTH // BLOCK_SIZE),
             int(GAME_FIELD_HEIGHT // BLOCK_SIZE),
-            self.__shader
+            self.__2d_shader
         )
 
         # Load map first so block positions are available for weapon placement
         self.__game_field.load_from_file("third.map")
 
         self.__bullets = Bullets()
-        self.__players = Players(self.__game_field, joysticks_manager, self.__shader, self.__bullets)
+        self.__players = Players(self.__game_field, joysticks_manager, self.__2d_shader, self.__bullets)
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
-        self.__weapons = Weapons(self.__game_field, self.__image_shader)
+        self.__weapons = Weapons(self.__game_field, self.__3d_shader, self.__2d_shader)
 
         self.__display_manager = DisplayManager()
         self.__music_manager = music_manager
@@ -86,10 +90,8 @@ class GameWindow:
 
     def show(self) -> None | tuple[float, float, float, float]:
 
-        self.__screen = self.__display_manager.set_screen_size(self.__screen, self.__shader, self.__screen.get_size())
-
-        # Set background's color
-        glClearColor(*BG_COLOR)
+        self.__screen = self.__display_manager.set_screen_size(
+            self.__screen, self.__2d_shader, self.__screen.get_size())
 
         self.__music_manager.play_game_theme()
         self.__running = True
@@ -98,7 +100,16 @@ class GameWindow:
         update_accumulator = 0.0
         draw_accumulator = 0.0
 
+        start = time.time()
+
+        light_pos = np.array([GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT, 100], dtype=np.float32)
+        camera_pos = np.array([0.0, 0.0, 50], dtype=np.float32)
+
+        glClearColor(*GAME_BG_COLOR)
+
         while self.__running:
+            t = time.time() - start
+
             now = time.perf_counter()
             frame_time = now - last_time
             last_time = now
@@ -131,9 +142,19 @@ class GameWindow:
 
             # Draws
             while draw_accumulator >= DRAW_DT:
+                view = OpenGLUtils.look_at(
+                    np.array([0.0, 0.0, 50], dtype=np.float32),  # Позиция камеры
+                    np.array([0.0, 0.0, 0.0], dtype=np.float32),  # Куда смотрит (в центр)
+                    np.array([0.0, 1.0, 0.0], dtype=np.float32)  # Где "верх" (ось Y)
+                )
+
+                # Ensure depth testing for 3D objects so they render correctly
+                glEnable(GL_DEPTH_TEST)
+
                 glEnable(GL_BLEND)
-                glClear(GL_COLOR_BUFFER_BIT)
-                glUseProgram(self.__shader)
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+                glUseProgram(self.__2d_shader)
 
                 self.__game_field.draw()
 
@@ -142,7 +163,7 @@ class GameWindow:
 
                 self.__bullets.draw()
 
-                self.__weapons.draw()
+                self.__weapons.draw(self.__3d_projection, view, t, light_pos, camera_pos)
 
                 pygame.display.flip()
 
@@ -159,7 +180,7 @@ class GameWindow:
                 self.__running = False
             if event.type == pygame.VIDEORESIZE:
                 videoresize = self.__display_manager.resize_display(
-                    self.__screen, self.__shader, self.__past_screen_size, event.size)
+                    self.__screen, self.__2d_shader, self.__past_screen_size, event.size)
 
                 if videoresize is not None:
                     self.__screen, self.__past_screen_size = videoresize
