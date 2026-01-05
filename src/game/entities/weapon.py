@@ -3,7 +3,7 @@
 import numpy as np
 from OpenGL.GL import *  # type: ignore
 
-from engine.graphics.opengl_3d_utils import OpenGL_3D_Utils
+from engine.graphics.opengl_3d_utils import MeshData, OpenGL_3D_Utils
 from engine.graphics.renderer import Renderer
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.float_rect import FloatRect
@@ -17,20 +17,15 @@ class Weapon:
         shader_2d,
         position: tuple[float, float],
         type: WeaponEnum,
-        model_path: str
+        model_mesh: MeshData
     ) -> None:
 
-        self.__renderer = Renderer()
-
         self.__shader = shader
-        self.__shader_2d = shader_2d
         self.__type = type
         self.__position = position  # world position (x, y)
+        self.__model_mesh = model_mesh
 
         self.rect = FloatRect(*self.__position, BLOCK_SIZE * 2, BLOCK_SIZE * 1)
-
-        vertices, normals, self.__face_indices, self.__edge_indices = OpenGL_3D_Utils.load_and_normalize_mesh(
-            model_path)
 
         self.__vao = glGenVertexArrays(1)
         vbo_pos = glGenBuffers(1)
@@ -42,25 +37,25 @@ class Weapon:
 
         # Positions
         glBindBuffer(GL_ARRAY_BUFFER, vbo_pos)
-        glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, model_mesh.vertices.nbytes, model_mesh.vertices, GL_STATIC_DRAW)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
 
         # Normals
         glBindBuffer(GL_ARRAY_BUFFER, vbo_norm)
-        glBufferData(GL_ARRAY_BUFFER, normals.nbytes, normals, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, model_mesh.normals.nbytes, model_mesh.normals, GL_STATIC_DRAW)
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(1)
 
         # Faces EBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_faces)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, self.__face_indices.nbytes, self.__face_indices, GL_STATIC_DRAW)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_mesh.faces.nbytes, model_mesh.faces, GL_STATIC_DRAW)
 
         glBindVertexArray(0)
 
         # Edges EBO (можно биндать по необходимости)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_edges)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, self.__edge_indices.nbytes, self.__edge_indices, GL_STATIC_DRAW)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_mesh.edges.nbytes, model_mesh.edges, GL_STATIC_DRAW)
 
     def draw(self, projection: 'np.ndarray', view: 'np.ndarray', t: float,
              light_pos: 'np.ndarray', camera_pos: 'np.ndarray') -> None:
@@ -87,37 +82,10 @@ class Weapon:
 
         glUniform3f(glGetUniformLocation(self.__shader, "objectColor"), 0.4, 0.4, 0.45)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_faces)
-        glDrawElements(GL_TRIANGLES, len(self.__face_indices), GL_UNSIGNED_INT, None)
+        glDrawElements(GL_TRIANGLES, len(self.__model_mesh.faces), GL_UNSIGNED_INT, None)
 
         glDisable(GL_POLYGON_OFFSET_FILL)
         glEnable(GL_BLEND)
-
-        # glUseProgram(self.__shader_2d)
-
-        # uPlayerPos = glGetUniformLocation(self.__shader, "uPlayerPos")
-        # uIsPlayer = glGetUniformLocation(self.__shader, "uIsPlayer")
-        # uColor = glGetUniformLocation(self.__shader, "uColor")
-        # uUseTexture = glGetUniformLocation(self.__shader, "uUseTexture")
-
-        # self.__renderer.draw_square(
-        #     self.__vao, (uUseTexture, False),
-        #     (uIsPlayer, True), uPlayerPos, uColor,
-        #     self.rect, (0, 0, 1, 0)
-        # )
-
-        # # --- Draw edges on top (opaque, smoothed) ---
-        # glEnable(GL_LINE_SMOOTH)
-        # try:
-        #     glEnable(GL_MULTISAMPLE)
-        # except Exception:
-        #     pass
-
-        # glUniform4f(glGetUniformLocation(self.__shader, "color"), 1.0, 1.0, 1.0, 1.0)
-        # glLineWidth(1.5)
-        # glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_edges)
-        # glDrawElements(GL_LINES, len(self.__edge_indices), GL_UNSIGNED_INT, None)
-
-        # glDisable(GL_LINE_SMOOTH)
 
     def get_type(self) -> WeaponEnum:
         return self.__type
