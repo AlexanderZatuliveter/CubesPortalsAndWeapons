@@ -108,7 +108,10 @@ class MainMenu:
 
             # Draws
             glEnable(GL_BLEND)
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+            glClear(GL_COLOR_BUFFER_BIT)
+            glClear(GL_DEPTH_BUFFER_BIT)
+
             glUseProgram(self.__shader)
 
             for button in self.__buttons:

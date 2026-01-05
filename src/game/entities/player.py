@@ -70,28 +70,21 @@ class Player:
         self.__uColor = glGetUniformLocation(self.__shader, "uColor")
         self.__uUseTexture = glGetUniformLocation(self.__shader, "uUseTexture")
 
-        vertices = OpenGLUtils.create_square_vertices(BLOCK_SIZE)
+        self.__vao, self.__vbo = self.__create_vao_vbo(BLOCK_SIZE)
+        self.__health_vao, self.__health_vbo = self.__create_vao_vbo(BLOCK_SIZE)
+
+        self.__last_health = self.__health
+
+    def __create_vao_vbo(self, size: float):
+        vertices = OpenGLUtils.create_square_vertices(size)
         self.__vertex_count = 4
-        self.__vao, self.__vbo = self.__renderer.create_vao_vbo(vertices)
+        vao, vbo = self.__renderer.create_vao_vbo(vertices)
 
+        # Configure vertex attribute for position (aPos at location 0)
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
 
-        size_1 = BLOCK_SIZE * 0.66
-        self.__health_vertices_1 = OpenGLUtils.create_square_vertices(size_1)
-        self.__health_vao_1, self.__health_vbo_1 = self.__renderer.create_vao_vbo(self.__health_vertices_1)
-
-        # Position attribute must be at location 0 like the main VAO
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
-
-        size_2 = BLOCK_SIZE * 0.32
-        self.__health_vertices_2 = OpenGLUtils.create_square_vertices(size_2)
-        self.__health_vao_2, self.__health_vbo_2 = self.__renderer.create_vao_vbo(self.__health_vertices_2)
-
-        # Position attribute must be at location 0 like the main VAO
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
+        return vao, vbo
 
     def update_weapon(self, weapon_type: WeaponEnum):
         self.__current_weapon = weapon_type
@@ -121,6 +114,8 @@ class Player:
             self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
             self.__health = PLAYER_HEALTH
             self.__bullets.clear_by_color(self._color)
+            self.__health_vao, self.__health_vbo = self.__create_vao_vbo(BLOCK_SIZE)
+            self.__current_weapon = WeaponEnum.MACHINE_GUN
             return "kill"
 
     def __shoot(self, bullet_type: WeaponEnum):
@@ -234,13 +229,24 @@ class Player:
             self._shot_time = 0
 
         # Update scores
-        self.__draw_scores.update_pos(self.rect.x, self.rect.y - BLOCK_SIZE * 0.9)
+        self.__draw_scores.update_pos(self.rect.x, self.rect.y - BLOCK_SIZE * 1.01)
 
     def draw(self) -> None:
-
-        glUniform1i(self.__uIsPlayer, GL_FALSE)
-
         self.__draw_scores.draw()
+
+        health = self.__health / PLAYER_HEALTH
+        size = self.rect.w * health
+        rect = FloatRect(self.rect.x + (self.rect.w - size) / 2, self.rect.y + (self.rect.h - size) / 2, size, size)
+
+        if self.__last_health != self.__health:
+            self.__health_vao, self.__health_vbo = self.__create_vao_vbo(size)
+
+        self.__renderer.draw_square(
+            self.__health_vao, (self.__uUseTexture, False),
+            (self.__uIsPlayer, True), self.__uPlayerPos,
+            self.__uColor, rect, self._color,
+            self.__vertex_count
+        )
 
         blur_color = (self._color[0], self._color[1], self._color[2], 0.4)
 
@@ -248,27 +254,6 @@ class Player:
             self.__vao, (self.__uUseTexture, False),
             (self.__uIsPlayer, True), self.__uPlayerPos,
             self.__uColor, self.rect, blur_color,
-            self.__vertex_count
-        )
-
-        if self.__health < 0:
-            return
-
-        health = self.__health / PLAYER_HEALTH
-        size = self.rect.w * health
-        rect = FloatRect(self.rect.x + (self.rect.w - size) / 2, self.rect.y + (self.rect.h - size) / 2, size, size)
-
-        if health == 0.66:
-            health_vao = self.__health_vao_1
-        elif health == 0.32:
-            health_vao = self.__health_vao_2
-        else:
-            health_vao = self.__vao
-
-        self.__renderer.draw_square(
-            health_vao, (self.__uUseTexture, False),
-            (self.__uIsPlayer, True), self.__uPlayerPos,
-            self.__uColor, rect, self._color,
             self.__vertex_count
         )
 
