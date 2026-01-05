@@ -72,16 +72,12 @@ class TextWorker:
         glUniform1i(self.__uTexture, 0)
         glUniform1i(self.__uUseTexture, 1)
 
-        # keep color as white so text renders in original color, but you can tint
         glUniform4f(self.__uColor, *self.__color)
 
         glBindVertexArray(self.__text_vao)
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
         glBindVertexArray(0)
         glBindTexture(GL_TEXTURE_2D, 0)
-
-        # Ensure shader not left in textured mode for subsequent draws
-        glUniform1i(self.__uUseTexture, 0)
 
     def update_text(self, text: str) -> None:
         self.__text = text

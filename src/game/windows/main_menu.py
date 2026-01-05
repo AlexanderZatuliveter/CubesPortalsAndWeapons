@@ -104,9 +104,11 @@ class MainMenu:
             mouse_pos = (int(mouse_pos[0] * scale), int(mouse_pos[1] * scale))
 
             for button in self.__buttons:
-                button.update()
+                button.update(mouse_pos, mouse_pressed)
 
             # Draws
+            glDisable(GL_DEPTH_TEST)
+            
             glEnable(GL_BLEND)
 
             glClear(GL_COLOR_BUFFER_BIT)

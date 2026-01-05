@@ -148,12 +148,15 @@ class GameWindow:
                     np.array([0.0, 1.0, 0.0], dtype=np.float32)  # Где "верх" (ось Y)
                 )
 
-                # Ensure depth testing for 3D objects so they render correctly
                 glEnable(GL_DEPTH_TEST)
 
                 glEnable(GL_BLEND)
                 glClear(GL_COLOR_BUFFER_BIT)
                 glClear(GL_DEPTH_BUFFER_BIT)
+
+                glUseProgram(self.__3d_shader)
+
+                self.__weapons.draw(self.__3d_projection, view, t, light_pos, camera_pos)
 
                 glUseProgram(self.__2d_shader)
 
@@ -163,8 +166,6 @@ class GameWindow:
                     player.draw()
 
                 self.__bullets.draw()
-
-                self.__weapons.draw(self.__3d_projection, view, t, light_pos, camera_pos)
 
                 pygame.display.flip()
 

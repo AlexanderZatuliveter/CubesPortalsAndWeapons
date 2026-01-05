@@ -64,13 +64,6 @@ class Weapon:
 
     def draw(self, projection: 'np.ndarray', view: 'np.ndarray', t: float,
              light_pos: 'np.ndarray', camera_pos: 'np.ndarray') -> None:
-        """Draw the weapon at its world position.
-
-        Fixes applied:
-        - Draw faces as opaque with polygon offset to avoid z-fighting with edges.
-        - Draw edges on top as opaque, with line smoothing enabled.
-        - Use a constant rotation speed for stable rotation.
-        """
 
         model = OpenGL_3D_Utils.rotate(t)
         translate = OpenGL_3D_Utils.translate(self.__position[0], self.__position[1], 0.0)
@@ -79,7 +72,6 @@ class Weapon:
         # Order: projection @ view @ translate(world) @ scale(local) @ rotate(local)
         mvp = projection @ view @ translate @ scale_mat @ model
 
-        glUseProgram(self.__shader)
         glUniformMatrix4fv(glGetUniformLocation(self.__shader, "mvp"), 1, GL_TRUE, mvp)
         glUniformMatrix4fv(glGetUniformLocation(self.__shader, "model"), 1, GL_TRUE, model)
         glUniform3fv(glGetUniformLocation(self.__shader, "lightPos"), 1, light_pos)
