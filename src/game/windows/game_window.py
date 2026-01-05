@@ -66,7 +66,7 @@ class GameWindow:
         glUseProgram(self.__3d_shader)
 
         u3dProjection = glGetUniformLocation(self.__3d_shader, "uProjection")
-        self.__3d_projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, GAME_FIELD_HEIGHT, 0, -150, 150)
+        self.__3d_projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -150, 150)
         glUniformMatrix4fv(u3dProjection, 1, GL_FALSE, self.__3d_projection.T)
 
         self.__game_field = GameField(
@@ -102,7 +102,7 @@ class GameWindow:
 
         start = time.time()
 
-        light_pos = np.array([GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT, 100], dtype=np.float32)
+        light_pos = np.array([GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT / 2, 100], dtype=np.float32)
         camera_pos = np.array([0.0, 0.0, 50], dtype=np.float32)
 
         glClearColor(*GAME_BG_COLOR)

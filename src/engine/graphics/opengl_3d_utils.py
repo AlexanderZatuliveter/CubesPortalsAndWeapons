@@ -56,7 +56,7 @@ class OpenGL_3D_Utils:
         # === ИСПРАВЛЕНИЕ ОРИЕНТАЦИИ (X-90 и Y+90) ===
 
         # 1. Поворот по X на -90 градусов (исправляет вертикальное положение)
-        angle_x = -np.pi / 2
+        angle_x = np.pi / 2
         rot_x = trimesh.transformations.rotation_matrix(angle_x, [1, 0, 0])
 
         # 2. Поворот по Y на 90 градусов (ваш запрос)
@@ -66,11 +66,11 @@ class OpenGL_3D_Utils:
         # Объединяем трансформации (порядок: сначала X, потом Y)
         full_transform = trimesh.transformations.concatenate_matrices(rot_y, rot_x)
 
-        # Применяем к мешу
-        mesh.apply_transform(full_transform)
-        # ===========================================
-
         if isinstance(mesh, trimesh.Trimesh):
+            # Применяем к мешу
+            mesh.apply_transform(full_transform)
+            # ===========================================
+
             # Центрируем модель после всех поворотов
             mesh.vertices -= mesh.center_mass
 
