@@ -1,10 +1,10 @@
 
 
 import numpy as np
+from OpenGL.GL.shaders import ShaderProgram
 from OpenGL.GL import *  # type: ignore
 
 from engine.graphics.opengl_3d_utils import MeshData, OpenGL_3D_Utils
-from engine.graphics.renderer import Renderer
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.float_rect import FloatRect
 from game.consts import BLOCK_SIZE
@@ -13,8 +13,7 @@ from game.consts import BLOCK_SIZE
 class Weapon:
     def __init__(
         self,
-        shader,
-        shader_2d,
+        shader: ShaderProgram | None,
         position: tuple[float, float],
         type: WeaponEnum,
         model_mesh: MeshData
@@ -57,8 +56,14 @@ class Weapon:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_edges)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_mesh.edges.nbytes, model_mesh.edges, GL_STATIC_DRAW)
 
-    def draw(self, projection: 'np.ndarray', view: 'np.ndarray', t: float,
-             light_pos: 'np.ndarray', camera_pos: 'np.ndarray') -> None:
+    def draw(
+        self,
+        projection: 'np.ndarray',
+        view: 'np.ndarray',
+        t: float,
+        light_pos: 'np.ndarray',
+        camera_pos: 'np.ndarray'
+    ) -> None:
 
         model = OpenGL_3D_Utils.rotate(t)
         translate = OpenGL_3D_Utils.translate(self.__position[0], self.__position[1], 0.0)
@@ -86,6 +91,10 @@ class Weapon:
 
         glDisable(GL_POLYGON_OFFSET_FILL)
         glEnable(GL_BLEND)
+
+    def change_position(self, position: tuple[float, float]) -> None:
+        self.__position = position
+        self.rect = FloatRect(*self.__position, BLOCK_SIZE * 2, BLOCK_SIZE * 1)
 
     def get_type(self) -> WeaponEnum:
         return self.__type

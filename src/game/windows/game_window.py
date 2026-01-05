@@ -18,7 +18,6 @@ from game.game_field import GameField
 from game.systems.game_state import GameState
 from engine.music_manager import MusicManager
 from engine.graphics.opengl_utils import OpenGLUtils
-from engine.graphics.opengl_3d_utils import OpenGL_3D_Utils
 from game.systems.players import Players
 from engine.shader_utils import ShaderUtils
 from game.enums.window_enum import WindowEnum
@@ -81,7 +80,7 @@ class GameWindow:
         self.__bullets = Bullets()
         self.__players = Players(self.__game_field, joysticks_manager, self.__2d_shader, self.__bullets)
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
-        self.__weapons = Weapons(self.__game_field, self.__3d_shader, self.__2d_shader)
+        self.__weapons = Weapons(self.__game_field, self.__3d_shader)
 
         self.__display_manager = DisplayManager()
         self.__music_manager = music_manager

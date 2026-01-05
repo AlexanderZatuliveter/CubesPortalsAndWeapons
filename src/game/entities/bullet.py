@@ -29,6 +29,14 @@ class Bullet:
             height = MACHINE_GUN_BULLET_HEIGHT
             self._type = WeaponEnum.MACHINE_GUN
 
+        # todo: add shotgun
+        elif bullet_type == WeaponEnum.SHOTGUN:
+            self.damage = MACHINE_GUN_BULLET_DAMAGE
+            self.__bullet_speed = MACHINE_GUN_BULLET_SPEED
+            width = MACHINE_GUN_BULLET_WIDTH
+            height = MACHINE_GUN_BULLET_HEIGHT
+            self._type = WeaponEnum.MACHINE_GUN
+
         elif bullet_type == WeaponEnum.LASER_GUN:
             self.damage = LASER_GUN_BULLET_DAMAGE
             self.__bullet_speed = LASER_GUN_BULLET_SPEED

@@ -11,9 +11,8 @@ from game.game_field import GameField
 
 
 class Weapons(list[Weapon]):
-    def __init__(self, game_field: GameField, shader: ShaderProgram | None, shader_2d: ShaderProgram | None) -> None:
+    def __init__(self, game_field: GameField, shader: ShaderProgram | None) -> None:
         self.__shader = shader
-        self.__shader_2d = shader_2d
 
         self.__weapons = {
             WeaponEnum.BAZOOKA: OpenGL_3D_Utils.load("src/_content/3D_models/bazooka.STL"),
@@ -33,6 +32,7 @@ class Weapons(list[Weapon]):
                     )
 
                     invalid = False
+
                     for weapon in self:
                         if new_weapon.rect.colliderect(weapon.rect):
                             invalid = True
@@ -45,9 +45,9 @@ class Weapons(list[Weapon]):
                     break
 
     def __create_weapon(
-            self,
-            block_positions: list[tuple[int, int]],
-            none_positions: list[tuple[int, int]]
+        self,
+        block_positions: list[tuple[int, int]],
+        none_positions: list[tuple[int, int]]
     ) -> Weapon:
 
         model = random.choice(list(self.__weapons.keys()))
@@ -65,7 +65,7 @@ class Weapons(list[Weapon]):
 
             break
 
-        return Weapon(self.__shader, self.__shader_2d, weapon_pos, model, self.__weapons[model])
+        return Weapon(self.__shader, weapon_pos, model, self.__weapons[model])
 
     def draw(self, projection: 'np.ndarray', view: 'np.ndarray', t: float,
              light_pos: 'np.ndarray', camera_pos: 'np.ndarray') -> None:
