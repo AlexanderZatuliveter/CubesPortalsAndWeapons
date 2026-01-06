@@ -87,8 +87,6 @@ class Bullet:
                 self.__last_time = now
                 self.__is_destroyed = True
                 return
-            
-        new_rect = pygame.transform.rotate(pygame.Surface(self.rect), 45)
 
         if self.__direction == DirectionEnum.LEFT:
             self.rect.x -= self.__bullet_speed * dt
