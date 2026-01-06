@@ -61,13 +61,8 @@ class OpenGL_3D_Utils:
 
     @staticmethod
     def load(file_path: str) -> MeshData:
-        print(f"Загрузка модели: {file_path}...")
 
-        if not os.path.exists(file_path):
-            print(f"Файл {file_path} не найден! Генерируем тестовый тор.")
-            mesh = trimesh.creation.torus(major_radius=0.5, minor_radius=0.2)
-        else:
-            mesh = trimesh.load(file_path)
+        mesh = trimesh.load(file_path)
 
         if isinstance(mesh, trimesh.Scene):
             mesh = mesh.dump(concatenate=True)
@@ -97,5 +92,4 @@ class OpenGL_3D_Utils:
             edges=mesh.edges_unique.flatten().astype(np.uint32)
         )
 
-        print(f"Модель загружена: {data.vertex_count} вершин, {data.face_count} граней.")
         return data

@@ -2,27 +2,42 @@
 import ctypes
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
+import numpy as np
+import pygame
 
-from game.consts import BAZOOKA_BULLET_DAMAGE, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_SPEED, BAZOOKA_BULLET_WIDTH, GAME_FIELD_WIDTH, LASER_GUN_BULLET_DAMAGE, LASER_GUN_BULLET_HEIGHT, LASER_GUN_BULLET_SPEED, LASER_GUN_BULLET_WIDTH, MACHINE_GUN_BULLET_DAMAGE, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_SPEED, MACHINE_GUN_BULLET_WIDTH
+from game.consts import BAZOOKA_BULLET_DAMAGE, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_SPEED, BAZOOKA_BULLET_WIDTH, BLOCK_SIZE, GAME_FIELD_WIDTH, LASER_GUN_BULLET_DAMAGE, LASER_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_DAMAGE, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_SPEED, MACHINE_GUN_BULLET_WIDTH
 from game.enums.direction_enum import DirectionEnum
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.float_rect import FloatRect
 from engine.graphics.opengl_utils import OpenGLUtils
 from engine.graphics.renderer import Renderer
+from engine.graphics.opengl_utils import OpenGLUtils
 
 
 class Bullet:
-    def __init__(self, x: float, y: float, direction: DirectionEnum,
-                 color: tuple[float, float, float, float], shader: ShaderProgram, bullet_type: WeaponEnum):
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        direction: DirectionEnum,
+        color: tuple[float, float, float, float],
+        shader: ShaderProgram,
+        bullet_type: WeaponEnum,
+        projection: np.ndarray
+    ) -> None:
 
-        if bullet_type == WeaponEnum.BAZOOKA:
+        self.__projection = projection
+
+        self.__bullet_type = bullet_type
+
+        if self.__bullet_type == WeaponEnum.BAZOOKA:
             self.damage = BAZOOKA_BULLET_DAMAGE
             self.__bullet_speed = BAZOOKA_BULLET_SPEED
             width = BAZOOKA_BULLET_WIDTH
             height = BAZOOKA_BULLET_HEIGHT
             self._type = WeaponEnum.BAZOOKA
 
-        elif bullet_type == WeaponEnum.MACHINE_GUN:
+        elif self.__bullet_type == WeaponEnum.MACHINE_GUN:
             self.damage = MACHINE_GUN_BULLET_DAMAGE
             self.__bullet_speed = MACHINE_GUN_BULLET_SPEED
             width = MACHINE_GUN_BULLET_WIDTH
@@ -30,17 +45,17 @@ class Bullet:
             self._type = WeaponEnum.MACHINE_GUN
 
         # todo: add shotgun
-        elif bullet_type == WeaponEnum.SHOTGUN:
+        elif self.__bullet_type == WeaponEnum.SHOTGUN:
             self.damage = MACHINE_GUN_BULLET_DAMAGE
             self.__bullet_speed = MACHINE_GUN_BULLET_SPEED
             width = MACHINE_GUN_BULLET_WIDTH
             height = MACHINE_GUN_BULLET_HEIGHT
             self._type = WeaponEnum.MACHINE_GUN
 
-        elif bullet_type == WeaponEnum.LASER_GUN:
+        elif self.__bullet_type == WeaponEnum.LASER_GUN:
             self.damage = LASER_GUN_BULLET_DAMAGE
-            self.__bullet_speed = LASER_GUN_BULLET_SPEED
-            width = LASER_GUN_BULLET_WIDTH
+            self.__bullet_speed = 0
+            width = GAME_FIELD_WIDTH - BLOCK_SIZE - x
             height = LASER_GUN_BULLET_HEIGHT
             self._type = WeaponEnum.LASER_GUN
 
@@ -49,6 +64,7 @@ class Bullet:
         self.__distance = 0.0
         self.__direction = direction
         self.__is_destroyed = False
+        self.__last_time = pygame.time.get_ticks()
 
         self.__renderer = Renderer()
 
@@ -65,6 +81,15 @@ class Bullet:
         self.__uUseTexture = glGetUniformLocation(shader, "uUseTexture")
 
     def update(self, dt: float):
+        if self.__bullet_type == WeaponEnum.LASER_GUN:
+            now = pygame.time.get_ticks()
+            if now - self.__last_time >= 10:
+                self.__last_time = now
+                self.__is_destroyed = True
+                return
+            
+        new_rect = pygame.transform.rotate(pygame.Surface(self.rect), 45)
+
         if self.__direction == DirectionEnum.LEFT:
             self.rect.x -= self.__bullet_speed * dt
         elif self.__direction == DirectionEnum.RIGHT:

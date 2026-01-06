@@ -1,4 +1,5 @@
 
+import numpy as np
 import pygame
 from OpenGL.GL import *  # type: ignore
 import ctypes
@@ -6,7 +7,7 @@ import ctypes
 from game.entities.bullet import Bullet
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.bullets import Bullets
-from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, LASER_GUN_BULLET_HEIGHT, LASER_GUN_BULLET_WIDTH, LASER_GUN_COOLDOWN, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED
+from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, GAME_FIELD_WIDTH, LASER_GUN_BULLET_HEIGHT, LASER_GUN_COOLDOWN, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -94,7 +95,7 @@ class Player:
             self.__bullet_width, self.__bullet_height = MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_BULLET_HEIGHT
         if self.__current_weapon == WeaponEnum.LASER_GUN:
             self._shot_cooldown = LASER_GUN_COOLDOWN
-            self.__bullet_width, self.__bullet_height = LASER_GUN_BULLET_WIDTH, LASER_GUN_BULLET_HEIGHT
+            self.__bullet_width, self.__bullet_height = GAME_FIELD_WIDTH - BLOCK_SIZE - self.rect.x, LASER_GUN_BULLET_HEIGHT
         if self.__current_weapon == WeaponEnum.BAZOOKA:
             self._shot_cooldown = BAZOOKA_COOLDOWN
             self.__bullet_width, self.__bullet_height = BAZOOKA_BULLET_WIDTH, BAZOOKA_BULLET_HEIGHT

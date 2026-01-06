@@ -16,7 +16,7 @@ from game.game_field import GameField
 from engine.graphics.display_manager import DisplayManager
 from engine.graphics.opengl_utils import OpenGLUtils
 from engine.shader_utils import ShaderUtils
-from game.consts import BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
+from game.consts import GAME_BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
 from mouse_buttons import Mouse
 
 
@@ -36,7 +36,7 @@ past_screen_size = screen.get_size()
 glEnable(GL_BLEND)
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-shader = ShaderUtils.create_shader("./src/game/_shaders/shader.vert", "./src/game/_shaders/shader.frag")
+shader = ShaderUtils.create_shader("./src/game/_shaders/2d_shader.vert", "./src/game/_shaders/2d_shader.frag")
 glUseProgram(shader)
 
 uProjection = glGetUniformLocation(shader, "uProjection")
@@ -57,7 +57,7 @@ display_manager = DisplayManager()
 screen = display_manager.set_screen_size(screen, shader, screen.get_size())
 
 # Set background's color
-glClearColor(*BG_COLOR, 1)
+glClearColor(*GAME_BG_COLOR)
 
 
 while True:
