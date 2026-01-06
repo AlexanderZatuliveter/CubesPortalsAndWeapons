@@ -7,7 +7,7 @@ import ctypes
 from game.entities.bullet import Bullet
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.bullets import Bullets
-from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, GAME_FIELD_WIDTH, LASER_GUN_BULLET_HEIGHT, LASER_GUN_COOLDOWN, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED
+from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, GAME_FIELD_WIDTH, LASER_GUN_BULLET_HEIGHT, LASER_GUN_COOLDOWN, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -58,7 +58,7 @@ class Player:
         self.__dash_start_time = 0
         self.__dash_last_time = 0
 
-        self.update_weapon(WeaponEnum.MACHINE_GUN)
+        self.update_weapon(WeaponEnum.SHOTGUN)
 
         self._shot_time = 0
         self._is_shot = False
@@ -99,6 +99,9 @@ class Player:
         if self.__current_weapon == WeaponEnum.BAZOOKA:
             self._shot_cooldown = BAZOOKA_COOLDOWN
             self.__bullet_width, self.__bullet_height = BAZOOKA_BULLET_WIDTH, BAZOOKA_BULLET_HEIGHT
+        if self.__current_weapon == WeaponEnum.SHOTGUN:
+            self._shot_cooldown = SHOTGUN_COOLDOWN
+            self.__bullet_width, self.__bullet_height = SHOTGUN_BULLET_WIDTH, SHOTGUN_BULLET_HEIGHT
 
     def damage(self, bullet: Bullet):
         self.__health -= bullet.damage
@@ -119,7 +122,7 @@ class Player:
             self.__current_weapon = WeaponEnum.MACHINE_GUN
             return "kill"
 
-    def __shoot(self, bullet_type: WeaponEnum):
+    def __shoot(self):
 
         if not self.__joystick:
             return
@@ -132,14 +135,27 @@ class Player:
             self.__bullet_width
         )
 
-        self.__bullets.add_bullet(Bullet(
-            x,
-            self.rect.y + self.rect.height / 2 - self.__bullet_height / 2,
-            self.__direction,
-            self._color,
-            self.__shader,
-            bullet_type
-        ))
+        if self.__current_weapon == WeaponEnum.SHOTGUN:
+            angles = [15, 0, -15]
+            for num in range(3):
+                self.__bullets.add_bullet(Bullet(
+                    x,
+                    self.rect.y + self.rect.height / 2 - self.__bullet_height / 2,
+                    self.__direction,
+                    self._color,
+                    self.__shader,
+                    self.__current_weapon,
+                    angle=angles[num]
+                ))
+        else:
+            self.__bullets.add_bullet(Bullet(
+                x,
+                self.rect.y + self.rect.height / 2 - self.__bullet_height / 2,
+                self.__direction,
+                self._color,
+                self.__shader,
+                self.__current_weapon
+            ))
 
         self._is_shot = True
         self._shot_time = pygame.time.get_ticks()
@@ -223,7 +239,7 @@ class Player:
 
         if not self._is_shot:
             if self.__joystick.get_axis(5) > 0:
-                self.__shoot(bullet_type=self.__current_weapon)
+                self.__shoot()
 
         if self._is_shot and pygame.time.get_ticks() - self._shot_time >= self._shot_cooldown:
             self._is_shot = False

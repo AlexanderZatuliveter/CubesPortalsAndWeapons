@@ -27,6 +27,16 @@ class OpenGLUtils:
         return vertices
 
     @staticmethod
+    def create_vertices_with_points(points: list[tuple[float, float]]) -> np.ndarray:
+        vertices = np.array([
+            points[0][0], points[0][1],
+            points[1][0], points[1][1],
+            points[2][0], points[2][1],
+            points[3][0], points[3][1],
+        ], dtype=np.float32)
+        return vertices
+
+    @staticmethod
     def ortho(l, r, b, t, n, f):
         return np.array([
             [2 / (r - l), 0, 0, -(r + l) / (r - l)],

@@ -76,6 +76,10 @@ class FloatRect:
         return (self.left, self.top)
 
     @property
+    def topright(self) -> Tuple[float, float]:
+        return (self.right, self.top)
+
+    @property
     def bottomright(self) -> Tuple[float, float]:
         return (self.right, self.bottom)
 
