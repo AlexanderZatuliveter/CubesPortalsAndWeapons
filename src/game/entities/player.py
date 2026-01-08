@@ -7,7 +7,7 @@ import ctypes
 from game.entities.bullet import Bullet
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.bullets import Bullets
-from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, GAME_FIELD_WIDTH, LASER_GUN_BULLET_HEIGHT, LASER_GUN_COOLDOWN, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
+from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -58,7 +58,7 @@ class Player:
         self.__dash_start_time = 0
         self.__dash_last_time = 0
 
-        self.update_weapon(WeaponEnum.SHOTGUN)
+        self.update_weapon(WeaponEnum.MACHINE_GUN)
 
         self._shot_time = 0
         self._is_shot = False
@@ -93,9 +93,6 @@ class Player:
         if self.__current_weapon == WeaponEnum.MACHINE_GUN:
             self._shot_cooldown = MACHINE_GUN_COOLDOWN
             self.__bullet_width, self.__bullet_height = MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_BULLET_HEIGHT
-        if self.__current_weapon == WeaponEnum.LASER_GUN:
-            self._shot_cooldown = LASER_GUN_COOLDOWN
-            self.__bullet_width, self.__bullet_height = GAME_FIELD_WIDTH - BLOCK_SIZE - self.rect.x, LASER_GUN_BULLET_HEIGHT
         if self.__current_weapon == WeaponEnum.BAZOOKA:
             self._shot_cooldown = BAZOOKA_COOLDOWN
             self.__bullet_width, self.__bullet_height = BAZOOKA_BULLET_WIDTH, BAZOOKA_BULLET_HEIGHT
@@ -109,8 +106,8 @@ class Player:
         if self.__joystick:
             if bullet._type == WeaponEnum.MACHINE_GUN:
                 self.__joystick.rumble(0.0, 0.3, 100)
-            if bullet._type == WeaponEnum.LASER_GUN:
-                self.__joystick.rumble(0.0, 0.35, 100)
+            if bullet._type == WeaponEnum.SHOTGUN:
+                self.__joystick.rumble(0.1, 0.3, 100)
             if bullet._type == WeaponEnum.BAZOOKA:
                 self.__joystick.rumble(0.2, 0.4, 150)
 
@@ -128,12 +125,10 @@ class Player:
             return
 
         # попытка выстрела
-        x = (
-            self.rect.x +
-            self.rect.width) if self.__direction == DirectionEnum.RIGHT else (
-            self.rect.x -
-            self.__bullet_width
-        )
+        if self.__direction == DirectionEnum.RIGHT:
+            x = self.rect.x + self.rect.width
+        else:
+            x = self.rect.x - self.__bullet_width
 
         if self.__current_weapon == WeaponEnum.SHOTGUN:
             angles = [15, 0, -15]

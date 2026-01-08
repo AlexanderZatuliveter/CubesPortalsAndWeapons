@@ -17,7 +17,6 @@ class Weapons(list[Weapon]):
         self.__weapons = {
             WeaponEnum.BAZOOKA: OpenGL_3D_Utils.load("src/_content/3D_models/bazooka.STL"),
             WeaponEnum.MACHINE_GUN: OpenGL_3D_Utils.load("src/_content/3D_models/machine_gun.STL"),
-            WeaponEnum.LASER_GUN: OpenGL_3D_Utils.load("src/_content/3D_models/laser_gun.STL"),
             WeaponEnum.SHOTGUN: OpenGL_3D_Utils.load("src/_content/3D_models/shotgun.STL")
         }
 
