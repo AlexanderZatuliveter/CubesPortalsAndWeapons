@@ -24,12 +24,15 @@ class Weapon:
         self.__position = position  # world position (x, y)
         self.__model_mesh = model_mesh
 
-        self.__size = BLOCK_SIZE * 2
+        self.__width = BLOCK_SIZE * 2
+        self.__height = BLOCK_SIZE * 1
+        self.__depth = BLOCK_SIZE * 2
+
         self.rect = FloatRect(
-            self.__position[0] - self.__size / 2,
-            self.__position[1] - self.__size / 2,
-            BLOCK_SIZE * 2,
-            BLOCK_SIZE * 2
+            self.__position[0] - self.__width / 2,
+            self.__position[1] - self.__height / 2,
+            self.__width,
+            self.__height
         )
 
         self.__vao = glGenVertexArrays(1)
@@ -73,7 +76,7 @@ class Weapon:
 
         model = OpenGL_3D_Utils.rotate(t)
         translate = OpenGL_3D_Utils.translate(self.__position[0], self.__position[1], 0.0)
-        scale_mat = OpenGL_3D_Utils.scale(self.__size, self.__size, self.__size)
+        scale_mat = OpenGL_3D_Utils.scale(self.__width, self.__height * 2, self.__depth)
         # Order: projection @ view @ translate(world) @ scale(local) @ rotate(local)
         mvp = projection @ view @ translate @ scale_mat @ model
 
