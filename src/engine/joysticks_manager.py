@@ -10,7 +10,7 @@ from game.enums.direction_enum import DirectionEnum
 class JoysticksManager:
 
     def __init__(self):
-        self.__current_button_i = 0
+        self.__current_button_i = -1
         self.__joysticks = self.get_joysticks()
 
     def get_joysticks(self) -> list[pygame.joystick.JoystickType]:
@@ -58,3 +58,6 @@ class JoysticksManager:
         buttons[self.__current_button_i].unset_current_button()
         self.__current_button_i = (self.__current_button_i + dir_num) % count
         buttons[self.__current_button_i].set_current_button()
+
+    def current_first_button(self, buttons: list[Button]) -> None:
+        buttons[0].set_current_button()

@@ -71,29 +71,7 @@ class Button:
             color=WHITE
         )
 
-    def update(self, mouse_pos: tuple[int, int], mouse_pressed: tuple[bool, bool, bool]) -> None:
-
-        # MOUSE
-        left = mouse_pressed[0]
-
-        mouse_down = left and not self.__prev_pressed
-        mouse_up = not left and self.__prev_pressed
-
-        if self.__rect.collidepoint(mouse_pos):
-            if mouse_down:
-                self.__color = BLUE
-                self.__active = True
-            elif not self.__active:
-                self.__color = ORANGE
-        else:
-            if not self.__active:
-                self.__color = GREY_2
-
-        if mouse_up and self.__active:
-            self.__active = False
-            self.__perform_function()
-
-        self.__prev_pressed = left
+    def update(self) -> None:
 
         # JOYSTICK
         if self.__joy_current_button:
@@ -106,6 +84,29 @@ class Button:
 
         if not self.__joy_current_button:
             self.__color = GREY_2
+
+        # MOUSE
+        # if mouse_pos is not None and mouse_pressed is not None:
+        #     left = mouse_pressed[0]
+
+        #     mouse_down = left and not self.__prev_pressed
+        #     mouse_up = not left and self.__prev_pressed
+
+        #     if self.__rect.collidepoint(mouse_pos):
+        #         if mouse_down:
+        #             self.__color = BLUE
+        #             self.__active = True
+        #         elif not self.__active:
+        #             self.__color = ORANGE
+        #     else:
+        #         if not self.__active:
+        #             self.__color = GREY_2
+
+        #     if mouse_up and self.__active:
+        #         self.__active = False
+        #         self.__perform_function()
+
+        #     self.__prev_pressed = left
 
     def draw(self) -> None:
         glBindVertexArray(self.__vao)

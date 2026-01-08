@@ -90,6 +90,8 @@ class MainMenu:
         self.__music_manager.play_main_menu_music()
         self.__running = True
 
+        self.__joysticks_manager.current_first_button(self.__buttons)
+
         while self.__running:
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
@@ -104,11 +106,11 @@ class MainMenu:
             mouse_pos = (int(mouse_pos[0] * scale), int(mouse_pos[1] * scale))
 
             for button in self.__buttons:
-                button.update(mouse_pos, mouse_pressed)
+                button.update()
 
             # Draws
             glDisable(GL_DEPTH_TEST)
-            
+
             glEnable(GL_BLEND)
 
             glClear(GL_COLOR_BUFFER_BIT)
