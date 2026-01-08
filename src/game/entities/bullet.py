@@ -5,7 +5,7 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GL.shaders import ShaderProgram
 import pygame
 
-from game.consts import BAZOOKA_BULLET_DAMAGE, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_SPEED, BAZOOKA_BULLET_WIDTH, SHOTGUN_BULLET_DISPERSION_VELOCITY, MACHINE_GUN_BULLET_DAMAGE, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_SPEED, MACHINE_GUN_BULLET_WIDTH, SHOTGUN_BULLET_DAMAGE, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_SPEED, SHOTGUN_BULLET_WIDTH
+from game.consts import BAZOOKA_BULLET_DAMAGE, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_SPEED, BAZOOKA_BULLET_WIDTH, PISTOL_BULLET_DAMAGE, PISTOL_BULLET_HEIGHT, PISTOL_BULLET_SPEED, PISTOL_BULLET_WIDTH, SHOTGUN_BULLET_DISPERSION_VELOCITY, MACHINE_GUN_BULLET_DAMAGE, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_SPEED, MACHINE_GUN_BULLET_WIDTH, SHOTGUN_BULLET_DAMAGE, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_SPEED, SHOTGUN_BULLET_WIDTH
 from game.enums.direction_enum import DirectionEnum
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.float_rect import FloatRect
@@ -51,7 +51,13 @@ class Bullet:
             height = MACHINE_GUN_BULLET_HEIGHT
             self._type = WeaponEnum.MACHINE_GUN
 
-        # todo: add shotgun
+        elif self._type == WeaponEnum.PISTOL:
+            self.damage = PISTOL_BULLET_DAMAGE
+            self.__bullet_speed = PISTOL_BULLET_SPEED
+            width = PISTOL_BULLET_WIDTH
+            height = PISTOL_BULLET_HEIGHT
+            self._type = WeaponEnum.PISTOL
+
         elif self._type == WeaponEnum.SHOTGUN:
             self.damage = SHOTGUN_BULLET_DAMAGE
             self.__bullet_speed = SHOTGUN_BULLET_SPEED

@@ -1,5 +1,4 @@
 
-import numpy as np
 import pygame
 from OpenGL.GL import *  # type: ignore
 import ctypes
@@ -7,7 +6,7 @@ import ctypes
 from game.entities.bullet import Bullet
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.bullets import Bullets
-from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
+from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PISTOL_BULLET_HEIGHT, PISTOL_BULLET_WIDTH, PISTOL_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -58,7 +57,8 @@ class Player:
         self.__dash_start_time = 0
         self.__dash_last_time = 0
 
-        self.update_weapon(WeaponEnum.MACHINE_GUN)
+        self.__default_weapon = WeaponEnum.PISTOL
+        self.update_weapon(self.__default_weapon)
 
         self._shot_time = 0
         self._is_shot = False
@@ -90,13 +90,16 @@ class Player:
     def update_weapon(self, weapon_type: WeaponEnum):
         self.__current_weapon = weapon_type
 
-        if self.__current_weapon == WeaponEnum.MACHINE_GUN:
+        if self.__current_weapon == WeaponEnum.PISTOL:
+            self._shot_cooldown = PISTOL_COOLDOWN
+            self.__bullet_width, self.__bullet_height = PISTOL_BULLET_WIDTH, PISTOL_BULLET_HEIGHT
+        elif self.__current_weapon == WeaponEnum.MACHINE_GUN:
             self._shot_cooldown = MACHINE_GUN_COOLDOWN
             self.__bullet_width, self.__bullet_height = MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_BULLET_HEIGHT
-        if self.__current_weapon == WeaponEnum.BAZOOKA:
+        elif self.__current_weapon == WeaponEnum.BAZOOKA:
             self._shot_cooldown = BAZOOKA_COOLDOWN
             self.__bullet_width, self.__bullet_height = BAZOOKA_BULLET_WIDTH, BAZOOKA_BULLET_HEIGHT
-        if self.__current_weapon == WeaponEnum.SHOTGUN:
+        elif self.__current_weapon == WeaponEnum.SHOTGUN:
             self._shot_cooldown = SHOTGUN_COOLDOWN
             self.__bullet_width, self.__bullet_height = SHOTGUN_BULLET_WIDTH, SHOTGUN_BULLET_HEIGHT
 
@@ -116,7 +119,7 @@ class Player:
             self.__health = PLAYER_HEALTH
             self.__bullets.clear_by_color(self._color)
             self.__health_vao, self.__health_vbo = self.__create_vao_vbo(BLOCK_SIZE)
-            self.__current_weapon = WeaponEnum.MACHINE_GUN
+            self.__current_weapon = self.__default_weapon
             return "kill"
 
     def __shoot(self):
