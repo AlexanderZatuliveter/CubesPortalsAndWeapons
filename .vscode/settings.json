@@ -44,6 +44,7 @@
         "JOYDEVICEREMOVED",
         "KEYUP",
         "leftx",
+        "linalg",
         "Lubrifont",
         "MEIPASS",
         "MODELVIEW",
@@ -68,6 +69,7 @@
         "VIDEORESIZE",
         "WDXL",
         "wght",
+        "биндать",
         "стика",
         "хардкода"
     ],

@@ -14,8 +14,12 @@ class Button:
         self.__rect: pygame.Rect = pygame.Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
         self.__text = text
         self.__color = GREY
+        self.__prev_pressed = False
+
         self.__active = False
-        self.__current_button = False
+        self.__joy_active = False
+        self.__joy_current_button = False
+
         self.__function = function
 
         # Shader uniform locations
@@ -67,40 +71,40 @@ class Button:
             color=WHITE
         )
 
-    def update(self) -> None:
+    def update(self, mouse_pos: tuple[int, int], mouse_pressed: tuple[bool, bool, bool]) -> None:
 
-        # # MOUSE
-        # left = mouse_pressed[0]
+        # MOUSE
+        left = mouse_pressed[0]
 
-        # mouse_down = left and not self.__prev_pressed
-        # mouse_up = not left and self.__prev_pressed
+        mouse_down = left and not self.__prev_pressed
+        mouse_up = not left and self.__prev_pressed
 
-        # if self.__rect.collidepoint(mouse_pos):
-        #     if mouse_down:
-        #         self.__color = BLUE
-        #         self.__active = True
-        #     elif not self.__active:
-        #         self.__color = ORANGE
-        # else:
-        #     if not self.__active:
-        #         self.__color = GREY_2
+        if self.__rect.collidepoint(mouse_pos):
+            if mouse_down:
+                self.__color = BLUE
+                self.__active = True
+            elif not self.__active:
+                self.__color = ORANGE
+        else:
+            if not self.__active:
+                self.__color = GREY_2
 
-        # if mouse_up and self.__active:
-        #     self.__active = False
-        #     self.__perform_function()
-
-        # self.__prev_pressed = left
-
-        # JOYSTICK
-        if self.__current_button:
-            self.__color = ORANGE
-
-        if self.__active:
-            self.__color = BLUE
-            self.__current_button = self.__active = False
+        if mouse_up and self.__active:
+            self.__active = False
             self.__perform_function()
 
-        if not self.__current_button:
+        self.__prev_pressed = left
+
+        # JOYSTICK
+        if self.__joy_current_button:
+            self.__color = ORANGE
+
+        if self.__joy_active:
+            self.__color = BLUE
+            self.__joy_current_button = self.__joy_active = False
+            self.__perform_function()
+
+        if not self.__joy_current_button:
             self.__color = GREY_2
 
     def draw(self) -> None:
@@ -126,13 +130,13 @@ class Button:
         self.__function()
 
     def set_current_button(self) -> None:
-        self.__current_button = True
+        self.__joy_current_button = True
 
     def unset_current_button(self) -> None:
-        self.__current_button = False
+        self.__joy_current_button = False
 
     def is_current(self) -> bool:
-        return self.__current_button
+        return self.__joy_current_button
 
     def set_active(self) -> None:
-        self.__active = True
+        self.__joy_active = True

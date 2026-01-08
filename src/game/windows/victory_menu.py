@@ -8,7 +8,7 @@ from OpenGL.GLU import *  # type: ignore
 
 from engine.ui.button import Button
 from engine.common import get_resource_path
-from game.consts import BLUE, BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, MENU_FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GREEN, ORANGE, RED, VICTORY_TEXT_HEIGHT, VICTORY_TEXT_WIDTH
+from game.consts import BLUE, BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, MENU_BG_COLOR, MENU_FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH, GREEN, ORANGE, RED, VICTORY_TEXT_HEIGHT, VICTORY_TEXT_WIDTH
 from engine.graphics.display_manager import DisplayManager
 from engine.joysticks_manager import JoysticksManager
 from game.systems.game_state import GameState
@@ -42,7 +42,9 @@ class VictoryMenu:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        self.__shader = ShaderUtils.create_shader("./src/game/_shaders/shader.vert", "./src/game/_shaders/shader.frag")
+        self.__shader = ShaderUtils.create_shader(
+            "./src/game/_shaders/2d_shader.vert",
+            "./src/game/_shaders/2d_shader.frag")
         glUseProgram(self.__shader)
 
         uProjection = glGetUniformLocation(self.__shader, "uProjection")
@@ -110,7 +112,7 @@ class VictoryMenu:
         self.__screen = self.__display_manager.set_screen_size(self.__screen, self.__shader, self.__screen.get_size())
 
         # Set background's color
-        glClearColor(0.1, 0.1, 0.1, 1)
+        glClearColor(*MENU_BG_COLOR)
 
         self.__music_manager.play_victory_menu_music()
         self.__running = True
@@ -129,11 +131,16 @@ class VictoryMenu:
             mouse_pos = (int(mouse_pos[0] * scale), int(mouse_pos[1] * scale))
 
             for button in self.__buttons:
-                button.update()
+                button.update(mouse_pos, mouse_pressed)
 
             # Draws
+            glDisable(GL_DEPTH_TEST)
+
             glEnable(GL_BLEND)
+
             glClear(GL_COLOR_BUFFER_BIT)
+            glClear(GL_DEPTH_BUFFER_BIT)
+
             glUseProgram(self.__shader)
 
             for button in self.__buttons:

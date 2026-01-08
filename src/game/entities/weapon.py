@@ -1,79 +1,108 @@
 
 
-import ctypes
 import numpy as np
+from OpenGL.GL.shaders import ShaderProgram
 from OpenGL.GL import *  # type: ignore
-import pygame
 
-from engine.common import load_texture
-from engine.graphics.renderer import Renderer
-from game.consts import BLOCK_SIZE
+from engine.graphics.opengl_3d_utils import MeshData, OpenGL_3D_Utils
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.float_rect import FloatRect
+from game.consts import BLOCK_SIZE
 
 
 class Weapon:
     def __init__(
         self,
-        image_shader,
-        image_path: str,
+        shader: ShaderProgram | None,
         position: tuple[float, float],
         type: WeaponEnum,
-        flip_x: bool = False,
-        flip_y: bool = True
+        model_mesh: MeshData
     ) -> None:
 
-        self.__shader = image_shader
-        self.__renderer = Renderer()
-
+        self.__shader = shader
         self.__type = type
-        self.__texture, ratio = load_texture(image_path)
+        self.__position = position  # world position (x, y)
+        self.__model_mesh = model_mesh
 
-        self.__width = BLOCK_SIZE * ratio[0]
-        self.__height = BLOCK_SIZE * ratio[1]
-        x = 0
-        y = 0
+        self.__width = BLOCK_SIZE * 2
+        self.__height = BLOCK_SIZE * 1
+        self.__depth = BLOCK_SIZE * 2
 
-        self.rect = FloatRect(*position, self.__width, self.__height)
+        self.rect = FloatRect(
+            self.__position[0] - self.__width / 2,
+            self.__position[1] - self.__height / 2,
+            self.__width,
+            self.__height
+        )
 
-        u0, u1 = (1.0, 0.0) if flip_x else (0.0, 1.0)
-        v0, v1 = (1.0, 0.0) if flip_y else (0.0, 1.0)
+        self.__vao = glGenVertexArrays(1)
+        vbo_pos = glGenBuffers(1)
+        vbo_norm = glGenBuffers(1)
+        self.__ebo_faces = glGenBuffers(1)
+        self.__ebo_edges = glGenBuffers(1)
 
-        vertices = np.array([
-            x, y, u0, v0,
-            x + self.__width, y, u1, v0,
-            x + self.__width, y + self.__height, u1, v1,
-            x, y + self.__height, u0, v1,
-        ], dtype=np.float32)
+        glBindVertexArray(self.__vao)
 
-        self.__vao, self.__vbo = self.__renderer.create_vao_vbo(vertices)
-
-        stride = 4 * 4  # 4 row by 4 row (vertices)
-
+        # Positions
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_pos)
+        glBufferData(GL_ARRAY_BUFFER, model_mesh.vertices.nbytes, model_mesh.vertices, GL_STATIC_DRAW)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
 
-        glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(8))
+        # Normals
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_norm)
+        glBufferData(GL_ARRAY_BUFFER, model_mesh.normals.nbytes, model_mesh.normals, GL_STATIC_DRAW)
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glEnableVertexAttribArray(1)
+
+        # Faces EBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_faces)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_mesh.faces.nbytes, model_mesh.faces, GL_STATIC_DRAW)
 
         glBindVertexArray(0)
 
-        # Cache uniform locations for faster access
-        glUseProgram(self.__shader)
-        self.__uPlayerPos = glGetUniformLocation(self.__shader, "uPlayerPos")
-        self.__uIsPlayer = glGetUniformLocation(self.__shader, "uIsPlayer")
-        self.__uUseTexture = glGetUniformLocation(self.__shader, "uUseTexture")
-        self.__uTexture = glGetUniformLocation(self.__shader, "uTexture")
-        self.__uColor = glGetUniformLocation(self.__shader, "uColor")
-        glUseProgram(0)
+        # Edges EBO (можно биндать по необходимости)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_edges)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_mesh.edges.nbytes, model_mesh.edges, GL_STATIC_DRAW)
 
-    def draw(self) -> None:
-        self.__renderer.draw_texture(
-            self.rect.topleft, self.__vao, self.__shader,
-            self.__uPlayerPos, self.__uIsPlayer,
-            self.__uUseTexture, self.__uTexture,
-            self.__texture, self.__uColor
-        )
+    def draw(
+        self,
+        projection: 'np.ndarray',
+        view: 'np.ndarray',
+        t: float,
+        light_pos: 'np.ndarray',
+        camera_pos: 'np.ndarray'
+    ) -> None:
+
+        model = OpenGL_3D_Utils.rotate(t)
+        translate = OpenGL_3D_Utils.translate(self.__position[0], self.__position[1], 0.0)
+        scale_mat = OpenGL_3D_Utils.scale(self.__width, self.__height * 2, self.__depth)
+        # Order: projection @ view @ translate(world) @ scale(local) @ rotate(local)
+        mvp = projection @ view @ translate @ scale_mat @ model
+
+        glUniformMatrix4fv(glGetUniformLocation(self.__shader, "mvp"), 1, GL_TRUE, mvp)
+        glUniformMatrix4fv(glGetUniformLocation(self.__shader, "model"), 1, GL_TRUE, model)
+        glUniform3fv(glGetUniformLocation(self.__shader, "lightPos"), 1, light_pos)
+        glUniform3fv(glGetUniformLocation(self.__shader, "viewPos"), 1, camera_pos)
+
+        glBindVertexArray(self.__vao)
+
+        # --- Draw faces (opaque) ---
+        glEnable(GL_DEPTH_TEST)
+        glDisable(GL_BLEND)
+        glEnable(GL_POLYGON_OFFSET_FILL)
+        glPolygonOffset(1.0, 1.0)
+
+        glUniform3f(glGetUniformLocation(self.__shader, "objectColor"), 0.4, 0.4, 0.45)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_faces)
+        glDrawElements(GL_TRIANGLES, len(self.__model_mesh.faces), GL_UNSIGNED_INT, None)
+
+        glDisable(GL_POLYGON_OFFSET_FILL)
+        glEnable(GL_BLEND)
+
+    def change_position(self, position: tuple[float, float]) -> None:
+        self.__position = position
+        self.rect = FloatRect(*self.__position, BLOCK_SIZE * 2, BLOCK_SIZE * 1)
 
     def get_type(self) -> WeaponEnum:
         return self.__type

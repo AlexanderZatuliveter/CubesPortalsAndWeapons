@@ -5,6 +5,8 @@ layout (location = 1) in vec2 aOffset;
 layout (location = 2) in vec2 aTexCoord;
 
 uniform mat4 uProjection;
+uniform mat4 rotation;
+uniform bool uApplyRotation;
 uniform vec2 uPlayerPos;
 uniform int uIsPlayer;
 
@@ -18,6 +20,11 @@ void main()
     else
         pos += uPlayerPos;
 
-    gl_Position = uProjection * vec4(pos, 0.0, 1.0);
+    vec4 pos4 = vec4(pos, 0.0, 1.0);
+    if (uApplyRotation)
+        gl_Position = uProjection * rotation * pos4;
+    else
+        gl_Position = uProjection * pos4;
+
     vTexCoord = aTexCoord;
-}
+} 
