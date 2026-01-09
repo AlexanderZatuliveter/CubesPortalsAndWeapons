@@ -1,23 +1,25 @@
 
-
+import sys
+import os
+import ctypes
 import pygame
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-import sys
-import os
-
 # --- ФИКС ИМПОРТОВ ---
 # Добавляем путь к src в sys.path, чтобы видеть модуль game
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
+from game.systems.float_rect import FloatRect
+from engine.graphics.renderer import Renderer
 from game.game_field import GameField
 from engine.graphics.display_manager import DisplayManager
 from engine.graphics.opengl_utils import OpenGLUtils
 from engine.shader_utils import ShaderUtils
-from game.consts import GAME_BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH
+from game.consts import GAME_BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH, MAP_HEIGHT, MAP_WIDTH, MAPS_CELLS_COLOR
 from mouse_buttons import Mouse
+
 
 
 pygame.init()
@@ -49,10 +51,46 @@ game_field = GameField(
     int(GAME_FIELD_HEIGHT // BLOCK_SIZE),
     shader
 )
+
+renderer = Renderer()
+
+lines: dict[FloatRect, tuple[int, int]] = {}
+
+thickness = 2
+
+for x in range(1, MAP_WIDTH):
+    x = x * BLOCK_SIZE
+    vertices = OpenGLUtils.create_rectangle_vertices(
+        width=thickness, 
+        height=GAME_FIELD_HEIGHT, 
+        x=x - thickness / 2, 
+        y=0
+    )
+    vao, vbo = renderer.create_vao_vbo(vertices)
+    # Configure vertex attribute for position (location 0)
+    glEnableVertexAttribArray(0)
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
+    rect = FloatRect(x, 0, width=5, height=GAME_FIELD_HEIGHT)
+    lines[rect] = (vao, vbo)
+
+for y in range(1, MAP_HEIGHT):
+    y = y * BLOCK_SIZE
+    vertices = OpenGLUtils.create_rectangle_vertices(
+        width=GAME_FIELD_WIDTH, 
+        height=thickness, 
+        x=0, 
+        y=y - thickness / 2
+    )
+    vao, vbo = renderer.create_vao_vbo(vertices)
+    # Configure vertex attribute for position (location 0)
+    glEnableVertexAttribArray(0)
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
+    rect = FloatRect(0, y, width=GAME_FIELD_WIDTH, height=5)
+    lines[rect] = (vao, vbo)
+
 clock = pygame.time.Clock()
 
 display_manager = DisplayManager()
-
 
 screen = display_manager.set_screen_size(screen, shader, screen.get_size())
 
@@ -82,14 +120,28 @@ while True:
             if videoresize is not None:
                 screen, past_screen_size = videoresize
 
+    mouse.update(game_field)
+
     # Cleaning the screen and setting the background
     glEnable(GL_BLEND)
     glClear(GL_COLOR_BUFFER_BIT)
     glUseProgram(shader)
 
+    for rect, (vao, vbo) in lines.items():
+        color = MAPS_CELLS_COLOR
+
+        renderer.draw_rect(
+            vao,
+            uUseTexture=(glGetUniformLocation(shader, "uUseTexture"), False),
+            uIsPlayer=(glGetUniformLocation(shader, "uIsPlayer"), False),
+            uPlayerPos=None,
+            uColor=glGetUniformLocation(shader, "uColor"),
+            rect=rect,
+            color=color
+        )
+
     # Draw
     game_field.draw()
-    mouse.update(game_field)
 
     clock.tick(60)
     pygame.display.flip()

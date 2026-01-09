@@ -110,7 +110,7 @@ class Bullet:
         return self.__is_destroyed
 
     def draw(self) -> None:
-        self.__renderer.draw_square(
+        self.__renderer.draw_rect(
             self.__vao, (self.__uUseTexture, False),
             (self.__uIsPlayer, True), self.__uPlayerPos,
             self.__uColor, self.rect, self._color,

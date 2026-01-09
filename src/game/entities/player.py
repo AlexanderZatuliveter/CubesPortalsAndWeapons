@@ -211,8 +211,11 @@ class Player:
 
         is_bottom_block = self.__physics.is_block(DirectionEnum.DOWN, dt)
         is_upper_block = self.__physics.is_block(DirectionEnum.UP, dt)
+        is_left_block = self.__physics.is_block(DirectionEnum.LEFT, dt)
+        is_right_block = self.__physics.is_block(DirectionEnum.RIGHT, dt)
 
-        if self.__joystick and self.__joystick.get_button(0) and is_bottom_block and not is_upper_block:
+        if self.__joystick and self.__joystick.get_button(0) \
+                and (is_bottom_block or is_left_block or is_right_block) and not is_upper_block:
             self.velocity_y = self.__jump_force
             self.__jumping = True
 
@@ -256,7 +259,7 @@ class Player:
         if self.__last_health != self.__health:
             self.__health_vao, self.__health_vbo = self.__create_vao_vbo(size)
 
-        self.__renderer.draw_square(
+        self.__renderer.draw_rect(
             self.__health_vao, (self.__uUseTexture, False),
             (self.__uIsPlayer, True), self.__uPlayerPos,
             self.__uColor, rect, self._color,
@@ -265,7 +268,7 @@ class Player:
 
         blur_color = (self._color[0], self._color[1], self._color[2], 0.4)
 
-        self.__renderer.draw_square(
+        self.__renderer.draw_rect(
             self.__vao, (self.__uUseTexture, False),
             (self.__uIsPlayer, True), self.__uPlayerPos,
             self.__uColor, self.rect, blur_color,

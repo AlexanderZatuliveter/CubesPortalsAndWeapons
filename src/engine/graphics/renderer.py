@@ -15,7 +15,7 @@ class Renderer:
 
         return vao, vbo
 
-    def draw_square(
+    def draw_rect(
         self,
         vao,
         uUseTexture: tuple[int, bool],

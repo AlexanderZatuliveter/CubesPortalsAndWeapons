@@ -49,7 +49,7 @@ class Block:
         glBufferData(GL_ARRAY_BUFFER, offset_data.nbytes, offset_data, GL_DYNAMIC_DRAW)
 
     def draw(self) -> None:
-        self.__renderer.draw_square(
+        self.__renderer.draw_rect(
             self.__vao, (self.__uUseTexture, False),
             (self.__uIsPlayer, False), None,
             self.__uColor, self.rect, DARK_GREY,
