@@ -108,11 +108,15 @@ while True:
 
         if keys[pygame.K_s]:
             print('saved')
-            game_field.save_to_file("third.map")
+            game_field.save_to_file("my.map")
 
         if keys[pygame.K_l]:
             print('loaded')
             game_field.load_from_file("third.map")
+
+        if keys[pygame.K_c]:
+            print('cleared')
+            game_field.field.fill(None)
 
         if event.type == pygame.VIDEORESIZE:
             videoresize = display_manager.resize_display(screen, shader, past_screen_size, event.size)
@@ -120,7 +124,7 @@ while True:
             if videoresize is not None:
                 screen, past_screen_size = videoresize
 
-    mouse.update(game_field)
+    mouse.update(game_field, screen)
 
     # Cleaning the screen and setting the background
     glEnable(GL_BLEND)

@@ -1,6 +1,7 @@
 from typing import Sequence
 import numpy as np
 
+from game.consts import BLOCK_SIZE, GAME_FIELD_HEIGHT
 from game.entities.bullet import Bullet
 from game.systems.bullets import Bullets
 from game.game_field import GameField
@@ -31,18 +32,23 @@ class Damage:
                     is_dead = player.damage(bullet)
 
                     for p in self.__damageables:
-                        if p._color == bullet._color and player._color != bullet._color and is_dead == "kill":  # type: ignore
-                            p.add_score()  # type: ignore
+                        if p._color == bullet._color and player._color != bullet._color and is_dead == "kill":
+                            p.add_score()
                             self.__destroy(bullet)
                             return
 
                         self.__destroy(bullet)
+
             for (bx, by), block in np.ndenumerate(self.__game_field.field):
                 if block is not None:
                     block_rect = self.__game_field._get_block_rect(bx, by)
                     if bullet.rect.colliderect(block_rect):
                         self.__destroy(bullet)
                         break
+
+        for player in self.__damageables:
+            if player.rect.top > GAME_FIELD_HEIGHT:
+                player.kill()
 
     def __destroy(self, bullet: Bullet):
         if bullet in self.__bullets:

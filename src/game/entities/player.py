@@ -122,7 +122,15 @@ class Player:
             self.__current_weapon = self.__default_weapon
             return "kill"
 
-    def __shoot(self):
+    def kill(self) -> None:
+        self.remove_score()
+        self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
+        self.__health = PLAYER_HEALTH
+        self.__bullets.clear_by_color(self._color)
+        self.__health_vao, self.__health_vbo = self.__create_vao_vbo(BLOCK_SIZE)
+        self.__current_weapon = self.__default_weapon
+
+    def __shoot(self) -> None:
 
         if not self.__joystick:
             return
@@ -232,7 +240,7 @@ class Player:
 
         # Physics
         self.__physics.gravitation(dt)
-        self.__physics.borders_teleportation()
+        # self.__physics.borders_teleportation()
 
         # Bullets
         if not self.__joystick:
@@ -284,6 +292,11 @@ class Player:
     def add_score(self) -> None:
         self.__scores += 1
         self.__draw_scores.update_text(str(self.__scores))
+
+    def remove_score(self) -> None:
+        if self.__scores > 0:
+            self.__scores -= 1
+            self.__draw_scores.update_text(str(self.__scores))
 
     def get_scores(self) -> int:
         return self.__scores

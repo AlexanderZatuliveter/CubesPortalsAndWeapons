@@ -149,14 +149,20 @@ class GameField:
         self.put_block(pos)
 
     def put_block(self, pos: IntPosition) -> None:
-        block = self.field[pos.x][pos.y]
-        if not block:
-            self.field[pos.x][pos.y] = Block(self.__shader)
+        try:
+            block = self.field[pos.x][pos.y]
+            if not block:
+                self.field[pos.x][pos.y] = Block(self.__shader)
+        except IndexError:
+            return
 
     def hit_block(self, pos: IntPosition) -> None:
-        block = self.field[pos.x][pos.y]
-        if block:
-            self.field[pos.x][pos.y] = None
+        try:
+            block = self.field[pos.x][pos.y]
+            if block:
+                self.field[pos.x][pos.y] = None
+        except IndexError:
+            return
 
     def hit_block_by_screen_pos(self, x, y) -> None:
         pos = self.get_block_field_position(x, y)
