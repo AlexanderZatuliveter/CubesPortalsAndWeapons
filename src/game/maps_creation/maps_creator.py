@@ -113,11 +113,11 @@ while True:
 
         if keys[pygame.K_s]:
             print('saved')
-            game_field.save_to_file("my.map")
+            game_field.save_to_file("pillars.map")
 
         if keys[pygame.K_l]:
             print('loaded')
-            game_field.load_from_file("my.map")
+            game_field.load_from_file("pillars.map")
 
         if keys[pygame.K_c]:
             print('cleared')
