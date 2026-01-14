@@ -75,7 +75,7 @@ class GameWindow:
         )
 
         # Load map first so block positions are available for weapon placement
-        self.__game_field.load_from_file("third.map")
+        self.__game_field.load_from_file("my.map")
 
         self.__bullets = Bullets()
         self.__players = Players(

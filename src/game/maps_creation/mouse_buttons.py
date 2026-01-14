@@ -9,10 +9,7 @@ class Mouse:
 
     def update(self, game_field: GameField, screen: pygame.Surface):
         left, middle, right = pygame.mouse.get_pressed()
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-
-        scale = screen.get_width() / pygame.display.get_window_size()[0]
-        mouse_x, mouse_y = int(mouse_x * scale), int(mouse_y * scale)
+        mouse_x, mouse_y = self.get_mouse_pos(screen)
 
         if left:
             game_field.put_block_by_screen_pos(mouse_x, mouse_y)
@@ -20,3 +17,8 @@ class Mouse:
         if right:
             game_field.hit_block_by_screen_pos(mouse_x, mouse_y)
             game_field.hit_block_by_screen_pos(int(GAME_FIELD_WIDTH) - mouse_x, mouse_y)
+
+    def get_mouse_pos(self, screen: pygame.Surface):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        scale = screen.get_width() / pygame.display.get_window_size()[0]
+        return int(mouse_x * scale), int(mouse_y * scale)

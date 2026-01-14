@@ -1,11 +1,6 @@
 
 import sys
 import os
-import ctypes
-import pygame
-from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
-from OpenGL.GL import *  # type: ignore
-from OpenGL.GLU import *  # type: ignore
 
 # --- ФИКС ИМПОРТОВ ---
 # Добавляем путь к src в sys.path, чтобы видеть модуль game
@@ -17,9 +12,13 @@ from game.game_field import GameField
 from engine.graphics.display_manager import DisplayManager
 from engine.graphics.opengl_utils import OpenGLUtils
 from engine.shader_utils import ShaderUtils
-from game.consts import GAME_BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH, MAP_HEIGHT, MAP_WIDTH, MAPS_CELLS_COLOR
+from game.consts import GAME_BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH, MAP_HEIGHT, MAP_WIDTH, MAPS_CELLS_COLOR, VIRTUAL_BLOCK_COLOR
 from mouse_buttons import Mouse
-
+import ctypes
+import pygame
+from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
+from OpenGL.GL import *  # type: ignore
+from OpenGL.GLU import *  # type: ignore
 
 
 pygame.init()
@@ -45,6 +44,12 @@ uProjection = glGetUniformLocation(shader, "uProjection")
 projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
 glUniformMatrix4fv(uProjection, 1, GL_FALSE, projection.T)
 
+# Cache other uniform locations for reuse
+uPlayerPos = glGetUniformLocation(shader, "uPlayerPos")
+uIsPlayerLoc = glGetUniformLocation(shader, "uIsPlayer")
+uUseTextureLoc = glGetUniformLocation(shader, "uUseTexture")
+uColorLoc = glGetUniformLocation(shader, "uColor")
+
 mouse = Mouse()
 game_field = GameField(
     int(GAME_FIELD_WIDTH // BLOCK_SIZE),
@@ -61,9 +66,9 @@ thickness = 2
 for x in range(1, MAP_WIDTH):
     x = x * BLOCK_SIZE
     vertices = OpenGLUtils.create_rectangle_vertices(
-        width=thickness, 
-        height=GAME_FIELD_HEIGHT, 
-        x=x - thickness / 2, 
+        width=thickness,
+        height=GAME_FIELD_HEIGHT,
+        x=x - thickness / 2,
         y=0
     )
     vao, vbo = renderer.create_vao_vbo(vertices)
@@ -76,9 +81,9 @@ for x in range(1, MAP_WIDTH):
 for y in range(1, MAP_HEIGHT):
     y = y * BLOCK_SIZE
     vertices = OpenGLUtils.create_rectangle_vertices(
-        width=GAME_FIELD_WIDTH, 
-        height=thickness, 
-        x=0, 
+        width=GAME_FIELD_WIDTH,
+        height=thickness,
+        x=0,
         y=y - thickness / 2
     )
     vao, vbo = renderer.create_vao_vbo(vertices)
@@ -112,7 +117,7 @@ while True:
 
         if keys[pygame.K_l]:
             print('loaded')
-            game_field.load_from_file("third.map")
+            game_field.load_from_file("my.map")
 
         if keys[pygame.K_c]:
             print('cleared')
@@ -131,9 +136,46 @@ while True:
     glClear(GL_COLOR_BUFFER_BIT)
     glUseProgram(shader)
 
-    for rect, (vao, vbo) in lines.items():
-        color = MAPS_CELLS_COLOR
+    try:
+        mouse_pos = mouse.get_mouse_pos(screen)
+        
+        block_pos = game_field.get_block_field_position(*mouse_pos)
+        
+        y = block_pos.y * BLOCK_SIZE
+        x1 = block_pos.x * BLOCK_SIZE
+        x2 = GAME_FIELD_WIDTH - x1 - BLOCK_SIZE
 
+        # Use a square geometry at origin and place it using uPlayerPos uniform
+        square_vertices = OpenGLUtils.create_square_vertices(BLOCK_SIZE)
+        block_vao, block_vbo = renderer.create_vao_vbo(square_vertices)
+        # Configure vertex attribute for position (location 0)
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8, ctypes.c_void_p(0))
+
+        renderer.draw_rect(
+            block_vao,
+            uUseTexture=(uUseTextureLoc, False),
+            uIsPlayer=(uIsPlayerLoc, True),
+            uPlayerPos=uPlayerPos,
+            uColor=uColorLoc,
+            rect=FloatRect(x1, y, BLOCK_SIZE, BLOCK_SIZE),
+            color=VIRTUAL_BLOCK_COLOR
+        )
+        
+        renderer.draw_rect(
+            block_vao,
+            uUseTexture=(uUseTextureLoc, False),
+            uIsPlayer=(uIsPlayerLoc, True),
+            uPlayerPos=uPlayerPos,
+            uColor=uColorLoc,
+            rect=FloatRect(x2, y, BLOCK_SIZE, BLOCK_SIZE),
+            color=VIRTUAL_BLOCK_COLOR
+        )
+
+    except IndexError:
+        ...
+
+    for rect, (vao, vbo) in lines.items():
         renderer.draw_rect(
             vao,
             uUseTexture=(glGetUniformLocation(shader, "uUseTexture"), False),
@@ -141,7 +183,7 @@ while True:
             uPlayerPos=None,
             uColor=glGetUniformLocation(shader, "uColor"),
             rect=rect,
-            color=color
+            color=MAPS_CELLS_COLOR
         )
 
     # Draw
