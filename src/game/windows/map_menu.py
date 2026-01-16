@@ -10,14 +10,14 @@ from engine.ui.button import Button
 from game.consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, MENU_BG_COLOR, MENU_FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from engine.graphics.display_manager import DisplayManager
 from engine.joysticks_manager import JoysticksManager
+from game.enums.window_enum import WindowEnum
 from game.systems.game_state import GameState
 from engine.music_manager import MusicManager
 from engine.graphics.opengl_utils import OpenGLUtils
 from engine.shader_utils import ShaderUtils
-from game.enums.window_enum import WindowEnum
 
 
-class MainMenu:
+class MapMenu:
     def __init__(
         self,
         game_state: GameState,
@@ -48,13 +48,18 @@ class MainMenu:
         self.__projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
         glUniformMatrix4fv(uProjection, 1, GL_FALSE, self.__projection.T)
 
+        self.map_path = "platform.map"
+
         # make buttons
         self.__buttons: list[Button] = []
 
         buttons = {
-            "Start": self.__start_button_func,
-            "Options": None,
-            "Exit to Desktop": self.__desktop_exit_button_func
+            "Climbing": self.__make_map_callback("climbing.map"),
+            "Just-face": self.__make_map_callback("just-face.map"),
+            "Moon-or-not-moon": self.__make_map_callback("moon-or-not-moon.map"),
+            "Pillars": self.__make_map_callback("pillars.map"),
+            "Platform": self.__make_map_callback("platform.map"),
+            "Sight": self.__make_map_callback("sight.map")
         }
 
         start_y = GAME_FIELD_HEIGHT / 2 - BUTTON_HEIGHT * \
@@ -142,10 +147,9 @@ class MainMenu:
                 if videoresize is not None:
                     self.__screen, self.__past_screen_size = videoresize
 
-    def __desktop_exit_button_func(self) -> None:
-        pygame.quit()
-        sys.exit()
-
-    def __start_button_func(self) -> None:
-        self.__game_state.current_window = WindowEnum.MAP_MENU
-        self.__running = False
+    def __make_map_callback(self, map_path):
+        def callback():
+            self.map_path = map_path
+            self.__game_state.current_window = WindowEnum.GAME_WINDOW
+            self.__running = False
+        return callback

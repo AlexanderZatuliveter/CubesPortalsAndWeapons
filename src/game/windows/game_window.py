@@ -31,7 +31,8 @@ class GameWindow:
         game_state: GameState,
         screen: Surface,
         music_manager: MusicManager,
-        joysticks_manager: JoysticksManager
+        joysticks_manager: JoysticksManager,
+        map_path: str
     ) -> None:
 
         self.__game_state = game_state
@@ -75,7 +76,7 @@ class GameWindow:
         )
 
         # Load map first so block positions are available for weapon placement
-        self.__game_field.load_from_file("pillars.map")
+        self.__game_field.load_from_file(map_path)
 
         self.__bullets = Bullets()
         self.__players = Players(

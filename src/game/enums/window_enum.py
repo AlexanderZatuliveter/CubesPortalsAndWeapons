@@ -8,3 +8,4 @@ class WindowEnum(Enum):
     PAUSE_MENU = auto()
     MAIN_MENU = auto()
     VICTORY_MENU = auto()
+    MAP_MENU = auto()
