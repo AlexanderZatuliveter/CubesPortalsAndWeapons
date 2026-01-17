@@ -48,6 +48,9 @@ class JoysticksManager:
                         if button.is_current():
                             button.set_active()
 
+            if event.type == pygame.JOYDEVICEADDED:
+                self.__joysticks = self.get_joysticks()
+
     def __joystick_move_selection(self, direction: DirectionEnum, buttons: list[Button]) -> None:
         if direction == DirectionEnum.DOWN:
             dir_num = 1
@@ -61,3 +64,4 @@ class JoysticksManager:
 
     def current_first_button(self, buttons: list[Button]) -> None:
         buttons[0].set_current_button()
+        self.__current_button_i = 0

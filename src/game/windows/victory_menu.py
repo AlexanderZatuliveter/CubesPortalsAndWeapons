@@ -123,14 +123,8 @@ class VictoryMenu:
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
 
-            mouse_pos = pygame.mouse.get_pos()
-            mouse_pressed = pygame.mouse.get_pressed()
-
             self.update(events)
             self.__joysticks_manager.update_joystick_selection(events, self.__buttons)
-
-            scale = self.__screen.get_width() / pygame.display.get_window_size()[0]
-            mouse_pos = (int(mouse_pos[0] * scale), int(mouse_pos[1] * scale))
 
             for button in self.__buttons:
                 button.update()
