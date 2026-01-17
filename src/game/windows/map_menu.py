@@ -93,7 +93,6 @@ class MapMenu:
         # Set background's color
         glClearColor(*MENU_BG_COLOR)
 
-        self.__music_manager.play_main_menu_music()
         self.__running = True
 
         self.__joysticks_manager.current_first_button(self.__buttons)

@@ -53,7 +53,6 @@ class MainMenu:
 
         buttons = {
             "Start": self.__start_button_func,
-            "Options": None,
             "Exit to Desktop": self.__desktop_exit_button_func
         }
 

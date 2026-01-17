@@ -53,7 +53,6 @@ class PauseMenu:
 
         buttons = {
             "Continue": self.__continue_button_func,
-            "Options": None,
             "Exit to Main Menu": self.__main_menu_button_func,
             "Exit to Desktop": self.__desktop_exit_button_func
         }
