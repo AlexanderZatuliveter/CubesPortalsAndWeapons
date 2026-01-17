@@ -47,7 +47,7 @@ class Damage:
                         break
 
         for player in self.__damageables:
-            if player.rect.top > GAME_FIELD_HEIGHT:
+            if player.rect.top > GAME_FIELD_HEIGHT + BLOCK_SIZE * 15:
                 player.kill()
 
     def __destroy(self, bullet: Bullet):

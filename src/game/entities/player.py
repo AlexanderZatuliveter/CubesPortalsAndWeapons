@@ -26,7 +26,8 @@ class Player:
         bullets: Bullets
     ) -> None:
 
-        self.rect = FloatRect(*start_pos, BLOCK_SIZE, BLOCK_SIZE)
+        self.__start_pos = start_pos
+        self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
         self.__joystick: pygame.joystick.JoystickType | None = None
         pygame.joystick.init()
         self._color = color
@@ -115,7 +116,7 @@ class Player:
                 self.__joystick.rumble(0.2, 0.4, 150)
 
         if self.__health <= 0:
-            self.rect = FloatRect(*self.rect.topleft, BLOCK_SIZE, BLOCK_SIZE)
+            self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
             self.__health = PLAYER_HEALTH
             self.__bullets.clear_by_color(self._color)
             self.__health_vao, self.__health_vbo = self.__create_vao_vbo(BLOCK_SIZE)
@@ -124,7 +125,7 @@ class Player:
 
     def kill(self) -> None:
         self.remove_score()
-        self.rect = FloatRect(*self.rect.topleft, BLOCK_SIZE, BLOCK_SIZE)
+        self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
         self.__health = PLAYER_HEALTH
         self.__bullets.clear_by_color(self._color)
         self.__health_vao, self.__health_vbo = self.__create_vao_vbo(BLOCK_SIZE)
@@ -240,7 +241,6 @@ class Player:
 
         # Physics
         self.__physics.gravitation(dt)
-        # self.__physics.borders_teleportation()
 
         # Bullets
         if not self.__joystick:
