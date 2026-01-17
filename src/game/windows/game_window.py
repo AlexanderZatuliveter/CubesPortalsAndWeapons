@@ -32,7 +32,8 @@ class GameWindow:
         screen: Surface,
         music_manager: MusicManager,
         joysticks_manager: JoysticksManager,
-        map_path: str
+        map_path: str,
+        player_start_pos: tuple[float, float]
     ) -> None:
 
         self.__game_state = game_state
@@ -83,7 +84,8 @@ class GameWindow:
             self.__game_field,
             joysticks_manager,
             self.__2d_shader,
-            self.__bullets
+            self.__bullets,
+            player_start_pos
         )
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
         self.__weapons = Weapons(self.__game_field, self.__3d_shader)

@@ -7,7 +7,7 @@ from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
 from engine.ui.button import Button
-from game.consts import BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, MENU_BG_COLOR, MENU_FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
+from game.consts import BLOCK_SIZE, BUTTON_HEIGHT, BUTTON_OFFSET, BUTTON_WIDTH, MENU_BG_COLOR, MENU_FPS, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from engine.graphics.display_manager import DisplayManager
 from engine.joysticks_manager import JoysticksManager
 from game.enums.window_enum import WindowEnum
@@ -49,6 +49,7 @@ class MapMenu:
         glUniformMatrix4fv(uProjection, 1, GL_FALSE, self.__projection.T)
 
         self.map_path = "platform.map"
+        self.player_start_pos = (GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT / 2)
 
         # make buttons
         self.__buttons: list[Button] = []
@@ -151,5 +152,19 @@ class MapMenu:
         def callback():
             self.map_path = map_path
             self.__game_state.current_window = WindowEnum.GAME_WINDOW
+
+            if map_path == "climbing.map":
+                self.player_start_pos = (GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT / 2)
+            elif map_path == "moon-or-not-moon.map":
+                self.player_start_pos = (GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT - BLOCK_SIZE * 3)
+            elif map_path == "just-face.map":
+                self.player_start_pos = (GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT / 2 + BLOCK_SIZE * 4)
+            elif map_path == "platform.map":
+                self.player_start_pos = (GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT / 2)
+            elif map_path == "pillars.map":
+                self.player_start_pos = (GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT / 2 - BLOCK_SIZE * 9)
+            elif map_path == "sight.map":
+                self.player_start_pos = (GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT - BLOCK_SIZE * 5)
+
             self.__running = False
         return callback

@@ -15,20 +15,22 @@ class Players(list[Player]):
         game_field: GameField,
         joysticks_manager: JoysticksManager,
         shader,
-        bullets: Bullets
+        bullets: Bullets,
+        player_start_pos: tuple[float, float]
     ) -> None:
         self.__colors = [BLUE, RED, GREEN, ORANGE]
         self.__bullets = bullets
         self.__shader = shader
+        self.__player_start_pos = player_start_pos
         self.__game_field = game_field
         self.__joystick_manager = joysticks_manager
 
-    def update(self, events: list[Event], dt: float):
+    def update(self, events: list[Event], dt: float) -> None:
         self.__joystick_events(events)
         for player in self:
             player.update(dt)
 
-    def __joystick_events(self, events: list[Event]):
+    def __joystick_events(self, events: list[Event]) -> None:
         self.__players_append()
 
         for event in events:
@@ -59,6 +61,7 @@ class Players(list[Player]):
             new_player = Player(
                 self.__game_field,
                 self.__shader,
+                self.__player_start_pos,
                 self.__colors[len(self)],
                 self.__bullets
             )

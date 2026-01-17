@@ -6,7 +6,7 @@ import ctypes
 from game.entities.bullet import Bullet
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.bullets import Bullets
-from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, GAME_FIELD_HEIGHT, CHANGE_ANTI_GRAVITY, GAME_FIELD_WIDTH, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PISTOL_BULLET_HEIGHT, PISTOL_BULLET_WIDTH, PISTOL_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
+from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, CHANGE_ANTI_GRAVITY, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PISTOL_BULLET_HEIGHT, PISTOL_BULLET_WIDTH, PISTOL_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -21,12 +21,12 @@ class Player:
         self,
         game_field: GameField,
         shader,
+        start_pos: tuple[float, float],
         color: tuple[float, float, float, float],
         bullets: Bullets
     ) -> None:
 
-        self.__start_pos = GAME_FIELD_WIDTH / 2, GAME_FIELD_HEIGHT / 2
-        self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
+        self.rect = FloatRect(*start_pos, BLOCK_SIZE, BLOCK_SIZE)
         self.__joystick: pygame.joystick.JoystickType | None = None
         pygame.joystick.init()
         self._color = color
@@ -115,7 +115,7 @@ class Player:
                 self.__joystick.rumble(0.2, 0.4, 150)
 
         if self.__health <= 0:
-            self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
+            self.rect = FloatRect(*self.rect.topleft, BLOCK_SIZE, BLOCK_SIZE)
             self.__health = PLAYER_HEALTH
             self.__bullets.clear_by_color(self._color)
             self.__health_vao, self.__health_vbo = self.__create_vao_vbo(BLOCK_SIZE)
@@ -124,7 +124,7 @@ class Player:
 
     def kill(self) -> None:
         self.remove_score()
-        self.rect = FloatRect(*self.__start_pos, BLOCK_SIZE, BLOCK_SIZE)
+        self.rect = FloatRect(*self.rect.topleft, BLOCK_SIZE, BLOCK_SIZE)
         self.__health = PLAYER_HEALTH
         self.__bullets.clear_by_color(self._color)
         self.__health_vao, self.__health_vbo = self.__create_vao_vbo(BLOCK_SIZE)
