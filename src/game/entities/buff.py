@@ -4,7 +4,8 @@ import numpy as np
 from OpenGL.GL.shaders import ShaderProgram
 from OpenGL.GL import *  # type: ignore
 
-from engine.graphics.opengl_3d_utils import MeshData, OpenGL_3D_Utils
+from engine.graphics.opengl_3d_utils import MeshData
+from engine.graphics.renderer_3d import Renderer3D
 from game.enums.buff_enum import BuffEnum
 from game.systems.float_rect import FloatRect
 from game.consts import BLOCK_SIZE
@@ -36,35 +37,8 @@ class Buff:
             self.__height
         )
 
-        self.__vao = glGenVertexArrays(1)
-        vbo_pos = glGenBuffers(1)
-        vbo_norm = glGenBuffers(1)
-        self.__ebo_faces = glGenBuffers(1)
-        self.__ebo_edges = glGenBuffers(1)
-
-        glBindVertexArray(self.__vao)
-
-        # Positions
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_pos)
-        glBufferData(GL_ARRAY_BUFFER, model_mesh.vertices.nbytes, model_mesh.vertices, GL_STATIC_DRAW)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
-        glEnableVertexAttribArray(0)
-
-        # Normals
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_norm)
-        glBufferData(GL_ARRAY_BUFFER, model_mesh.normals.nbytes, model_mesh.normals, GL_STATIC_DRAW)
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, None)
-        glEnableVertexAttribArray(1)
-
-        # Faces EBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_faces)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_mesh.faces.nbytes, model_mesh.faces, GL_STATIC_DRAW)
-
-        glBindVertexArray(0)
-
-        # Edges EBO (можно биндать по необходимости)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_edges)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_mesh.edges.nbytes, model_mesh.edges, GL_STATIC_DRAW)
+        self.__renderer = Renderer3D()
+        self.__vao, self.__ebo_faces, self.__ebo_edges = self.__renderer.create_vao_ebo(self.__model_mesh)
 
     def draw(
         self,
@@ -75,36 +49,27 @@ class Buff:
         camera_pos: 'np.ndarray'
     ) -> None:
 
-        model = OpenGL_3D_Utils.rotate(t)
-        translate = OpenGL_3D_Utils.translate(self.__position[0], self.__position[1], 0.0)
-        scale_mat = OpenGL_3D_Utils.scale(self.__width, self.__height, self.__depth)
-        # Order: projection @ view @ translate(world) @ scale(local) @ rotate(local)
-        mvp = projection @ view @ translate @ scale_mat @ model
-
-        glUniformMatrix4fv(glGetUniformLocation(self.__shader, "mvp"), 1, GL_TRUE, mvp)
-        glUniformMatrix4fv(glGetUniformLocation(self.__shader, "model"), 1, GL_TRUE, model)
-        glUniform3fv(glGetUniformLocation(self.__shader, "lightPos"), 1, light_pos)
-        glUniform3fv(glGetUniformLocation(self.__shader, "viewPos"), 1, camera_pos)
-
-        glBindVertexArray(self.__vao)
-
-        # --- Draw faces (opaque) ---
-        glEnable(GL_DEPTH_TEST)
-        glDisable(GL_BLEND)
-        glEnable(GL_POLYGON_OFFSET_FILL)
-        glPolygonOffset(1.0, 1.0)
-
         if self.__type == BuffEnum.ENDLESS_HEALTH:
-            glUniform3f(glGetUniformLocation(self.__shader, "objectColor"), 194 / 255, 29 / 255, 29 / 255)
+            color = (194 / 255, 29 / 255, 29 / 255)
         elif self.__type == BuffEnum.STRENGTH_INCREASE:
-            glUniform3f(glGetUniformLocation(self.__shader, "objectColor"), 15 / 255, 193 / 255, 209 / 255)
+            color = (15 / 255, 193 / 255, 209 / 255)
         else:
-            glUniform3f(glGetUniformLocation(self.__shader, "objectColor"), 0.4, 0.4, 0.45)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.__ebo_faces)
-        glDrawElements(GL_TRIANGLES, len(self.__model_mesh.faces), GL_UNSIGNED_INT, None)
+            color = (0.4, 0.4, 0.45)
 
-        glDisable(GL_POLYGON_OFFSET_FILL)
-        glEnable(GL_BLEND)
+        self.__renderer.draw_3d_model(
+            position=self.__position,
+            size=(self.__width, self.__height, self.__depth),
+            color=color,
+            vao=self.__vao,
+            ebo_faces=self.__ebo_faces,
+            shader=self.__shader,
+            model_mesh=self.__model_mesh,
+            projection=projection,
+            view=view,
+            t=t,
+            light_pos=light_pos,
+            camera_pos=camera_pos
+        )
 
     def change_position(self, position: tuple[float, float]) -> None:
         self.__position = position

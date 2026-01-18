@@ -1,24 +1,23 @@
 
+from OpenGL.GLU import *  # type: ignore
+from OpenGL.GL import *  # type: ignore
+from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
+import pygame
+import ctypes
+from mouse_buttons import Mouse
+from game.consts import GAME_BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH, MAP_HEIGHT, MAP_WIDTH, MAPS_CELLS_COLOR, VIRTUAL_BLOCK_COLOR
+from engine.shader_utils import ShaderUtils
+from engine.graphics.opengl_utils import OpenGLUtils
+from engine.graphics.display_manager import DisplayManager
+from game.game_field import GameField
+from engine.graphics.renderer_2d import Renderer2D
+from game.systems.float_rect import FloatRect
 import sys
 import os
 
 # --- ФИКС ИМПОРТОВ ---
 # Добавляем путь к src в sys.path, чтобы видеть модуль game
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
-from game.systems.float_rect import FloatRect
-from engine.graphics.renderer import Renderer
-from game.game_field import GameField
-from engine.graphics.display_manager import DisplayManager
-from engine.graphics.opengl_utils import OpenGLUtils
-from engine.shader_utils import ShaderUtils
-from game.consts import GAME_BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH, MAP_HEIGHT, MAP_WIDTH, MAPS_CELLS_COLOR, VIRTUAL_BLOCK_COLOR
-from mouse_buttons import Mouse
-import ctypes
-import pygame
-from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
-from OpenGL.GL import *  # type: ignore
-from OpenGL.GLU import *  # type: ignore
 
 
 pygame.init()
@@ -57,7 +56,7 @@ game_field = GameField(
     shader
 )
 
-renderer = Renderer()
+renderer = Renderer2D()
 
 lines: dict[FloatRect, tuple[int, int]] = {}
 
@@ -138,9 +137,9 @@ while True:
 
     try:
         mouse_pos = mouse.get_mouse_pos(screen)
-        
+
         block_pos = game_field.get_block_field_position(*mouse_pos)
-        
+
         y = block_pos.y * BLOCK_SIZE
         x1 = block_pos.x * BLOCK_SIZE
         x2 = GAME_FIELD_WIDTH - x1 - BLOCK_SIZE
@@ -161,7 +160,7 @@ while True:
             rect=FloatRect(x1, y, BLOCK_SIZE, BLOCK_SIZE),
             color=VIRTUAL_BLOCK_COLOR
         )
-        
+
         renderer.draw_rect(
             block_vao,
             uUseTexture=(uUseTextureLoc, False),

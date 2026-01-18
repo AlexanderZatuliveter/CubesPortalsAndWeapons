@@ -10,7 +10,7 @@ from game.enums.direction_enum import DirectionEnum
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.float_rect import FloatRect
 from engine.graphics.opengl_utils import OpenGLUtils
-from engine.graphics.renderer import Renderer
+from engine.graphics.renderer_2d import Renderer2D
 from engine.graphics.opengl_utils import OpenGLUtils
 from game.systems.rotated_rect import RotatedRect
 
@@ -69,7 +69,7 @@ class Bullet:
         self.rect = FloatRect(x, y, width, height)
         self.__rotated_rect = RotatedRect(self.rect)
 
-        self.__renderer = Renderer()
+        self.__renderer = Renderer2D()
 
         vertices = OpenGLUtils.create_rectangle_vertices(width, height)
         self.__vertex_count = 4

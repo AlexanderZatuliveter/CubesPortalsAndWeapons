@@ -13,7 +13,7 @@ from game.systems.float_rect import FloatRect
 from game.game_field import GameField
 from engine.graphics.opengl_utils import OpenGLUtils
 from game.systems.physics import Physics
-from engine.graphics.renderer import Renderer
+from engine.graphics.renderer_2d import Renderer2D
 from game.systems.scores import Scores
 
 
@@ -71,7 +71,7 @@ class Player:
         self._is_shot = False
 
         self.__shader = shader
-        self.__renderer = Renderer()
+        self.__renderer = Renderer2D()
 
         self.__uPlayerPos = glGetUniformLocation(self.__shader, "uPlayerPos")
         self.__uIsPlayer = glGetUniformLocation(self.__shader, "uIsPlayer")
@@ -275,8 +275,6 @@ class Player:
         if self._is_strength_increase and pygame.time.get_ticks() - self.__strength_increase_start >= BUFF_COOLDOWN:
             self._is_strength_increase = False
             self.__strength_increase_start = 0
-
-        print(f"{self._is_endless_health=}")
 
         # Update scores
         self.__draw_scores.update_pos(self.rect.x, self.rect.y - BLOCK_SIZE * 1.01)

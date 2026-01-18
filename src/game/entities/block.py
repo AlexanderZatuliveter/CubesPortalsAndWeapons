@@ -7,7 +7,7 @@ import ctypes
 from game.consts import BLOCK_SIZE, DARK_GREY
 from game.systems.float_rect import FloatRect
 from engine.graphics.opengl_utils import OpenGLUtils
-from engine.graphics.renderer import Renderer
+from engine.graphics.renderer_2d import Renderer2D
 
 
 class Block:
@@ -21,7 +21,7 @@ class Block:
         self.__offset_x = 0.0
         self.__offset_y = 0.0
 
-        self.__renderer = Renderer()
+        self.__renderer = Renderer2D()
 
         vertices = OpenGLUtils.create_square_vertices(BLOCK_SIZE)
         self.__vertex_count = 4
