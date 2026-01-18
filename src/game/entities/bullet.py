@@ -24,7 +24,8 @@ class Bullet:
         color: tuple[float, float, float, float],
         shader: ShaderProgram,
         type: WeaponEnum,
-        angle: float = 0
+        angle: float = 0,
+        damage_coefficient: float = 1.0
     ) -> None:
 
         self._type = type
@@ -38,28 +39,28 @@ class Bullet:
         self.__last_time = pygame.time.get_ticks()
 
         if self._type == WeaponEnum.BAZOOKA:
-            self.damage = BAZOOKA_BULLET_DAMAGE
+            self.damage = BAZOOKA_BULLET_DAMAGE * damage_coefficient
             self.__bullet_speed = BAZOOKA_BULLET_SPEED
             width = BAZOOKA_BULLET_WIDTH
             height = BAZOOKA_BULLET_HEIGHT
             self._type = WeaponEnum.BAZOOKA
 
         elif self._type == WeaponEnum.MACHINE_GUN:
-            self.damage = MACHINE_GUN_BULLET_DAMAGE
+            self.damage = MACHINE_GUN_BULLET_DAMAGE * damage_coefficient
             self.__bullet_speed = MACHINE_GUN_BULLET_SPEED
             width = MACHINE_GUN_BULLET_WIDTH
             height = MACHINE_GUN_BULLET_HEIGHT
             self._type = WeaponEnum.MACHINE_GUN
 
         elif self._type == WeaponEnum.PISTOL:
-            self.damage = PISTOL_BULLET_DAMAGE
+            self.damage = PISTOL_BULLET_DAMAGE * damage_coefficient
             self.__bullet_speed = PISTOL_BULLET_SPEED
             width = PISTOL_BULLET_WIDTH
             height = PISTOL_BULLET_HEIGHT
             self._type = WeaponEnum.PISTOL
 
         elif self._type == WeaponEnum.SHOTGUN:
-            self.damage = SHOTGUN_BULLET_DAMAGE
+            self.damage = SHOTGUN_BULLET_DAMAGE * damage_coefficient
             self.__bullet_speed = SHOTGUN_BULLET_SPEED
             width = SHOTGUN_BULLET_WIDTH
             height = SHOTGUN_BULLET_HEIGHT

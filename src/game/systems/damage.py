@@ -48,7 +48,8 @@ class Damage:
 
         for player in self.__damageables:
             if player.rect.top > GAME_FIELD_HEIGHT + BLOCK_SIZE * 15:
-                player.kill()
+                if not player._is_endless_health:
+                    player.kill()
 
     def __destroy(self, bullet: Bullet):
         if bullet in self.__bullets:

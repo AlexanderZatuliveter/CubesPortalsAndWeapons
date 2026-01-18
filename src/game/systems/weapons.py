@@ -15,9 +15,9 @@ class Weapons(list[Weapon]):
         self.__shader = shader
 
         self.__weapons = {
-            WeaponEnum.BAZOOKA: OpenGL_3D_Utils.load("src/_content/3D_models/bazooka.STL"),
-            WeaponEnum.MACHINE_GUN: OpenGL_3D_Utils.load("src/_content/3D_models/machine_gun.STL"),
-            WeaponEnum.SHOTGUN: OpenGL_3D_Utils.load("src/_content/3D_models/shotgun.STL")
+            WeaponEnum.BAZOOKA: OpenGL_3D_Utils.load("src/_content/3D_models/weapons/bazooka.STL"),
+            WeaponEnum.MACHINE_GUN: OpenGL_3D_Utils.load("src/_content/3D_models/weapons/machine_gun.STL"),
+            WeaponEnum.SHOTGUN: OpenGL_3D_Utils.load("src/_content/3D_models/weapons/shotgun.STL")
         }
 
         none_positions, block_positions = game_field.return_block_positions()

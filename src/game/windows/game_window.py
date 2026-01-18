@@ -9,6 +9,7 @@ from pygame import Surface
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
+from game.systems.buffs import Buffs
 from game.systems.bullets import Bullets
 from game.consts import GAME_BG_COLOR, BLOCK_SIZE, DRAW_DT, UPDATE_DT, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from engine.joysticks_manager import JoysticksManager
@@ -89,6 +90,7 @@ class GameWindow:
         )
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
         self.__weapons = Weapons(self.__game_field, self.__3d_shader)
+        self.__buffs = Buffs(self.__game_field, self.__3d_shader)
 
         self.__display_manager = DisplayManager()
         self.__music_manager = music_manager
@@ -145,6 +147,12 @@ class GameWindow:
                             player.update_weapon(weapon.get_type())
                             self.__weapons.remove(weapon)
 
+                for buff in self.__buffs:
+                    for player in self.__players:
+                        if player.rect.colliderect(buff.rect):
+                            player.set_buff(buff.get_type())
+                            self.__buffs.remove(buff)
+
                 update_accumulator -= UPDATE_DT
 
             # Draws
@@ -164,6 +172,7 @@ class GameWindow:
                 glUseProgram(self.__3d_shader)
 
                 self.__weapons.draw(self.__3d_projection, view, t, light_pos, camera_pos)
+                self.__buffs.draw(self.__3d_projection, view, t, light_pos, camera_pos)
 
                 glUseProgram(self.__2d_shader)
 

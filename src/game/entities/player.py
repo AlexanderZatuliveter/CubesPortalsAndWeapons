@@ -4,9 +4,10 @@ from OpenGL.GL import *  # type: ignore
 import ctypes
 
 from game.entities.bullet import Bullet
+from game.enums.buff_enum import BuffEnum
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.bullets import Bullets
-from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, CHANGE_ANTI_GRAVITY, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PISTOL_BULLET_HEIGHT, PISTOL_BULLET_WIDTH, PISTOL_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
+from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, BUFF_COOLDOWN, CHANGE_ANTI_GRAVITY, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PISTOL_BULLET_HEIGHT, PISTOL_BULLET_WIDTH, PISTOL_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -58,6 +59,11 @@ class Player:
         self.__dash_start_time = 0
         self.__dash_last_time = 0
 
+        self._is_endless_health = False
+        self.__endless_health_start = 0
+        self._is_strength_increase = False
+        self.__strength_increase_start = 0
+
         self.__default_weapon = WeaponEnum.PISTOL
         self.update_weapon(self.__default_weapon)
 
@@ -105,7 +111,8 @@ class Player:
             self.__bullet_width, self.__bullet_height = SHOTGUN_BULLET_WIDTH, SHOTGUN_BULLET_HEIGHT
 
     def damage(self, bullet: Bullet):
-        self.__health -= bullet.damage
+        if not self._is_endless_health:
+            self.__health -= bullet.damage
 
         if self.__joystick:
             if bullet._type == WeaponEnum.MACHINE_GUN:
@@ -142,6 +149,11 @@ class Player:
         else:
             x = self.rect.x - self.__bullet_width
 
+        if self._is_strength_increase:
+            damage_coefficient = 1.5
+        else:
+            damage_coefficient = 1.0
+
         if self.__current_weapon == WeaponEnum.SHOTGUN:
             angles = [15, 0, -15]
             for num in range(3):
@@ -152,7 +164,8 @@ class Player:
                     self._color,
                     self.__shader,
                     self.__current_weapon,
-                    angle=angles[num]
+                    angle=angles[num],
+                    damage_coefficient=damage_coefficient
                 ))
         else:
             self.__bullets.add_bullet(Bullet(
@@ -161,7 +174,8 @@ class Player:
                 self.__direction,
                 self._color,
                 self.__shader,
-                self.__current_weapon
+                self.__current_weapon,
+                damage_coefficient=damage_coefficient
             ))
 
         self._is_shot = True
@@ -254,6 +268,16 @@ class Player:
             self._is_shot = False
             self._shot_time = 0
 
+        if self._is_endless_health and pygame.time.get_ticks() - self.__endless_health_start >= BUFF_COOLDOWN:
+            self._is_endless_health = False
+            self.__endless_health_start = 0
+
+        if self._is_strength_increase and pygame.time.get_ticks() - self.__strength_increase_start >= BUFF_COOLDOWN:
+            self._is_strength_increase = False
+            self.__strength_increase_start = 0
+
+        print(f"{self._is_endless_health=}")
+
         # Update scores
         self.__draw_scores.update_pos(self.rect.x, self.rect.y - BLOCK_SIZE * 1.01)
 
@@ -300,3 +324,13 @@ class Player:
 
     def get_scores(self) -> int:
         return self.__scores
+
+    def set_buff(self, buff_type: BuffEnum) -> None:
+        if buff_type == BuffEnum.ENDLESS_HEALTH:
+            self._is_endless_health = True
+            self.__endless_health_start = pygame.time.get_ticks()
+        elif buff_type == BuffEnum.STRENGTH_INCREASE:
+            self._is_strength_increase = True
+            self.__strength_increase_start = pygame.time.get_ticks()
+        else:
+            return
