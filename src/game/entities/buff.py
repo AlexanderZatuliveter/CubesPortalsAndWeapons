@@ -46,7 +46,8 @@ class Buff:
         view: 'np.ndarray',
         t: float,
         light_pos: 'np.ndarray',
-        camera_pos: 'np.ndarray'
+        camera_pos: 'np.ndarray',
+        uniforms: dict
     ) -> None:
 
         if self.__type == BuffEnum.ENDLESS_HEALTH:
@@ -68,7 +69,8 @@ class Buff:
             view=view,
             t=t,
             light_pos=light_pos,
-            camera_pos=camera_pos
+            camera_pos=camera_pos,
+            uniforms=uniforms
         )
 
     def change_position(self, position: tuple[float, float]) -> None:

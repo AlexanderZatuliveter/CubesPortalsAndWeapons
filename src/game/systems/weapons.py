@@ -67,6 +67,6 @@ class Weapons(list[Weapon]):
         return Weapon(self.__shader, weapon_pos, model, self.__weapons[model])
 
     def draw(self, projection: 'np.ndarray', view: 'np.ndarray', t: float,
-             light_pos: 'np.ndarray', camera_pos: 'np.ndarray') -> None:
+             light_pos: 'np.ndarray', camera_pos: 'np.ndarray', uniforms: dict) -> None:
         for weapon in self:
-            weapon.draw(projection, view, t, light_pos, camera_pos)
+            weapon.draw(projection, view, t, light_pos, camera_pos, uniforms)

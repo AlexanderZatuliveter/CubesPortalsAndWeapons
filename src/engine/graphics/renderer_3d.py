@@ -52,7 +52,8 @@ class Renderer3D:
         view: 'np.ndarray',
         t: float,
         light_pos: 'np.ndarray',
-        camera_pos: 'np.ndarray'
+        camera_pos: 'np.ndarray',
+        uniforms: dict | None = None
     ) -> None:
 
         model = OpenGL_3D_Utils.rotate(t)
@@ -61,10 +62,20 @@ class Renderer3D:
         # Order: projection @ view @ translate(world) @ scale(local) @ rotate(local)
         mvp = projection @ view @ translate @ scale_mat @ model
 
-        glUniformMatrix4fv(glGetUniformLocation(shader, "mvp"), 1, GL_TRUE, mvp)
-        glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_TRUE, model)
-        glUniform3fv(glGetUniformLocation(shader, "lightPos"), 1, light_pos)
-        glUniform3fv(glGetUniformLocation(shader, "viewPos"), 1, camera_pos)
+        # Use cached uniform locations if provided (optimization)
+        if uniforms is None:
+            uniforms = {
+                "mvp": glGetUniformLocation(shader, "mvp"),
+                "model": glGetUniformLocation(shader, "model"),
+                "lightPos": glGetUniformLocation(shader, "lightPos"),
+                "viewPos": glGetUniformLocation(shader, "viewPos"),
+                "objectColor": glGetUniformLocation(shader, "objectColor"),
+            }
+
+        glUniformMatrix4fv(uniforms["mvp"], 1, GL_TRUE, mvp)
+        glUniformMatrix4fv(uniforms["model"], 1, GL_TRUE, model)
+        glUniform3fv(uniforms["lightPos"], 1, light_pos)
+        glUniform3fv(uniforms["viewPos"], 1, camera_pos)
 
         glBindVertexArray(vao)
 
@@ -74,7 +85,7 @@ class Renderer3D:
         glEnable(GL_POLYGON_OFFSET_FILL)
         glPolygonOffset(1.0, 1.0)
 
-        glUniform3f(glGetUniformLocation(shader, "objectColor"), *color)
+        glUniform3f(uniforms["objectColor"], *color)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_faces)
         glDrawElements(GL_TRIANGLES, len(model_mesh.faces), GL_UNSIGNED_INT, None)
 

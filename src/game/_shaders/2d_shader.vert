@@ -13,6 +13,9 @@ out vec2 vTexCoord;
 void main()
 {
     vec2 pos = aPos;
+    
+    // For instanced rendering (aOffset has divisor=1)
+    // For regular rendering (aOffset updated per frame)
     if(uIsPlayer == 0)
         pos += aOffset;
     else

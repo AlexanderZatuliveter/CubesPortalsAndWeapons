@@ -1,11 +1,13 @@
 import numpy as np
 import json
+from OpenGL.GL import *  # type: ignore
 
 from game.entities.block import Block
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.systems.position import IntPosition
 from game.consts import BLOCK_SIZE
+from engine.graphics.blocks_renderer import BlocksRenderer
 
 
 class GameField:
@@ -13,14 +15,18 @@ class GameField:
         self.field = np.zeros(shape=(x, y), dtype=object)
         self.field.fill(None)
 
-        self.__shader = shader
+        self.__blocks_renderer = BlocksRenderer(shader)
 
     def draw(self) -> None:
+        """Draw all blocks using instanced rendering (1 draw call)."""
+        # Collect positions of all blocks
+        positions = []
         for (bx, by), block in np.ndenumerate(self.field):
             if block:
-                pos = self._get_block_position(bx, by)
-                block.set_offset(pos[0], pos[1])
-                block.draw()
+                positions.append((bx * BLOCK_SIZE, by * BLOCK_SIZE))
+
+        # Render all blocks in a single draw call
+        self.__blocks_renderer.draw(positions)
 
     def _get_block_position(self, bx: int, by: int) -> tuple[float, float]:
         return (
@@ -152,7 +158,7 @@ class GameField:
         try:
             block = self.field[pos.x][pos.y]
             if not block:
-                self.field[pos.x][pos.y] = Block(self.__shader)
+                self.field[pos.x][pos.y] = Block()
         except IndexError:
             return
 

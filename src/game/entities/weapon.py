@@ -45,12 +45,13 @@ class Weapon:
         view: 'np.ndarray',
         t: float,
         light_pos: 'np.ndarray',
-        camera_pos: 'np.ndarray'
+        camera_pos: 'np.ndarray',
+        uniforms: dict
     ) -> None:
 
         self.__renderer.draw_3d_model(
             position=self.__position,
-            size=(self.__width, self.__height, self.__depth),
+            size=(self.__width, self.__height * 2, self.__depth),
             color=(0.4, 0.4, 0.45),
             vao=self.__vao,
             ebo_faces=self.__ebo_faces,
@@ -60,7 +61,8 @@ class Weapon:
             view=view,
             t=t,
             light_pos=light_pos,
-            camera_pos=camera_pos
+            camera_pos=camera_pos,
+            uniforms=uniforms
         )
 
     def change_position(self, position: tuple[float, float]) -> None:

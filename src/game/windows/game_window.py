@@ -56,7 +56,6 @@ class GameWindow:
         self.__2d_shader = ShaderUtils.create_shader(
             "./src/game/_shaders/2d_shader.vert",
             "./src/game/_shaders/2d_shader.frag")
-        glUseProgram(self.__2d_shader)
 
         u2dProjection = glGetUniformLocation(self.__2d_shader, "uProjection")
         self.__2d_projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -1, 1)
@@ -65,11 +64,25 @@ class GameWindow:
         self.__3d_shader = ShaderUtils.create_shader(
             "./src/game/_shaders/3d_shader.vert",
             "./src/game/_shaders/3d_shader.frag")
-        glUseProgram(self.__3d_shader)
 
         u3dProjection = glGetUniformLocation(self.__3d_shader, "uProjection")
         self.__3d_projection = OpenGLUtils.ortho(0, GAME_FIELD_WIDTH, 0, GAME_FIELD_HEIGHT, -150, 150)
         glUniformMatrix4fv(u3dProjection, 1, GL_FALSE, self.__3d_projection.T)
+
+        # Cache 3D shader uniform locations for faster rendering
+        self.__3d_uniforms = {
+            "mvp": glGetUniformLocation(self.__3d_shader, "mvp"),
+            "model": glGetUniformLocation(self.__3d_shader, "model"),
+            "lightPos": glGetUniformLocation(self.__3d_shader, "lightPos"),
+            "viewPos": glGetUniformLocation(self.__3d_shader, "viewPos"),
+            "objectColor": glGetUniformLocation(self.__3d_shader, "objectColor"),
+        }
+
+        self.__view = OpenGLUtils.look_at(
+            np.array([0.0, 0.0, 50], dtype=np.float32),
+            np.array([0.0, 0.0, 0.0], dtype=np.float32),
+            np.array([0.0, 1.0, 0.0], dtype=np.float32)
+        )
 
         self.__game_field = GameField(
             int(GAME_FIELD_WIDTH // BLOCK_SIZE),
@@ -77,7 +90,6 @@ class GameWindow:
             self.__2d_shader
         )
 
-        # Load map first so block positions are available for weapon placement
         self.__game_field.load_from_file(map_path)
 
         self.__bullets = Bullets()
@@ -157,24 +169,16 @@ class GameWindow:
 
             # Draws
             while draw_accumulator >= DRAW_DT:
-                view = OpenGLUtils.look_at(
-                    np.array([0.0, 0.0, 50], dtype=np.float32),  # Позиция камеры
-                    np.array([0.0, 0.0, 0.0], dtype=np.float32),  # Куда смотрит (в центр)
-                    np.array([0.0, 1.0, 0.0], dtype=np.float32)  # Где "верх" (ось Y)
-                )
-
                 glEnable(GL_DEPTH_TEST)
 
                 glEnable(GL_BLEND)
                 glClear(GL_COLOR_BUFFER_BIT)
                 glClear(GL_DEPTH_BUFFER_BIT)
 
-                glUseProgram(self.__3d_shader)
 
-                self.__weapons.draw(self.__3d_projection, view, t, light_pos, camera_pos)
-                self.__buffs.draw(self.__3d_projection, view, t, light_pos, camera_pos)
-
+                # --- 2D Rendering Pass ---
                 glUseProgram(self.__2d_shader)
+                glDisable(GL_DEPTH_TEST)
 
                 self.__game_field.draw()
 
@@ -182,6 +186,13 @@ class GameWindow:
                     player.draw()
 
                 self.__bullets.draw()
+
+                # --- 3D Rendering Pass ---
+                glUseProgram(self.__3d_shader)
+                glEnable(GL_DEPTH_TEST)
+
+                self.__weapons.draw(self.__3d_projection, self.__view, t, light_pos, camera_pos, self.__3d_uniforms)
+                self.__buffs.draw(self.__3d_projection, self.__view, t, light_pos, camera_pos, self.__3d_uniforms)
 
                 pygame.display.flip()
 

@@ -66,6 +66,6 @@ class Buffs(list[Buff]):
         return Buff(self.__shader, buff_pos, model, self.__buffs[model])
 
     def draw(self, projection: 'np.ndarray', view: 'np.ndarray', t: float,
-             light_pos: 'np.ndarray', camera_pos: 'np.ndarray') -> None:
+             light_pos: 'np.ndarray', camera_pos: 'np.ndarray', uniforms: dict) -> None:
         for buff in self:
-            buff.draw(projection, view, t, light_pos, camera_pos)
+            buff.draw(projection, view, t, light_pos, camera_pos, uniforms)
