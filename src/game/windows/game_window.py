@@ -9,10 +9,12 @@ from pygame import Surface
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
 
-from game.systems.buffs import Buffs
+from game.entities.buff import Buff
+from game.entities.weapon import Weapon
 from game.systems.bullets import Bullets
 from game.consts import GAME_BG_COLOR, BLOCK_SIZE, DRAW_DT, UPDATE_DT, GAME_FIELD_HEIGHT, GAME_FIELD_WIDTH
 from engine.joysticks_manager import JoysticksManager
+from game.systems.collectable_objects import CollectableObjects
 from game.systems.damage import Damage
 from engine.graphics.display_manager import DisplayManager
 from game.game_field import GameField
@@ -22,7 +24,6 @@ from engine.graphics.opengl_utils import OpenGLUtils
 from game.systems.players import Players
 from engine.shader_utils import ShaderUtils
 from game.enums.window_enum import WindowEnum
-from game.systems.weapons import Weapons
 
 
 class GameWindow:
@@ -101,8 +102,7 @@ class GameWindow:
             player_start_pos
         )
         self.__damage = Damage(self.__players, self.__bullets, self.__game_field)
-        self.__weapons = Weapons(self.__game_field, self.__3d_shader)
-        self.__buffs = Buffs(self.__game_field, self.__3d_shader)
+        self.__collectable_objects = CollectableObjects(self.__game_field, self.__3d_shader)
 
         self.__display_manager = DisplayManager()
         self.__music_manager = music_manager
@@ -153,17 +153,14 @@ class GameWindow:
                         self.__game_state.current_window = WindowEnum.VICTORY_MENU
                         return player._color
 
-                for weapon in self.__weapons:
+                for object in self.__collectable_objects:
                     for player in self.__players:
-                        if player.rect.colliderect(weapon.rect):
-                            player.update_weapon(weapon.get_type())
-                            self.__weapons.remove(weapon)
-
-                for buff in self.__buffs:
-                    for player in self.__players:
-                        if player.rect.colliderect(buff.rect):
-                            player.set_buff(buff.get_type())
-                            self.__buffs.remove(buff)
+                        if player.rect.colliderect(object.rect):
+                            if isinstance(object, Weapon):
+                                player.update_weapon(object.get_type())
+                            elif isinstance(object, Buff):
+                                player.set_buff(object.get_type())
+                            self.__collectable_objects.remove(object)
 
                 update_accumulator -= UPDATE_DT
 
@@ -174,7 +171,6 @@ class GameWindow:
                 glEnable(GL_BLEND)
                 glClear(GL_COLOR_BUFFER_BIT)
                 glClear(GL_DEPTH_BUFFER_BIT)
-
 
                 # --- 2D Rendering Pass ---
                 glUseProgram(self.__2d_shader)
@@ -191,8 +187,14 @@ class GameWindow:
                 glUseProgram(self.__3d_shader)
                 glEnable(GL_DEPTH_TEST)
 
-                self.__weapons.draw(self.__3d_projection, self.__view, t, light_pos, camera_pos, self.__3d_uniforms)
-                self.__buffs.draw(self.__3d_projection, self.__view, t, light_pos, camera_pos, self.__3d_uniforms)
+                self.__collectable_objects.draw(
+                    self.__3d_projection,
+                    self.__view,
+                    t,
+                    light_pos,
+                    camera_pos,
+                    self.__3d_uniforms
+                )
 
                 pygame.display.flip()
 
