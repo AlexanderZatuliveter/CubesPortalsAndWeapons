@@ -7,7 +7,7 @@ from game.entities.bullet import Bullet
 from game.enums.buff_enum import BuffEnum
 from game.enums.weapon_enum import WeaponEnum
 from game.systems.bullets import Bullets
-from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, BUFF_COOLDOWN, CHANGE_ANTI_GRAVITY, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PISTOL_BULLET_HEIGHT, PISTOL_BULLET_WIDTH, PISTOL_COOLDOWN, PLAYER_DASH_DURATION, PLAYER_DASH_SPEED, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
+from game.consts import ANTI_GRAVITY_DECAY, BAZOOKA_BULLET_HEIGHT, BAZOOKA_BULLET_WIDTH, BAZOOKA_COOLDOWN, BLOCK_SIZE, BUFF_COOLDOWN, CHANGE_ANTI_GRAVITY, MACHINE_GUN_BULLET_HEIGHT, MACHINE_GUN_BULLET_WIDTH, MACHINE_GUN_COOLDOWN, PISTOL_BULLET_HEIGHT, PISTOL_BULLET_WIDTH, PISTOL_COOLDOWN, PLAYER_HEALTH, PLAYER_JUMP_FORCE, MAX_ANTI_GRAVITY, PLAYER_JUMPS_COUNT, PLAYER_MAX_VELOCITY_Y, PLAYER_SPEED, SHOTGUN_BULLET_HEIGHT, SHOTGUN_BULLET_WIDTH, SHOTGUN_COOLDOWN
 from game.enums.direction_enum import DirectionEnum
 from game.systems.float_rect import FloatRect
 from game.game_field import GameField
@@ -50,14 +50,10 @@ class Player:
         self.__change_anti_gravity = CHANGE_ANTI_GRAVITY
         self.__anti_gravity_decay = ANTI_GRAVITY_DECAY
 
+        self.__jump_count = 1
         self.__jump_force = -PLAYER_JUMP_FORCE
         self.__jumping = False
-
-        self.__is_dashing = False
-        self.__dash_duration = PLAYER_DASH_DURATION
-        self.__dash_speed = PLAYER_DASH_SPEED
-        self.__dash_start_time = 0
-        self.__dash_last_time = 0
+        self.__prev_jump_button_state = False
 
         self._is_endless_health = False
         self.__endless_health_start = 0
@@ -214,44 +210,38 @@ class Player:
             elif difx > 0 and is_block == DirectionEnum.LEFT:
                 self.rect.x += difx
 
-        # Dash
-        current_time = pygame.time.get_ticks()
-
-        if current_time - self.__dash_last_time > 1000 and not self.__is_dashing:
-            if self.__joystick and self.__joystick.get_button(2):
-                self.__is_dashing = True
-                self.__dash_start_time = current_time
-                self.__dash_last_time = current_time
-
-        if self.__is_dashing:
-            if current_time - self.__dash_start_time < self.__dash_duration:
-                if self.__direction == DirectionEnum.RIGHT:
-                    self.rect.x += self.__dash_speed * dt
-                else:
-                    self.rect.x -= self.__dash_speed * dt
-            else:
-                self.__is_dashing = False
-
         is_bottom_block = self.__physics.is_block(DirectionEnum.DOWN, dt)
         is_upper_block = self.__physics.is_block(DirectionEnum.UP, dt)
         is_left_block = self.__physics.is_block(DirectionEnum.LEFT, dt)
         is_right_block = self.__physics.is_block(DirectionEnum.RIGHT, dt)
 
-        if self.__joystick and self.__joystick.get_button(0) \
-                and (is_bottom_block or is_left_block or is_right_block) and not is_upper_block:
+        can_jump = (((is_bottom_block or is_left_block or is_right_block) and self.velocity_y < 0)
+                    or self.__jump_count < PLAYER_JUMPS_COUNT) and not is_upper_block
+
+        current_button_state = self.__joystick.get_button(0) if self.__joystick else False
+
+        if current_button_state and not self.__prev_jump_button_state and can_jump:
             self.velocity_y = self.__jump_force
             self.__jumping = True
+            self.__jump_count += 1
+
+        self.__prev_jump_button_state = current_button_state
 
         if self.__joystick and not self.__joystick.get_button(0):
             self.__jumping = False
             self.anti_gravity = 0
 
-        if self.__jumping and self.__joystick and self.__joystick.get_button(0) and self.velocity_y < 0:
+        if self.__joystick and self.__joystick.get_button(0) and self.__jumping:
             if self.anti_gravity < self.__max_anti_gravity:
                 self.anti_gravity += self.__change_anti_gravity * dt
 
         if self.__jumping == True and self.anti_gravity > 0:
             self.anti_gravity -= self.__anti_gravity_decay * dt
+
+        if is_bottom_block or is_left_block or is_right_block:
+            self.__jump_count = 1
+
+        print(f"{self.__jump_count=}")
 
         # Physics
         self.__physics.gravitation(dt)
