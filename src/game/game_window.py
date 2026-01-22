@@ -42,14 +42,6 @@ class GameWindow:
         self.__screen = screen
         self.__past_screen_size = self.__screen.get_size()
 
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-        # Disable unnecessary OpenGL features for 2D rendering
-        glDisable(GL_DEPTH_TEST)  # No depth testing needed for 2D
-        glDisable(GL_CULL_FACE)   # No backface culling needed
-        glDisable(GL_MULTISAMPLE)  # No multisampling needed for pixel-perfect 2D
-
         # Enable alpha blending by default for UI and textures
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)

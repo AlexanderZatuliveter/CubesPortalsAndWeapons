@@ -24,14 +24,14 @@ class MusicManager:
         self.set_volume(0.6)
         self.play(self.__game_window_music)
 
-    def play_pause_music(self) -> None:
+    def play_pause_menu_music(self) -> None:
         self.set_volume(1.0)
         self.play(self.__pause_menu_music)
 
     def play_main_menu_music(self) -> None:
         self.set_volume(1.0)
         self.play(self.__main_menu_music)
-        
+
     def play_victory_menu_music(self) -> None:
         self.set_volume(1.0)
         self.play(self.__victory_menu_music)

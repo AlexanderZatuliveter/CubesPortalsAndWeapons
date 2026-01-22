@@ -4,13 +4,13 @@ from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 
 from game.consts import SCREEN_HEIGHT, SCREEN_WIDTH
 from engine.joysticks_manager import JoysticksManager
-from game.windows.main_menu import MainMenu
-from game.windows.game_window import GameWindow
+from menus.main_menu import MainMenu
+from game.game_window import GameWindow
 from engine.music_manager import MusicManager
-from game.windows.map_menu import MapMenu
-from game.windows.pause_menu import PauseMenu
+from menus.map_menu import MapMenu
+from menus.pause_menu import PauseMenu
 from game.systems.game_state import GameState
-from game.windows.victory_menu import VictoryMenu
+from menus.victory_menu import VictoryMenu
 from game.enums.window_enum import WindowEnum
 
 
