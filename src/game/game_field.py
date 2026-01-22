@@ -35,10 +35,14 @@ class GameField:
         )
 
     def get_block_field_position(self, x: float, y: float) -> IntPosition:
-        return IntPosition(
-            int(x // BLOCK_SIZE),
-            int(y // BLOCK_SIZE)
-        )
+        try:
+            return IntPosition(
+                int(x // BLOCK_SIZE),
+                int(y // BLOCK_SIZE)
+            )
+        except ValueError:
+            print("ValueError")
+            return IntPosition(0, 0)
 
     def _get_block_rect(self, x: int, y: int) -> FloatRect:
         return FloatRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)

@@ -241,8 +241,6 @@ class Player:
         if is_bottom_block or is_left_block or is_right_block:
             self.__jump_count = 1
 
-        print(f"{self.__jump_count=}")
-
         # Physics
         self.__physics.gravitation(dt)
 
