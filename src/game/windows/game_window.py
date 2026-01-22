@@ -141,7 +141,7 @@ class GameWindow:
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
 
-            self.update(events)
+            self.update_events(events)
 
             # Updates
             while update_accumulator >= UPDATE_DT:
@@ -200,7 +200,7 @@ class GameWindow:
 
                 draw_accumulator -= DRAW_DT
 
-    def update(self, events: list[Event]) -> None:
+    def update_events(self, events: list[Event]) -> None:
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()

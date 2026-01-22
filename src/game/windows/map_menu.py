@@ -101,7 +101,7 @@ class MapMenu:
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
 
-            self.update(events)
+            self.update_events(events)
             self.__joysticks_manager.update_joystick_selection(events, self.__buttons)
 
             for button in self.__buttons:
@@ -123,7 +123,7 @@ class MapMenu:
             pygame.display.flip()
             self.__clock.tick(MENU_FPS)
 
-    def update(self, events: list[Event]) -> None:
+    def update_events(self, events: list[Event]) -> None:
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()

@@ -80,7 +80,6 @@ class MainMenu:
         self.__running = True
 
     def show(self) -> None:
-
         self.__screen = self.__display_manager.set_screen_size(self.__screen, self.__shader, self.__screen.get_size())
 
         # Set background's color
@@ -95,7 +94,7 @@ class MainMenu:
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
 
-            self.update(events)
+            self.update_events(events)
             self.__joysticks_manager.update_joystick_selection(events, self.__buttons)
 
             for button in self.__buttons:
@@ -117,7 +116,7 @@ class MainMenu:
             pygame.display.flip()
             self.__clock.tick(MENU_FPS)
 
-    def update(self, events: list[Event]) -> None:
+    def update_events(self, events: list[Event]) -> None:
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()

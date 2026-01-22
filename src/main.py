@@ -34,14 +34,6 @@ game_state = GameState()
 map_menu = MapMenu(game_state, screen, clock, music_manager, joysticks_manager)
 main_menu = MainMenu(game_state, screen, clock, music_manager, joysticks_manager)
 pause_menu = PauseMenu(game_state, screen, clock, music_manager, joysticks_manager)
-game_window = GameWindow(
-    game_state,
-    screen,
-    music_manager,
-    joysticks_manager,
-    map_menu.map_path,
-    map_menu.player_start_pos
-)
 
 while True:
     if game_state.current_window == WindowEnum.MAIN_MENU:

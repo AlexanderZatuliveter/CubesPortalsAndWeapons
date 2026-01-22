@@ -41,7 +41,6 @@ class GameField:
                 int(y // BLOCK_SIZE)
             )
         except ValueError:
-            print("ValueError")
             return IntPosition(0, 0)
 
     def _get_block_rect(self, x: int, y: int) -> FloatRect:
