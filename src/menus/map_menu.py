@@ -26,8 +26,9 @@ class MapMenu(BaseMenu):
         self._buttons = self._create_buttons(buttons)
 
     def show(self) -> None:
-
         self._joysticks_manager.current_first_button(self._buttons)
+        
+        self._running = True
 
         while self._running:
             events = pygame.event.get()

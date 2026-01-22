@@ -60,6 +60,8 @@ class VictoryMenu(BaseMenu):
     def show(self) -> None:
         self._music_manager.play_victory_menu_music()
         self._joysticks_manager.current_first_button(self._buttons)
+        
+        self._running = True
 
         while self._running:
             events = pygame.event.get()

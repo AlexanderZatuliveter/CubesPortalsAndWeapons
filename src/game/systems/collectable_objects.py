@@ -82,8 +82,6 @@ class CollectableObjects(list[Buff | Weapon]):
 
             self.__weapon_timer = pygame.time.get_ticks()
 
-        print(f"{self.__buff_timer=}, now={pygame.time.get_ticks()=}")
-
         if len(self) > 6:
             return
 

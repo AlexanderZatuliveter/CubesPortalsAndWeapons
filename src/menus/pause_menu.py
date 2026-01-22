@@ -40,6 +40,8 @@ class PauseMenu(BaseMenu):
     def show(self):
         self._music_manager.play_pause_menu_music()
         self._joysticks_manager.current_first_button(self._buttons)
+        
+        self._running = True
 
         while self._running:
             events = pygame.event.get()

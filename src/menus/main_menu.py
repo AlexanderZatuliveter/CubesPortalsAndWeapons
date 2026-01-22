@@ -35,6 +35,8 @@ class MainMenu(BaseMenu):
         self._music_manager.play_main_menu_music()
         self._joysticks_manager.current_first_button(self._buttons)
 
+        self._running = True
+
         while self._running:
             events = pygame.event.get()
             self._update_common_events(events)
