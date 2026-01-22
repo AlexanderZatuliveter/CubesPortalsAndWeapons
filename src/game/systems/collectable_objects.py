@@ -2,6 +2,7 @@ import numpy as np
 import random
 
 from OpenGL.GL.shaders import ShaderProgram
+import pygame
 from engine.graphics.opengl_3d_utils import OpenGL_3D_Utils
 from game.consts import BLOCK_SIZE
 from game.game_field import GameField
@@ -17,59 +18,79 @@ class CollectableObjects(list[Buff | Weapon]):
         super().__init__()
         self.__shader = shader
 
-        none_positions, block_positions = game_field.return_block_positions()
+        self.__none_positions, self.__block_positions = game_field.return_block_positions()
 
-        if not block_positions:
+        if not self.__block_positions:
             return
 
         # Конфиги для разных типов предметов
-        buffs_config = {
+        self.__buffs_config = {
             BuffEnum.ENDLESS_HEALTH: "src/_content/3D_models/buffs/heart.STL",
             BuffEnum.STRENGTH_INCREASE: "src/_content/3D_models/buffs/energy_drink.STL"
         }
 
-        weapons_config = {
+        self.__weapons_config = {
             WeaponEnum.BAZOOKA: "src/_content/3D_models/weapons/bazooka.STL",
             WeaponEnum.MACHINE_GUN: "src/_content/3D_models/weapons/machine_gun.STL",
             WeaponEnum.SHOTGUN: "src/_content/3D_models/weapons/shotgun.STL"
         }
 
         # Загружаем модели
-        buff_models = {
+        self.__buff_models = {
             enum_val: OpenGL_3D_Utils.load(path)
-            for enum_val, path in buffs_config.items()
+            for enum_val, path in self.__buffs_config.items()
         }
 
-        weapons_models = {
+        self.__weapons_models = {
             enum_val: OpenGL_3D_Utils.load(path)
-            for enum_val, path in weapons_config.items()
+            for enum_val, path in self.__weapons_config.items()
         }
 
-        for _ in range(3):
+        self.__buff_timer = 0
+        self.__weapon_timer = 0
+        self.__timers_cooldown = 10000
+
+    def update(self) -> None:
+        if self.__buff_timer == 0:
             while True:
                 buff = self.__create_item(
-                    buff_models,
+                    self.__buff_models,
                     Buff,
-                    block_positions,
-                    none_positions
+                    self.__block_positions,
+                    self.__none_positions
                 )
 
                 if not self.__check_collision(buff):
                     self.append(buff)
                     break
 
-        for _ in range(5):
-            while True:
-                weapon = self.__create_item(
-                    weapons_models,
-                    Weapon,
-                    block_positions,
-                    none_positions
-                )
+            self.__buff_timer = pygame.time.get_ticks()
 
-                if not self.__check_collision(weapon):
-                    self.append(weapon)
-                    break
+        if self.__weapon_timer == 0:
+            for _ in range(2):
+                while True:
+                    weapon = self.__create_item(
+                        self.__weapons_models,
+                        Weapon,
+                        self.__block_positions,
+                        self.__none_positions
+                    )
+
+                    if not self.__check_collision(weapon):
+                        self.append(weapon)
+                        break
+
+            self.__weapon_timer = pygame.time.get_ticks()
+
+        print(f"{self.__buff_timer=}, now={pygame.time.get_ticks()=}")
+
+        if len(self) > 6:
+            return
+
+        if pygame.time.get_ticks() - self.__buff_timer >= self.__timers_cooldown:
+            self.__buff_timer = 0
+        if pygame.time.get_ticks() - self.__weapon_timer >= self.__timers_cooldown:
+            self.__weapon_timer = 0
 
     def __create_item(
         self,

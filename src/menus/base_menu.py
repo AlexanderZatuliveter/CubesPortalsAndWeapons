@@ -81,6 +81,7 @@ class BaseMenu(ABC):
             if event.type == pygame.VIDEORESIZE:
                 videoresize = self._display_manager.resize_display(
                     self._screen, self._shader, self._past_screen_size, event.size)
+                print(f"{videoresize=}")
                 if videoresize is not None:
                     self._screen, self._past_screen_size = videoresize
 
