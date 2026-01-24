@@ -104,8 +104,7 @@ class CollectableObjects(list[Buff | Weapon]):
 
             if (item_pos[0], item_pos[1] + BLOCK_SIZE) not in block_positions:
                 continue
-            if (item_pos[0], item_pos[1] - BLOCK_SIZE) in block_positions \
-                    or (item_pos[0] + BLOCK_SIZE, item_pos[1] - BLOCK_SIZE) in block_positions:
+            if (item_pos[0], item_pos[1] - BLOCK_SIZE) in block_positions:
                 continue
             if item_pos in block_positions:
                 continue

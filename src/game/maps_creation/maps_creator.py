@@ -4,6 +4,14 @@ from OpenGL.GL import *  # type: ignore
 from pygame.locals import DOUBLEBUF, OPENGL, RESIZABLE
 import pygame
 import ctypes
+
+import sys
+import os
+
+# --- ФИКС ИМПОРТОВ ---
+# Добавляем путь к src в sys.path, чтобы видеть модуль game
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
 from mouse_buttons import Mouse
 from game.consts import GAME_BG_COLOR, BLOCK_SIZE, GAME_FIELD_HEIGHT, GAME_FIELD_PROPORTIONS, GAME_FIELD_WIDTH, MAP_HEIGHT, MAP_WIDTH, MAPS_CELLS_COLOR, VIRTUAL_BLOCK_COLOR
 from engine.shader_utils import ShaderUtils
@@ -12,12 +20,6 @@ from engine.graphics.display_manager import DisplayManager
 from game.game_field import GameField
 from engine.graphics.renderer_2d import Renderer2D
 from game.systems.float_rect import FloatRect
-import sys
-import os
-
-# --- ФИКС ИМПОРТОВ ---
-# Добавляем путь к src в sys.path, чтобы видеть модуль game
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 
 pygame.init()
@@ -112,11 +114,11 @@ while True:
 
         if keys[pygame.K_s]:
             print('saved')
-            game_field.save_to_file("pillars.map")
+            game_field.save_to_file("sight.map")
 
         if keys[pygame.K_l]:
             print('loaded')
-            game_field.load_from_file("pillars.map")
+            game_field.load_from_file("sight.map")
 
         if keys[pygame.K_c]:
             print('cleared')
